@@ -5,17 +5,23 @@
 
 .menu{
     position:absolute;
-    top:50%;
+    top:40%;
     left:50%;
     transform:translate(-50%,-50%);
+    background-color: white;
+    opacity: 0.9;
+    padding: 2em;
+    border-radius: 15%;
+    text-align: center;
+
 }
 
 .hive{
-    position:absolute;
+    /* position:absolute;
     top:25%;
     left:50%;
-    transform:translate(-50%,-50%);
-    font-family: Copperplate, Papyrus, fantasy;
-    text-align: center;
+    transform:translate(-50%,-50%); */
+    font-family: "Brush Script MT", cursive;
+    /* text-align: center; */
     font-size: 100px;
 }
