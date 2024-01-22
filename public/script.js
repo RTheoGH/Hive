@@ -2,7 +2,7 @@
 
 function debutPartie(){
     clear();
-    genereDamier(2,10,10);
+    genereDamier(50,10,10);
 }
 
 function clear(){                    
