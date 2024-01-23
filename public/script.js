@@ -60,7 +60,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .attr("stroke", "black")
                 .attr("fill", "white")
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
-                //.on("click", function(d) {
+                .on("click", function() {
                     //let position=d3.select(this).attr('id').substring(1);
                     //let typePion = document.querySelector('input[name="swap"]:checked').id;
                     //console.log("typePion : "+typePion)
@@ -68,9 +68,11 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                     //socket.emit('pion',{'typePion':typePion,'position':position,'numJoueur':jeton});
                     //console.log("typePion hexagone apres emit : "+typePion);
                     // if(typePion=="pion")
-                    // d3.select(this).attr('fill', couleursJoueurs[jeton]);
-                //});
+                    d3.select(this).attr('fill', "red");
+                });
             }
+            
+
     }
 
     d3.select('#h5250').attr('fill', 'red')
@@ -88,4 +90,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     d3.select('#h5226').attr('fill', 'blue')
     d3.select('#h5425').attr('fill', 'blue')
     d3.select('#h5426').attr('fill', 'blue')
+
+    //Quand la centaine est paire, il faut faire +1
+    //Quand la centaine est impaire, il faut faire -1
 }
