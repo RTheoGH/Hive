@@ -13,15 +13,45 @@
 
 <body class="fond">
     <div class="menu">
-        <h1 class="hive">Hive</h1>
-        <button class="bouton" onClick="window.open('https://www.regledujeu.fr/hive/')">Règles</button>
-        <br/><br/>
-        <hr/>
-        <br/>
-        <button class="bouton" onClick='debutPartie()'>Duel</button>   
-        <button class="bouton" onClick='debutPartie()'>VS IA</button><br/>
+        <div id="creer">
+            <h1>Création d'une salle</h1>
+            <hr/>
+            <p>Nom de la salle : <input type="text"/></p>
+            <p>Code de la salle : <input type="text"/></p>
+            <p>Pseudonyme : <input type="text"/></p>
+            <hr/>
+            <p>Choisir le mode :</p>
+            <input name="Type" id="duel" type="radio" value="duel" checked />
+            <label for="duel">Duel</label><br/>
+            <input name="Type" id="ia" type="radio" value="ia"/>
+            <label for="ia">VS IA</label><br/>
+            <hr/>
+            <button class="bouton" onClick="retour()">Retour</button>
+            <button class="bouton">Valider</button>
+        </div>
+        <div id="rejoindre">
+            <h1>Rejoindre</h1>
+            <hr/>
+            <p>Code de la salle : <input type="text"/></p>
+            <p>Pseudonyme : <input type="text"/></p>
+            <hr/>
+            <button class="bouton" onClick="retour()">Retour</button>
+            <button class="bouton">Valider</button>
+        </div>
+        <div id="accueil">
+            <h1 class="hive">Hive</h1>
+            <button class="bouton" onClick="window.open('https://www.regledujeu.fr/hive/')">Règles</button>
+            <br/><br/>
+            <hr/>
+            <br/>
+            <button class="bouton" onClick='creer()'>Créer</button>   
+            <button class="bouton" onClick='rejoindre()'>Rejoindre</button><br/>
+        </div>
     </div>
     
     <div id = "tablier" position = "relative"></div>
+    <footer>
+        <p>&copy; 2024 THEO REYNIER | ANTHONY HOMMAIS | CORENTIN FAY | KILLIAN VIGUIER</p>
+    </footer>
 </body>
 </html>

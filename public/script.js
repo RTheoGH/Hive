@@ -1,5 +1,9 @@
-/* fonction pour "clear" la page web afin d'afficher le jeu */
+$(document).ready(() => {
+    $("#creer").hide();
+    $("#rejoindre").hide();
+})
 
+/* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
     clear();
     genereDamier(15,22);
@@ -8,7 +12,22 @@ function debutPartie(){
 function clear(){                    
     $(".menu").remove();
     $("body").removeClass();
-    // faut jquery
+}
+
+function creer(){
+    $("#accueil").hide();
+    $("#creer").show();
+}
+
+function rejoindre(){
+    $("#accueil").hide();
+    $("#rejoindre").show();
+}
+
+function retour(){
+    $("#accueil").show();
+    $("#rejoindre").hide();
+    $("#creer").hide();
 }
 
 // Fonction qui créé un hexagone
