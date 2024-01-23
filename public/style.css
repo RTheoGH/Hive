@@ -66,9 +66,13 @@ footer{
     background-color: black;
     color: white;
     text-align:center;
-    height:4vh;
+    height:5vh;
 }
 
 .left{
     text-align: left;
+}
+
+.barre-droit{
+    border-right: 1px solid black;
 }

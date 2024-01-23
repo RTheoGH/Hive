@@ -20,14 +20,39 @@
             <p class="left">Code de la salle : <input type="text"/></p>
             <p class="left">Pseudonyme : <input type="text"/></p>
             <hr/>
-            <p class="left">Choisir le mode :</p>
-            <input name="Type" id="duel" type="radio" value="duel" checked />
-            <label for="duel">Duel</label><br/>
-            <input name="Type" id="ia" type="radio" value="ia"/>
-            <label for="ia">VS IA</label><br/>
+            <p>Choisir les modes :</p>
+            <div style="display:flex;">
+                <div style="text-align:right; width: 50%;">
+                    <br/>
+                    <label for="duel">Duel</label>
+                    <input name="Type" id="duel" type="radio" value="duel" checked /><br/>
+                    <label for="ia">VS IA</label>
+                    <input name="Type" id="ia" type="radio" value="ia"/>
+                </div>
+                <div style="border: 1px solid black;"></div>
+                <div class="left" style="width: 50%;">
+                    <input name="Mode" id="classique" type="radio" value="classique" checked />
+                    <label for="classique">Classique</label><br/>
+                    <input name="Mode" id="extension1" type="radio" value="extension1"/>
+                    <label for="extension1" title="Extension avec la coccinelle (plus tard...)">Extension 1</label><br/>
+                    <input name="Mode" id="extension2" type="radio" value="extension2"/>
+                    <label for="extension2" title="Extension avec le moustique (plus tard...)">Extension 2</label><br/>
+                    <input name="Mode" id="extension3" type="radio" value="extension3"/>
+                    <label for="extension3" title="Extension avec le cloporte (plus tard...)">Extension 3</label><br/>
+                </div>
+            </div>
             <hr/>
             <button class="bouton" onClick="retour()">Retour</button>
-            <button class="bouton">Valider</button>
+            <button class="bouton" onClick="validerCreation()">Valider</button>
+        </div>
+        <div id="lobby">
+            <h1>Nom de la salle : Code</h1>
+            <hr/>
+            <p>Pseudonyme 1 (créateur)</p>
+            <p>Pseudonyme 2 (celui qui rejoint)</p>
+            <hr/>
+            <button class="bouton" onClick="quitter()">Quitter</button>
+            <button class="bouton" onClick="debutPartie()">Lancer</button>
         </div>
         <div id="rejoindre">
             <h1>Rejoindre</h1>
@@ -36,7 +61,7 @@
             <p>Pseudonyme : <input type="text"/></p>
             <hr/>
             <button class="bouton" onClick="retour()">Retour</button>
-            <button class="bouton">Valider</button>
+            <button class="bouton" onClick="validerRejoindre()">Valider</button>
         </div>
         <div id="accueil">
             <h1 class="hive">Hive</h1>
@@ -49,7 +74,7 @@
         </div>
     </div>
     
-    <div id = "tablier" position = "relative"></div>
+    <div id="tablier"></div>
     <footer>
         <p>&copy; 2024 THEO REYNIER | ANTHONY HOMMAIS | CORENTIN FAY | KILLIAN VIGUIER</p>
     </footer>

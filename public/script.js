@@ -1,6 +1,7 @@
 $(document).ready(() => {
     $("#creer").hide();
     $("#rejoindre").hide();
+    $("#lobby").hide();
 })
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */
@@ -28,6 +29,21 @@ function retour(){
     $("#accueil").show();
     $("#rejoindre").hide();
     $("#creer").hide();
+}
+
+function validerCreation(){
+    $("#creer").hide();
+    $("#lobby").show();
+}
+
+function validerRejoindre(){
+    $("#rejoindre").hide();
+    $("#lobby").show();
+}
+
+function quitter(){
+    $("#lobby").hide();
+    $("#accueil").show();
 }
 
 // Fonction qui créé un hexagone
