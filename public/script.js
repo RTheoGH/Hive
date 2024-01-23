@@ -2,7 +2,7 @@
 
 function debutPartie(){
     clear();
-    genereDamier(15,22);
+    genereDamier(25,100,100);
 }
 
 function clear(){                    
@@ -24,34 +24,31 @@ function creeHexagone(rayon) {
     return points;
 }
 
-//idée : nbHexa = 0
-// for tailleCote :
-//  for tailleCote :
-//    ajouter nbHexa à gauche
-//    if nHexa
-
-
-function genereDamier(rayon, tailleCote) {
-    if(tailleCote==9 && tailleCote==9){  /* augmente la taille globale du damier*/
+function genereDamier(rayon, nbLignes, nbColonnes) {
+    if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
         rayon=rayon+5;
     };
-    if(tailleCote==19 && tailleCote==19){  /* reduire la taille globale du damier*/
+    if(nbLignes==19 && nbColonnes==19){  /* reduire la taille globale du damier*/
         rayon=rayon-5;
     };
     var i=0;
     distance =  rayon - (Math.sin(1 * Math.PI / 3) * rayon);  // plus grande distance entre l'hexagone et le cercle circonscrit
 
-    d3.select("#tablier").append("svg").attr("width", (tailleCote*2)*2*rayon).attr("height",tailleCote*2*rayon);
+    d3.select("#tablier").append("svg").attr("width", (nbLignes*2)*2*rayon).attr("height",nbLignes*2*rayon);
     var hexagone = creeHexagone(rayon);
     console.log(hexagone)
-    var nbHexagoneLigne = 0
-    for (var ligne=0; ligne < tailleCote; ligne++) {
+    for (var ligne=0; ligne < nbLignes; ligne++) {
         i++;
-        for (var colonne=0; colonne < tailleCote + nbHexagoneLigne; colonne++) {
+        for (var colonne=0; colonne < nbColonnes; colonne++) {
             var d = "";
             var x, y;
             for (h in hexagone) {
-                x = hexagone[h][0]+(rayon-distance)*(2+2*colonne-i)+(tailleCote*15);
+                if(i%2==0){
+                    x = hexagone[h][0]+(rayon-distance)*(2+2*colonne);
+                }
+                else{
+                    (x = hexagone[h][0]+(rayon-distance)*(2+1+2*colonne))
+                }
                 y = distance*2 + hexagone[h][1]+(rayon-distance*2)*(1+2*ligne);
                 if (h == 0) d += "M"+x+","+y+" L";
                 else        d +=     x+","+y+" ";
@@ -62,7 +59,7 @@ function genereDamier(rayon, tailleCote) {
                 .attr("d", d)
                 .attr("stroke", "black")
                 .attr("fill", "white")
-                .attr("id", "h"+(ligne*tailleCote+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
+                .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 //.on("click", function(d) {
                     //let position=d3.select(this).attr('id').substring(1);
                     //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -74,6 +71,21 @@ function genereDamier(rayon, tailleCote) {
                     // d3.select(this).attr('fill', couleursJoueurs[jeton]);
                 //});
             }
-        nbHexagoneLigne +=1
     }
+
+    d3.select('#h5250').attr('fill', 'red')
+    d3.select('#h5249').attr('fill', 'green')
+    d3.select('#h5251').attr('fill', 'green')
+    d3.select('#h5150').attr('fill', 'green')
+    d3.select('#h5151').attr('fill', 'green')
+    d3.select('#h5350').attr('fill', 'green')
+    d3.select('#h5351').attr('fill', 'green')
+
+    d3.select('#h5325').attr('fill', 'orange')
+    d3.select('#h5326').attr('fill', 'blue')
+    d3.select('#h5324').attr('fill', 'blue')
+    d3.select('#h5225').attr('fill', 'blue')
+    d3.select('#h5226').attr('fill', 'blue')
+    d3.select('#h5425').attr('fill', 'blue')
+    d3.select('#h5426').attr('fill', 'blue')
 }
