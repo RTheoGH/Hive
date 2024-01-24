@@ -34,7 +34,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     var i=0;
     distance =  rayon - (Math.sin(1 * Math.PI / 3) * rayon);  // plus grande distance entre l'hexagone et le cercle circonscrit
 
-    d3.select("#tablier").append("svg").attr("width", (nbLignes*2)*2*rayon).attr("height",nbLignes*2*rayon);
+    d3.select("#tablier").append("svg").attr("width", (nbLignes*2)*rayon).attr("height",nbLignes*1.5*rayon);
     var hexagone = creeHexagone(rayon);
     console.log(hexagone)
     for (var ligne=0; ligne < nbLignes; ligne++) {
@@ -74,6 +74,26 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             
 
     }
+
+    // Créer un nouvel élément SVG pour tous les éléments ayant comme classe "pion"
+    var svgPions = d3.selectAll(".pion").append("svg").attr("width", 100).attr("height", 100);
+
+    var d2 = "";
+    for (h in hexagone) {
+        x = hexagone[h][0]+rayon;
+        y = hexagone[h][1]+rayon;
+        if (h == 0) d2 += "M" + x + "," + y + " L";
+        else d2 += x + "," + y + " ";
+    }
+    d2 += "Z";
+
+    // Ajouter l'hexagone à l'élément SVG dans #menuPions
+    svgPions.append("path")
+        .attr("d", d2)
+        .attr("stroke", "black")
+        .attr("fill", "white")
+        .attr("id", "pionAbeille")
+        .attr("xlink:href", "/image/abeille.png");
 
     d3.select('#h5250').attr('fill', 'red')
     d3.select('#h5249').attr('fill', 'green')
