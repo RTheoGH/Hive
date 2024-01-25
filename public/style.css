@@ -8,12 +8,13 @@
     top:40%;
     left:50%;
     transform:translate(-50%,-50%);
-    background-color: white;
-    opacity: 0.9;
+    background-color:aliceblue;
+    /* opacity: 0.9; */
     padding: 2em;
     border-radius: 24px;
     text-align: center;
     width: 20vw;
+    border: 2px solid black
 }
 
 .hive{
@@ -22,32 +23,56 @@
 }
 
 .bouton {
-  background-color: #fff000;
-  border-radius: 12px;
-  color: #000;
-  cursor: pointer;
-  font-weight: bold;
-  padding: 10px 15px;
-  text-align: center;
-  transition: 200ms;
-  box-sizing: border-box;
-  border: 0;
-  font-size: 24px;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-
+    background-color: #fff000;
+    border-radius: 12px;
+    color: #000;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 10px 15px;
+    text-align: center;
+    transition: 200ms;
+    box-sizing: border-box;
+    border: 0;
+    font-size: 24px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
 }
 
 .bouton:not(:disabled):hover,
 .bouton:not(:disabled):focus {
-  outline: 0;
-  background: #f4e603;
-  box-shadow: 0 0 0 2px rgba(0,0,0,.2), 0 3px 8px 0 rgba(0,0,0,.15);
+    outline: 0;
+    background: #f4e603;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.2), 0 3px 8px 0 rgba(0,0,0,.15);
 }
 
 .bouton:disabled {
-  filter: saturate(0.2) opacity(0.5);
-  -webkit-filter: saturate(0.2) opacity(0.5);
-  cursor: not-allowed;
+    filter: saturate(0.2) opacity(0.5);
+    -webkit-filter: saturate(0.2) opacity(0.5);
+    cursor: not-allowed;
+}
+
+input[type=text] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    box-sizing: border-box;
+}
+
+footer{
+    position: absolute;
+    bottom: 0;
+    width: 100vw;
+    background-color: black;
+    color: white;
+    text-align:center;
+    height:5vh;
+}
+
+.left{
+    text-align: left;
+}
+
+.barre-droit{
+    border-right: 1px solid black;
 }
