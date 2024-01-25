@@ -11,7 +11,7 @@
     <title>Hive</title>
 </head>
 
-<body class="fond">
+<body class="fond" style="overflow-x:hidden;">
     <div class="menu">
         <div id="creer">
             <h1>Création d'une salle</h1>
@@ -73,17 +73,23 @@
             <button class="bouton" onClick='rejoindre()'>Rejoindre</button><br/>
         </div>
     </div>
-    <div id = "tablier"></div>
-    <div id = "menuPions">
-        <ul>
-            <li class="pion">Abeille</li>
-            <li class="pion">Araignée</li>
-            <li class="pion">Coccinelle</li>
-            <li class="pion">Fourmi</li>
-            <li class="pion">Moustique</li>
-            <li class="pion">Sauterelle</li>
-            <li class="pion">Scarabée</li>
-        </ul>
+    <div id="jeu">
+        <div id = "tablier"></div>
+        <div id = "menuPions" style="display:flex;flex-wrap: wrap;">
+            <p class="pion" id="pionAbeille"></p>
+            <p class="pion" id="pionFourmi"></p>
+            <p class="pion" id="pionScarabee"></p>
+            <p class="pion" id="pionCoccinelle"></p>
+            <p class="pion" id="pionAraignee"></p>
+            <p class="pion" id="pionSauterelle"></p>
+            <p class="pion" id="pionMoustique"></p>
+            <p class="pion" id="pionCloporte"></p>
+        </div>
+        <div id='chat' class='chat'>
+            <ul id='messages'></ul>
+            <input id='message' type='text'><button onClick='send()'>Envoyer</button>
+        </div>
+        <button class="bouton positionQP" onClick="quitter()">Quitter la partie</button>
     </div>
     <footer>
         <p>&copy; 2024 THEO REYNIER | ANTHONY HOMMAIS | CORENTIN FAY | KILLIAN VIGUIER</p>

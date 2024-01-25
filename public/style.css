@@ -62,7 +62,7 @@ input[type=text] {
 footer{
     position: absolute;
     bottom: 0;
-    width: 100vw;
+    width: 105vw;
     background-color: black;
     color: white;
     text-align:center;
@@ -76,3 +76,65 @@ footer{
 .barre-droit{
     border-right: 1px solid black;
 }
+
+#tablier{
+    background-color: burlywood;
+    margin: 0;
+    top:10%;
+    left:10%;
+    width:75vw;
+    height:85vh;
+    border: 5px solid black;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+#menuPions{
+    background-color: burlywood;
+    border: 5px solid black;
+    margin: 0;
+    top:1%;
+    left:76%;
+    position:absolute;
+    width:23vw;
+    height:auto;
+}
+
+#menuPions p{
+    width:25%;
+    box-sizing: border-box;
+    padding-right: 1em;
+    padding-left: 1em;
+    text-align: center;
+}
+
+.pion{
+    text-align: center;
+}
+.positionQP{
+    top:88%;
+    left:35%;
+    position:absolute;
+}
+
+/* position du tchat */
+.chat{
+    position:absolute;
+    top:60%;
+    left:80%;
+    transform: translateY(-50%);
+  }
+  
+  /* zone du tchat */
+  #messages{
+    height:40vh;
+    padding:1em;
+    background-color:whitesmoke;
+    overflow-y: scroll;
+  }
+  
+  /* liste des messages */
+  #messages li{
+    list-style: none;
+    margin-bottom: 0.5em;
+  }

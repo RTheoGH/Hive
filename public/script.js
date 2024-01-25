@@ -2,17 +2,18 @@ $(document).ready(() => {
     $("#creer").hide();
     $("#rejoindre").hide();
     $("#lobby").hide();
+    $("#jeu").hide();
 })
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
     clear();
-    genereDamier(25,100,100);
+    $("#jeu").show();
+    genereDamier(40,40,40);
 }
 
 function clear(){                    
-    $(".menu").remove();
-    $("body").removeClass();
+    $(".menu").hide();
 }
 
 function creer(){
@@ -43,6 +44,8 @@ function validerRejoindre(){
 
 function quitter(){
     $("#lobby").hide();
+    $("#jeu").hide();
+    $(".menu").show();
     $("#accueil").show();
 }
 
@@ -93,7 +96,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .append("path")
                 .attr("d", d)
                 .attr("stroke", "black")
-                .attr("fill", "white")
+                .attr("fill", "burlywood")
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function() {
                     //let position=d3.select(this).attr('id').substring(1);
@@ -111,7 +114,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     }
 
     // Créer un nouvel élément SVG pour tous les éléments ayant comme classe "pion"
-    var svgPions = d3.selectAll(".pion").append("svg").attr("width", 100).attr("height", 100);
+    var svgPions = d3.selectAll(".pion")
+                    .append("svg")
+                    .attr("width", 100)
+                    .attr("height", 100);
 
     var d2 = "";
     for (h in hexagone) {
