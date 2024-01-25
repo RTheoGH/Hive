@@ -1,3 +1,13 @@
+/*
+socket.on("connexion", () => {
+
+    console.log("Connecté au serveur Socket.IO");
+});
+
+socket.on("hello from server", () =>  {
+    console.log("socket io connecté");
+});
+ */
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 
 function debutPartie(){
@@ -37,6 +47,19 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     d3.select("#tablier").append("svg").attr("width", (nbLignes*2)*2*rayon).attr("height",nbLignes*2*rayon);
     var hexagone = creeHexagone(rayon);
     console.log(hexagone)
+    var milieu = [];
+    if (((nbLignes*nbColonnes)/2)%200 == 0){
+        milieu.push((nbLignes*nbColonnes+nbLignes)/2)
+        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-1)
+        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+1)
+        //milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-(nbColonnes+1))
+        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-(nbColonnes))
+        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-(nbColonnes-1))
+        //milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes-1))
+        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes))
+        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes+1))
+    }
+    console.log(milieu);
     for (var ligne=0; ligne < nbLignes; ligne++) {
         i++;
         for (var colonne=0; colonne < nbColonnes; colonne++) {
@@ -59,8 +82,14 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .attr("d", d)
                 .attr("stroke", "black")
                 .attr("fill", "white")
+                .attr("class", function() {
+                    return "hexagone" + (ligne * nbLignes + colonne);
+                })
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
-                //.on("click", function(d) {
+                .on("click", function(d) {
+                    let position=d3.select(this).attr('id').substring(1);
+                    socket.emit('discover',{'position':position});
+
                     //let position=d3.select(this).attr('id').substring(1);
                     //let typePion = document.querySelector('input[name="swap"]:checked').id;
                     //console.log("typePion : "+typePion)
@@ -69,23 +98,15 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                     //console.log("typePion hexagone apres emit : "+typePion);
                     // if(typePion=="pion")
                     // d3.select(this).attr('fill', couleursJoueurs[jeton]);
-                //});
+                });
             }
     }
-
-    d3.select('#h5250').attr('fill', 'red')
-    d3.select('#h5249').attr('fill', 'green')
-    d3.select('#h5251').attr('fill', 'green')
-    d3.select('#h5150').attr('fill', 'green')
-    d3.select('#h5151').attr('fill', 'green')
-    d3.select('#h5350').attr('fill', 'green')
-    d3.select('#h5351').attr('fill', 'green')
-
-    d3.select('#h5325').attr('fill', 'orange')
-    d3.select('#h5326').attr('fill', 'blue')
-    d3.select('#h5324').attr('fill', 'blue')
-    d3.select('#h5225').attr('fill', 'blue')
-    d3.select('#h5226').attr('fill', 'blue')
-    d3.select('#h5425').attr('fill', 'blue')
-    d3.select('#h5426').attr('fill', 'blue')
+    for(i of milieu) {
+        console.log(milieu.includes(i),i);
+        d3.select('#h'+i).attr("stroke", "black");
+    }
+    for(var i = 0; i < nbLignes * nbColonnes; i++){
+        if(!milieu.includes(i))
+            d3.select('#h'+i).classed("hexagoneWhiteBorder", true);
+    }
 }
