@@ -138,3 +138,7 @@ footer{
     list-style: none;
     margin-bottom: 0.5em;
   }
+
+.hexagoneWhiteBorder {
+    display: none;
+}
