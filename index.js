@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const port = 3000
 
-/* const http = require('http');
+const http = require('http');
 const server = http.createServer(app);
 const io = require("socket.io")(server);
 
@@ -13,7 +13,7 @@ io.on("connexion", (socket) => {
     console.log("socket")
     socket.emit("hello from server");
 });
-*/
+
 app.get('/',(req,res) => {
     res.sendFile('public/index.html',{root: __dirname})
 })
