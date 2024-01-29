@@ -8,11 +8,15 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="/public/script.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
+            integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI"
+            crossorigin="anonymous"></script>
+
     <title>Hive</title>
 </head>
 
 <body class="fond" style="overflow-x:hidden;">
-    <div class="menu">
+    <div class="menu ajustement">
         <div id="creer">
             <h1>Création d'une salle</h1>
             <hr/>
@@ -94,5 +98,11 @@
     <footer>
         <p>&copy; 2024 THEO REYNIER | ANTHONY HOMMAIS | CORENTIN FAY | KILLIAN VIGUIER</p>
     </footer>
+    <script>
+        const socket = io();
+        socket.on("hello from server", () => {
+            console.log("Connecté au serveur Socket.IO");
+        });
+    </script>
 </body>
 </html>
