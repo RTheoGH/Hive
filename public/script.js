@@ -250,3 +250,34 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             d3.select('#h'+i).classed("hexagoneWhiteBorder", true);
     }
 }
+
+$(document).ready(() => {
+    const draggableElement = document.getElementById('tablier')
+    console.log(draggableElement);
+
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    draggableElement.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    offsetX = e.clientX - draggableElement.getBoundingClientRect().left;
+    offsetY = e.clientY - draggableElement.getBoundingClientRect().top;
+    draggableElement.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+
+        draggableElement.style.left = `${x}px`;
+        draggableElement.style.top = `${y}px`;
+    }
+    });
+
+    document.addEventListener('mouseup', () => {
+    isDragging = false;
+    draggableElement.style.cursor = 'grab';
+    });
+})
+//const draggableElement = document.getElementById('tablier');
