@@ -2,6 +2,7 @@ $(document).ready(() => {
     $("#creer").hide();
     $("#rejoindre").hide();
     $("#lobby").hide();
+    $("#jeu").hide();
 })
 
 /*
