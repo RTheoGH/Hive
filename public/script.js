@@ -5,8 +5,9 @@ $(document).ready(() => {
     $("#jeu").hide();
 })
 
+const socket = io();
+
 document.addEventListener('DOMContentLoaded', function () {
-    const socket = io();
     // Code socket.io
     socket.on("hello from server", () => {
         console.log("Connecté au serveur Socket.IO");
@@ -98,6 +99,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     var milieu = [];
     if (((nbLignes*nbColonnes)/2)%200 == 0){
         milieu.push((nbLignes*nbColonnes+nbLignes)/2)
+        /*
         milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-1)
         milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+1)
         //milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-(nbColonnes+1))
@@ -106,6 +108,8 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         //milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes-1))
         milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes))
         milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes+1))
+        */
+
     }
     console.log(milieu);
     for (var ligne=0; ligne < nbLignes; ligne++) {
