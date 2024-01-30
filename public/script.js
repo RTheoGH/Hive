@@ -5,6 +5,15 @@ $(document).ready(() => {
     $("#jeu").hide();
 })
 
+document.addEventListener('DOMContentLoaded', function () {
+    const socket = io();
+    // Code socket.io
+    socket.on("hello from server", () => {
+        console.log("Connecté au serveur Socket.IO");
+    });
+});
+// Pour killian : En gros je connecte ici et le fait bien attention de le faire avant de charger les élément de la page pour éviter les conflits ^^
+
 /*
 socket.on("connexion", () => {
 
