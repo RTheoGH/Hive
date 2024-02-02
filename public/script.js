@@ -134,12 +134,19 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .attr("d", d)
                 .attr("stroke", "black")
 
-                .attr("fill", "burlywood")
+                .attr("fill", "white")
                 .attr("class", function() {
                     return "hexagone" + (ligne * nbLignes + colonne);
                 })
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function(d) {
+                    d3.select(this).selectAll("svg").remove();
+                    d3.select(this).append("svg").append('image')
+                    //.attr("viewBox", "0 0 " + (rayon * 2) + " " + (rayon * 2))  // Ajout de la viewBox
+                    .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
+                    
+
+                    console.log(this)
                     let position=d3.select(this).attr('id').substring(1);
                     socket.emit('discover',{'position':position});
                     //let position=d3.select(this).attr('id').substring(1);
@@ -149,7 +156,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                     //socket.emit('pion',{'typePion':typePion,'position':position,'numJoueur':jeton});
                     //console.log("typePion hexagone apres emit : "+typePion);
                     // if(typePion=="pion")
-                    d3.select(this).attr('fill', "red");
+                    //d3.select(this).attr('fill', "red");
                     // d3.select(this).attr('fill', couleursJoueurs[jeton]);
                 });
             }
@@ -178,7 +185,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     
     //Pour mettre les images sur les pions du menu :
     
-    console.log(document.getElementById("pionAbeille"));
     var pionAb = d3.select('#pionAbeille')
     pionAb.select('svg').append('image')
         .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
@@ -235,21 +241,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         .attr('width', rayon*1.3)  
         .attr('height', rayon*1.3);
 
-    d3.select('#h5250').attr('fill', 'red')
-    d3.select('#h5249').attr('fill', 'green')
-    d3.select('#h5251').attr('fill', 'green')
-    d3.select('#h5150').attr('fill', 'green')
-    d3.select('#h5151').attr('fill', 'green')
-    d3.select('#h5350').attr('fill', 'green')
-    d3.select('#h5351').attr('fill', 'green')
-
-    d3.select('#h5325').attr('fill', 'orange')
-    d3.select('#h5326').attr('fill', 'blue')
-    d3.select('#h5324').attr('fill', 'blue')
-    d3.select('#h5225').attr('fill', 'blue')
-    d3.select('#h5226').attr('fill', 'blue')
-    d3.select('#h5425').attr('fill', 'blue')
-    d3.select('#h5426').attr('fill', 'blue')
 
     //Quand la centaine est paire, il faut faire +1
     //Quand la centaine est impaire, il faut faire -1
@@ -263,3 +254,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             d3.select('#h'+i).classed("hexagoneWhiteBorder", true);
     }
 }
+
+var selectionPion = false;
+
+$(document).on('click', '.pion', function(){
+    selectionPion = true;
+});
