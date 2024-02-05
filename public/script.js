@@ -1,30 +1,9 @@
-$(document).ready(() => {
+socket.on("Salut c'est le serveur ! :)", () =>  {
+    console.log("socket io connecté");
     $("#creer").hide();
     $("#rejoindre").hide();
     $("#lobby").hide();
     $("#jeu").hide();
-})
-
-const socket = io();
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Code socket.io
-    socket.on("hello from server", () => {
-        console.log("Connecté au serveur Socket.IO");
-    });
-});
-// Pour killian : En gros je connecte ici et le fait bien attention de le faire avant de charger les élément de la page pour éviter les conflits ^^
-
-/*
-socket.on("connexion", () => {
-
-    console.log("Connecté au serveur Socket.IO");
-});
-
-socket.on("hello from server", () =>  {
-    console.log("socket io connecté");
-});
- */
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
@@ -56,6 +35,26 @@ function retour(){
 function validerCreation(){
     $("#creer").hide();
     $("#lobby").show();
+    const nomSalle = document.querySelector("input[name='nomSalle']").value;
+    const codeSalle = document.querySelector("input[name='codeSalle']").value;
+    const pseudo = document.querySelector("input[name='pseudo']").value;
+    const typeListe = document.querySelectorAll("input[name='Type']");
+    let typeChoix;
+    for (const type of typeListe) {
+        if (type.checked) {
+            typeChoix = type.value;
+            break;
+        }
+    }
+    const modeListe = document.querySelectorAll("input[name='Mode']");
+    let modeChoix;
+    for (const mode of modeListe) {
+        if (mode.checked) {
+            modeChoix = mode.value;
+            break;
+        }
+    }
+    socket.emit('paramNewSalle',{'nomSalle':nomSalle,'codeSalle':codeSalle,'pseudo':pseudo,'typeChoix':typeChoix,'modeChoix':modeChoix});
 }
 
 function validerRejoindre(){
@@ -93,7 +92,53 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     var i=0;
     distance =  rayon - (Math.sin(1 * Math.PI / 3) * rayon);  // plus grande distance entre l'hexagone et le cercle circonscrit
 
-    d3.select("#tablier").append("svg").attr("width", (nbLignes*2)*rayon).attr("height",nbLignes*1.5*rayon);
+    d3.select("#tablier").append("svg").attr("width", (nbLignes*2)*rayon).attr("height",nbLignes*1.5*rayon).attr('id','ruche');
+    
+    let deplacement = false;
+    let startX,startY,currentX,currentY;
+
+    const tablier = document.getElementById('tablier');
+    const ruche = document.getElementById('ruche');
+
+    var centreH = (tablier.scrollWidth-tablier.clientWidth)/2;
+    var centreV = (tablier.scrollHeight-tablier.clientHeight)/2;
+
+    tablier.scrollLeft = centreH-100;
+    tablier.scrollTop = centreV;
+
+    ruche.addEventListener('mousedown', (e) => {
+        deplacement = true;
+        startX = e.clientX-tablier.getBoundingClientRect().left;
+        startY = e.clientY-tablier.getBoundingClientRect().top;
+        ruche.style.cursor = 'grabbing';
+        //console.log('grab');
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!deplacement) return;
+
+        e.preventDefault();
+
+        currentX = e.clientX - tablier.getBoundingClientRect().left;
+        currentY = e.clientY - tablier.getBoundingClientRect().top;
+
+        //console.log('on bouge');
+        const deltaX = currentX - startX;
+        const deltaY = currentY - startY;
+
+        tablier.scrollLeft -= deltaX;
+        tablier.scrollTop -= deltaY;
+
+        startX = currentX;
+        startY = currentY;
+    });
+
+    document.addEventListener('mouseup', () => {
+        //console.log('on lache');
+        deplacement = false;
+        ruche.style.cursor = 'grab';
+    });
+    
     var hexagone = creeHexagone(rayon);
     console.log(hexagone)
     var milieu = [];
@@ -159,7 +204,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
 
     // Créer un nouvel élément SVG pour tous les éléments ayant comme classe "pion"
-    var svgPions = d3.selectAll(".pion").append("svg").attr("width", 100).attr("height", 100);
+    var svgPions = d3.selectAll(".pion")
+                    .append("svg")
+                    .attr("width", 100)
+                    .attr("height", 100);
 
     var d2 = "";
     for (h in hexagone) {

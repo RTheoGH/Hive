@@ -5,23 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="/public/icone.png">
     <link rel="stylesheet" href="/public/style.css">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
+            integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI"
+            crossorigin="anonymous">
+    </script>
+    <script>const socket = io();</script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="/public/script.js"></script>
-
-
     <title>Hive</title>
 </head>
 
 <body class="fond" style="overflow-x:hidden;">
-    <div class="menu">
+    <div class="menu ajustement">
         <div id="creer">
             <h1>Création d'une salle</h1>
             <hr/>
-            <p class="left">Nom de la salle : <input type="text"/></p>
-            <p class="left">Code de la salle : <input type="text"/></p>
-            <p class="left">Pseudonyme : <input type="text"/></p>
+            <p class="left">Nom de la salle : <input type="text" name="nomSalle"/></p>
+            <p class="left">Code de la salle : <input type="password" name="codeSalle"/></p>
+            <p class="left">Pseudonyme : <input type="text" name="pseudo"/></p>
             <hr/>
             <p>Choisir les modes :</p>
             <div style="display:flex;">
