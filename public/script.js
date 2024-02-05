@@ -1,9 +1,10 @@
-socket.on("Salut c'est le serveur ! :)", () =>  {
+socket.on("Salut c'est le serveur ! :)", () => {
     console.log("socket io connecté");
     $("#creer").hide();
     $("#rejoindre").hide();
     $("#lobby").hide();
     $("#jeu").hide();
+});
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
@@ -69,6 +70,16 @@ function quitter(){
     $("#accueil").show();
 }
 
+function hideHex(position){
+    console.log('fonction hideHex sur : '+ position);
+    d3.select('#h'+position).attr("stroke", "black");
+}
+
+socket.on('hide', (data) => {
+    console.log('chemin hide client : '+ position);
+    hideHex(data.position);
+})
+
 // Fonction qui créé un hexagone
 function creeHexagone(rayon) {
     var points = new Array();
@@ -81,6 +92,63 @@ function creeHexagone(rayon) {
     }
     return points;
 }
+
+function desactiverHexagone(indiceHexagone) {
+    d3.select('#h' + indiceHexagone)
+        .classed("desactive", true);
+}
+
+function activerHexagone(indiceHexagone) {
+    var hexagone = d3.select('#h' + indiceHexagone);
+
+    // Vérifier la couleur de remplissage actuelle
+    var couleurRemplissage = hexagone.attr("fill");
+
+    // Si la couleur de remplissage n'est pas rouge, rendre transparent et cliquable
+    if (couleurRemplissage !== "red") {
+        hexagone
+            .classed("desactive", false)
+            .classed("hexagoneReactive", true)
+            .attr("fill", "none")
+            .style("pointer-events", "all");
+    }
+}
+
+function toggleHexagone(indiceHexagone) {
+    var hexagone = d3.select('#h' + indiceHexagone);
+    var couleurRemplissage = hexagone.attr("fill");
+
+    if (couleurRemplissage === "red") {
+        // Hexagone rouge, le désactive et désactive les hexagones autour
+        hexagone
+            .classed("desactive", true)
+            .classed("hexagoneReactive", false)
+            .attr("fill", "none")
+            .style("pointer-events", "none");
+
+        // Récupérer les indices des hexagones autour
+        var indicesAutour = determinerIndicesAutour(indiceHexagone);
+
+        // Désactiver les hexagones autour s'ils ne sont pas rouges
+        indicesAutour.forEach(function (indice) {
+            var hexVoisin = d3.select('#h' + indice);
+            var couleurVoisin = hexVoisin.attr("fill");
+
+            if (couleurVoisin !== "red") {
+                hexVoisin
+                    .classed("desactive", true)
+                    .classed("hexagoneReactive", false)
+                    .attr("fill", "none")
+                    .style("pointer-events", "none");
+            }
+        });
+    } else {
+        // Hexagone non rouge, l'active
+        activerHexagone(indiceHexagone);
+    }
+}
+
+
 
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
@@ -185,17 +253,20 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 })
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function(d) {
-                    let position=d3.select(this).attr('id').substring(1);
-                    socket.emit('discover',{'position':position});
-                    //let position=d3.select(this).attr('id').substring(1);
-                    //let typePion = document.querySelector('input[name="swap"]:checked').id;
-                    //console.log("typePion : "+typePion)
-                    //console.log(position);
-                    //socket.emit('pion',{'typePion':typePion,'position':position,'numJoueur':jeton});
-                    //console.log("typePion hexagone apres emit : "+typePion);
-                    // if(typePion=="pion")
-                    d3.select(this).attr('fill', "red");
-                    // d3.select(this).attr('fill', couleursJoueurs[jeton]);
+                    if (!d3.select(this).classed("desactive")) {
+                        let position = d3.select(this).attr('id').substring(1);
+                        socket.emit('discover', {'position': position});
+                        console.log('position' + position);
+                        //let position=d3.select(this).attr('id').substring(1);
+                        //let typePion = document.querySelector('input[name="swap"]:checked').id;
+                        //console.log("typePion : "+typePion)
+                        //console.log(position);
+                        //socket.emit('pion',{'typePion':typePion,'position':position,'numJoueur':jeton});
+                        //console.log("typePion hexagone apres emit : "+typePion);
+                        // if(typePion=="pion")
+                        d3.select(this).attr('fill', "red");
+                        // d3.select(this).attr('fill', couleursJoueurs[jeton]);
+                    }
                 });
             }
             
@@ -282,7 +353,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         .attr('y', 10)  
         .attr('width', rayon*1.3)  
         .attr('height', rayon*1.3);
-
+/*
     d3.select('#h5250').attr('fill', 'red')
     d3.select('#h5249').attr('fill', 'green')
     d3.select('#h5251').attr('fill', 'green')
@@ -298,7 +369,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     d3.select('#h5226').attr('fill', 'blue')
     d3.select('#h5425').attr('fill', 'blue')
     d3.select('#h5426').attr('fill', 'blue')
-
+*/
     //Quand la centaine est paire, il faut faire +1
     //Quand la centaine est impaire, il faut faire -1
 
@@ -308,6 +379,14 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     }
     for(var i = 0; i < nbLignes * nbColonnes; i++){
         if(!milieu.includes(i))
+            //desactiverHexagone(i);
             d3.select('#h'+i).classed("hexagoneWhiteBorder", true);
     }
 }
+
+socket.on('instructionsActivation', (data) => {
+    // Activer les hexagones autour selon les instructions du serveur
+    for (let indice of data.indices) {
+        activerHexagone(indice);
+    }
+});
