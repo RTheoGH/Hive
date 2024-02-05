@@ -346,7 +346,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         //socket.emit('pion',{'typePion':typePion,'position':position,'numJoueur':jeton});
                         //console.log("typePion hexagone apres emit : "+typePion);
                         // if(typePion=="pion")
-                        //d3.select(this).attr('fill', "red");
+                        d3.select(this).attr('fill', "red");
                         // d3.select(this).attr('fill', couleursJoueurs[jeton]);
                     }
                 });
