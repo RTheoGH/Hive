@@ -114,39 +114,109 @@ function activerHexagone(indiceHexagone) {
     }
 }
 
-function toggleHexagone(indiceHexagone) {
-    var hexagone = d3.select('#h' + indiceHexagone);
+function toggleHexagone(data) {
+    console.log('Avant sélection : ' + data.position);
+    var hexagone = d3.select('#h' + data.position);
+    console.log('Après sélection : ' + hexagone);
+
+    if (!hexagone || hexagone.empty()) {
+        console.error('Hexagone non trouvé pour l\'indice ' + data.position);
+        return;
+    }
+
+    console.log('Propriétés de l\'hexagone :', hexagone.node());
+
     var couleurRemplissage = hexagone.attr("fill");
+    console.log('Couleur de la case ' + data.position + ': ' + couleurRemplissage);
 
     if (couleurRemplissage === "red") {
+        console.log(data.position + " est rouge.");
         // Hexagone rouge, le désactive et désactive les hexagones autour
         hexagone
-            .classed("desactive", true)
-            .classed("hexagoneReactive", false)
             .attr("fill", "none")
-            .style("pointer-events", "none");
+        // passer a vide
 
         // Récupérer les indices des hexagones autour
-        var indicesAutour = determinerIndicesAutour(indiceHexagone);
+        var indicesAutour = data.indices;
 
-        // Désactiver les hexagones autour s'ils ne sont pas rouges
-        indicesAutour.forEach(function (indice) {
+        // Désactiver les hexagones autour s'ils ne sont pas rouges ou n'ont pas un autre hexagone rouge autour d'eux
+        for(indiceR of indicesAutour) {
+            console.log(indiceR + " est rouge ou border ?");
+            /*
             var hexVoisin = d3.select('#h' + indice);
             var couleurVoisin = hexVoisin.attr("fill");
 
-            if (couleurVoisin !== "red") {
+            // Vérifier si l'hexagone voisin est rouge ou a un hexagone rouge autour de lui
+            var indicesVoisinAutour = determinerIndicesAutour(indice);
+            let rouge = false;
+            for(indiceRed of indicesVoisinAutour){
+                if(d3.select('#h' + indiceRed).attr("fill")==="red"){
+                    rouge = true;
+                }
+            }
+            var voisinAHexRouge = indicesVoisinAutour.some(function (voisinIndice) {
+                var voisinHex = d3.select('#h' + voisinIndice);
+                return voisinHex.attr("fill") === "red";
+            });
+            */
+            var hexVoisin = d3.select('#h' + indiceR);
+            var indicesVoisinAutour = determinerIndicesAutour(indiceR);
+            let rouge = false;
+            if(d3.select('#h' + indiceR).attr("fill")==="red") rouge = true;
+            for(indiceRed of indicesVoisinAutour){
+                if(d3.select('#h' + indiceRed).attr("fill")==="red") rouge = true;
+            }
+
+            if (!rouge) {
                 hexVoisin
                     .classed("desactive", true)
                     .classed("hexagoneReactive", false)
+                    .classed("hexagoneWhiteBorder", true)
                     .attr("fill", "none")
                     .style("pointer-events", "none");
             }
-        });
+        }
     } else {
         // Hexagone non rouge, l'active
-        activerHexagone(indiceHexagone);
+        console.log(data.position + " n'est pas rouge");
     }
 }
+
+function determinerIndicesAutour(position) {
+    let indicesAutour = [];
+    nbColonnes = 40;
+
+    // Convertir la position en coordonnées de ligne et colonne
+    let ligne = Math.floor(position / nbColonnes);
+    let colonne = position % nbColonnes;
+
+    // Coordonnées des voisins relatifs
+    let voisinsRelatifs = [
+        [0, -1], [0, 1], // gauche, droite
+        [-1, (ligne % 2 === 0) ? 1 : 0], [-1, (ligne % 2 === 0) ? 0 : -1], // hautG, hautD
+        [1, (ligne % 2 === 0) ? 1 : 0], [1, (ligne % 2 === 0) ? 0 : -1]  // basG, basD
+    ];
+
+    // Parcourir les voisins et calculer les indices
+    for (let voisin of voisinsRelatifs) {
+        let voisinLigne = ligne + voisin[0];
+        let voisinColonne = colonne + voisin[1];
+
+        // Vérifier si le voisin est à l'intérieur des limites
+        if (voisinLigne >= 0 && voisinLigne < nbColonnes && voisinColonne >= 0 && voisinColonne < nbColonnes) {
+            // Calculer l'indice et l'ajouter au tableau
+            let voisinIndice = voisinLigne * nbColonnes + voisinColonne;
+            indicesAutour.push(voisinIndice);
+        }
+    }
+
+    return indicesAutour;
+}
+
+socket.on('instructionsRedActivation', (data) => {
+    // Activer les hexagones autour selon les instructions du serveur
+    toggleHexagone(data);
+});
 
 
 
@@ -255,8 +325,13 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .on("click", function(d) {
                     if (!d3.select(this).classed("desactive")) {
                         let position = d3.select(this).attr('id').substring(1);
-                        socket.emit('discover', {'position': position});
                         console.log('position' + position);
+                        if (d3.select(this).attr("fill") === "red") {
+                            socket.emit('ClickHexRed', {'position': position});
+                        }
+                        else {
+                            socket.emit('discover', {'position': position});
+                        }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
                         //console.log("typePion : "+typePion)

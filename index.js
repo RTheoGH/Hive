@@ -40,6 +40,15 @@ io.on('connection', (socket) => {
         // Envoyer les instructions pour activer les hexagones autour
         socket.emit('instructionsActivation', { 'indices': indicesAutour });
     });
+    socket.on('ClickHexRed', (data) => {
+        const position = data.position;
+        console.log('Position reçue du client :', position);
+        let indicesAutour = determinerIndicesAutour(data.position);
+        console.log('indicesAutour envoie au serveur :', indicesAutour);
+
+        // Envoyer les instructions pour activer les hexagones autour
+        socket.emit('instructionsRedActivation', { 'position': position, 'indices': indicesAutour });
+    });
 });
 
 function determinerIndicesAutour(position) {
