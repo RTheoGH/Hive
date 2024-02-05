@@ -4,6 +4,7 @@ socket.on("Salut c'est le serveur ! :)", () =>  {
     $("#rejoindre").hide();
     $("#lobby").hide();
     $("#jeu").hide();
+});
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
