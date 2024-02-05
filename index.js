@@ -35,4 +35,7 @@ io.on('connection', (socket) => {
         console.log(data.typeChoix);
         console.log(data.modeChoix);
     });
+    socket.on('envoieMessage',(data) => {
+        io.emit('recoitMessage',data);
+    });
 });

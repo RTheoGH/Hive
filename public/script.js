@@ -84,10 +84,15 @@ function send(){
     let message = $('#message').val().trim().replace(/[^a-zA-Z0-9 ]/g,'');
     if (!message==""){
         console.log(message);
-        socket.emit('envoieMessage',{'auteur':nomJoueur,'message':message,'numeroJeton':jeton});
+        socket.emit('envoieMessage',{'auteur':nomJoueur,'message':message});
     }
     $('#message').val("");
 }
+
+/* reception des messages */
+socket.on('recoitMessage', (data) => {
+    $("#messages").append("<li>"+data.auteur+": "+data.message+"</li>");
+});
 
 // Fonction qui créé un hexagone
 function creeHexagone(rayon) {
