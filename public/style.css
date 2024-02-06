@@ -157,6 +157,10 @@ footer{
     display: none;
 }
 
+.hexagoneReactive {
+    display: block;
+}
+
 @media (max-width: 1600px){
     .ajustement{
         top:45%;
