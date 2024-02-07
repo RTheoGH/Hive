@@ -88,10 +88,10 @@ footer{
     background-size:100%;
     margin: 0;
     position: absolute;
-    top:2%;
-    left:2%;
-    width:75vw;
-    height:85vh;
+    top:1%;
+    left:1%;
+    width:98vw;
+    height:93vh;
     border-radius: 24px;
     box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
     overflow-y: hidden;
@@ -100,31 +100,68 @@ footer{
 }
 
 #menuPions{
-    /* background-color: burlywood; */
-    background-image: url("table.jpeg");
-    background-size: 150%;
-    /* border: 5px solid black; */
+    background-color: whitesmoke;
     border-radius: 24px;
-    box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
     margin: 0;
-    top:1%;
-    left:76%;
-    position:absolute;
-    width:23vw;
-    height:auto;
+    top: 3%;
+    left: 2%;
+    position: absolute;
+    width: 5.25vw;
+    height: 11.5vh;
+    transition: 0.5s;
+    padding-bottom: 0;
+    padding-top: 5px;
+    opacity:0.8;
 }
 
-#menuPions p{
-    width:25%;
-    box-sizing: border-box;
-    padding-right: 1em;
-    padding-left: 1em;
+#menuPions:hover{
+    padding-bottom:35em;
+    opacity:1;
+    transition: 0.25s;
+}
+
+#menuPions svg{
     text-align: center;
+    height:0%;
+    transform-origin: 50% 50%;
+    /* box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19); */
+    transition: 0.25s;
+}
+
+#menuPions svg image{
+    transform-origin: 50% 50%;
+}
+
+#menuPions:hover svg{
+    height:100%;
+}
+
+#menuPions svg:hover image{
+    animation: shake 0.5s;
+}
+
+@keyframes shake{
+    0%{
+        transform: rotate(0deg);
+    }
+    25%{
+        transform: rotate(-25deg);
+    }
+    50%{
+        transform: rotate(25deg);
+    }
+    75%{
+        transform: rotate(-10deg);
+    }
+    100%{
+        transform: rotate(0deg);
+    }
 }
 
 .pion{
     text-align: center;
 }
+
 .positionQP{
     top:88%;
     left:35%;
@@ -133,25 +170,47 @@ footer{
 
 /* position du tchat */
 .chat{
+    background-color:white;
+    opacity: 0.7;
+    border-radius: 24px;
+    padding:8px;
     position:absolute;
+    top:75%;
+    left:80%;
+    /* width:10vw; */
+    /* height:20vh; */
+    transform: translateY(-50%);
+    transition: 1s;
+}
+
+.chat:hover{
+    opacity:1;
     top:60%;
     left:80%;
-    transform: translateY(-50%);
-  }
+    /* width:auto; */
+    /* height:auto; */
+    transition: 1s;
+}
   
-  /* zone du tchat */
-  #messages{
-    height:40vh;
+/* zone du tchat */
+#messages{
+    height:10vh;
     padding:1em;
     background-color:whitesmoke;
     overflow-y: scroll;
-  }
-  
-  /* liste des messages */
-  #messages li{
+    transition: 1s;
+}
+
+.chat:hover #messages{
+    height:40vh;
+    transition: 1s;
+}
+
+/* liste des messages */
+#messages li{
     list-style: none;
     margin-bottom: 0.5em;
-  }
+}
 
 .hexagoneWhiteBorder {
     display: none;
@@ -161,17 +220,18 @@ footer{
     display: block;
 }
 
+/* A voir pour un ecran plus large vu que c'est sur mon petit ordi */
 @media (max-width: 1600px){
     .ajustement{
         top:45%;
     }
-    #tablier{
+    /* #tablier{
         top:5%;
         left:5%;
         width:65vw;
         height:80vh;
-    }
-    #menuPions{
+    } */
+    /* #menuPions{
         font-size: 0.9;
         left:73%;
         width:25vw;
@@ -179,11 +239,11 @@ footer{
     #menuPions p{
         padding-right: 0.5em;
         padding-left: 0.5em;
-    }
-    .chat{
+    } */
+    /* .chat{
         top:65%;
     }
     #messages{
         height:30vh;
-    }
+    } */
 }
