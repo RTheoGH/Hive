@@ -422,15 +422,35 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     $(document).on('click', '.svgHexa', function() {
         console.log('pistache');
         if (selectionPion != null) {
-            console.log("Sélection hexagone");
-            d3.select(this).append('image')
-                .attr('xlink:href', logosPions[selectionPion])
-                .attr('x', 10)
-                .attr('y', 10)
-                .attr('width', rayonGlobal * 1.3)
-                .attr('height', rayonGlobal * 1.3);
+            // console.log("Sélection hexagone");
+
+            var path = $(this).find('path');   // On sélectionne le path à l'intérieur du svg
+            // console.log(path);
+            
+            if (path.length > 0) {            // Si on le trouve
+                var d = path.attr('d');       // On récupère son d
+                // console.log(d);
+                
+                var valeurs = d.split(' ');   // On split par les espaces
+                // console.log(valeurs);
+            
+                var coords = valeurs[0].substring(1).split(','); // Récupère x et y
+                // console.log(coords);
+                var x = parseFloat(coords[0]);
+                var y = parseFloat(coords[1]);
+                // console.log(x,y);
+
+                d3.select(this).append('image')
+                    .attr('xlink:href', logosPions[selectionPion])
+                    .attr('x', x-26)
+                    .attr('y', y+14)
+                    .attr('width', rayonGlobal * 1.3)
+                    .attr('height', rayonGlobal * 1.3);
+            }
         }
     });
+    
+    
 
     //Pour mettre les images sur les pions du menu :
     
