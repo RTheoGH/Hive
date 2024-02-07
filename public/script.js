@@ -6,6 +6,10 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#jeu").hide();
 });
 
+var nomJoueur="";
+var salle="";
+var code="";
+
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
     clear();
@@ -55,6 +59,11 @@ function validerCreation(){
             break;
         }
     }
+    nomJoueur = pseudo.trim().replace(/[^a-zA-Z0-9 ]/g,'');
+    salle = nomSalle.trim().replace(/[^a-zA-Z0-9 ]/g,'');
+    code = codeSalle.trim().replace(/[^a-zA-Z0-9 ]/g,'');
+    document.getElementById('nomCodeSalle').innerHTML = salle+' : '+code;
+    document.getElementById('J1').innerHTML += nomJoueur;
     socket.emit('paramNewSalle',{'nomSalle':nomSalle,'codeSalle':codeSalle,'pseudo':pseudo,'typeChoix':typeChoix,'modeChoix':modeChoix});
 }
 
@@ -79,6 +88,21 @@ socket.on('hide', (data) => {
     console.log('chemin hide client : '+ position);
     hideHex(data.position);
 })
+
+/* fonction pour envoyer un message */
+function send(){
+    let message = $('#message').val().trim().replace(/[^a-zA-Z0-9 ]/g,'');
+    if (!message==""){
+        console.log(message);
+        socket.emit('envoieMessage',{'auteur':nomJoueur,'message':message});
+    }
+    $('#message').val("");
+}
+
+/* reception des messages */
+socket.on('recoitMessage', (data) => {
+    $("#messages").append("<li>"+data.auteur+": "+data.message+"</li>");
+});
 
 // Fonction qui créé un hexagone
 function creeHexagone(rayon) {

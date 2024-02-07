@@ -51,10 +51,10 @@
             <button class="bouton" onClick="validerCreation()">Valider</button>
         </div>
         <div id="lobby">
-            <h1>Nom de la salle : Code</h1>
+            <h1 id="nomCodeSalle"></h1>
             <hr/>
-            <p>Pseudonyme 1 (créateur)</p>
-            <p>Pseudonyme 2 (celui qui rejoint)</p>
+            <p id="J1">Joueur 1 : </p>
+            <p id="J2">Joueur 2 : (celui qui rejoint)</p>
             <hr/>
             <button class="bouton" onClick="quitter()">Quitter</button>
             <button class="bouton" onClick="debutPartie()">Lancer</button>
@@ -62,7 +62,7 @@
         <div id="rejoindre">
             <h1>Rejoindre</h1>
             <hr/>
-            <p>Code de la salle : <input type="text"/></p>
+            <p>Code de la salle : <input type="password"/></p>
             <p>Pseudonyme : <input type="text"/></p>
             <hr/>
             <button class="bouton" onClick="retour()">Retour</button>

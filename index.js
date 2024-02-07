@@ -49,6 +49,9 @@ io.on('connection', (socket) => {
         // Envoyer les instructions pour activer les hexagones autour
         socket.emit('instructionsRedActivation', { 'position': position, 'indices': indicesAutour });
     });
+    socket.on('envoieMessage',(data) => {
+        io.emit('recoitMessage',data);
+    });
 });
 
 function determinerIndicesAutour(position) {
@@ -79,5 +82,3 @@ function determinerIndicesAutour(position) {
 
     return indicesAutour;
 }
-
-
