@@ -323,6 +323,8 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 })
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function(d) {
+
+                    
                     // d3.select(this).selectAll("svg").remove();
                     // d3.select(this).append("svg").append('image')
                     //.attr("viewBox", "0 0 " + (rayon * 2) + " " + (rayon * 2))  // Ajout de la viewBox
@@ -352,8 +354,22 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 });
             }
             
-
+        //     svgHexa = d3.select("svg");
+        //     svgHexa.on("click", function(d) {
+        //     if(selectionPion != null){
+        //         console.log("Sélection hexagone")
+        //         svgHexa.append("image")
+        //         .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
+        //         .attr('x', 10)  
+        //         .attr('y', 10)  
+        //         .attr('width', rayon*1.3)  
+        //         .attr('height', rayon*1.3);
+        //     }
+        // });
     }
+
+
+    
 
 
     // Créer un nouvel élément SVG pour tous les éléments ayant comme classe "pion"
@@ -473,8 +489,9 @@ socket.on('instructionsActivation', (data) => {
 });
 
 
-var selectionPion = false;
+var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
-    selectionPion = true;
+    selectionPion = this.id;
+    console.log("Pion sélectionné : ", this.id);
 });
