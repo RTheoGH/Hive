@@ -51,10 +51,10 @@
             <button class="bouton" onClick="validerCreation()">Valider</button>
         </div>
         <div id="lobby">
-            <h1>Nom de la salle : Code</h1>
+            <h1 id="nomCodeSalle"></h1>
             <hr/>
-            <p>Pseudonyme 1 (créateur)</p>
-            <p>Pseudonyme 2 (celui qui rejoint)</p>
+            <p id="J1">Joueur 1 : </p>
+            <p id="J2">Joueur 2 : (celui qui rejoint)</p>
             <hr/>
             <button class="bouton" onClick="quitter()">Quitter</button>
             <button class="bouton" onClick="debutPartie()">Lancer</button>
@@ -62,7 +62,7 @@
         <div id="rejoindre">
             <h1>Rejoindre</h1>
             <hr/>
-            <p>Code de la salle : <input type="text"/></p>
+            <p>Code de la salle : <input type="password"/></p>
             <p>Pseudonyme : <input type="text"/></p>
             <hr/>
             <button class="bouton" onClick="retour()">Retour</button>
@@ -80,15 +80,15 @@
     </div>
     <div id="jeu">
         <div id = "tablier"></div>
-        <div id = "menuPions" style="display:flex;flex-wrap: wrap;">
-            <p class="pion" id="pionAbeille"></p>
-            <p class="pion" id="pionFourmi"></p>
-            <p class="pion" id="pionScarabee"></p>
-            <p class="pion" id="pionCoccinelle"></p>
-            <p class="pion" id="pionAraignee"></p>
-            <p class="pion" id="pionSauterelle"></p>
-            <p class="pion" id="pionMoustique"></p>
-            <p class="pion" id="pionCloporte"></p>
+        <div id = "menuPions">
+            <!-- <p style="opacity:1;" class="pion" id="pionAbeille"></p> -->
+            <svg class="pion" id="pionAbeille"></svg>
+            <svg class="pion" id="pionFourmi"></svg>
+            <svg class="pion" id="pionScarabee"></svg>
+            <svg class="pion" id="pionCoccinelle"></svg>
+            <svg class="pion" id="pionAraignee"></svg>
+            <svg class="pion" id="pionSauterelle"></svg>
+            <svg class="pion" id="pionMoustique"></svg>
         </div>
         <div id='chat' class='chat'>
             <ul id='messages'></ul>
