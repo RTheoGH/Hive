@@ -228,5 +228,16 @@ footer{
 
 /* 1920x1080 */
 @media screen and (min-width: 1601px){
-    
+    #menuPions{
+        width:4.15vw;
+    }
+    #menuPions:hover svg{
+        height:90px;
+    }
+    .chat{
+        left:83%;
+    }
+    .chat:hover{
+        left:83%;
+    }
 }
