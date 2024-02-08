@@ -220,30 +220,16 @@ footer{
     display: block;
 }
 
-/* A voir pour un ecran plus large vu que c'est sur mon petit ordi */
 @media (max-width: 1600px){
     .ajustement{
         top:45%;
     }
-    /* #tablier{
-        top:5%;
-        left:5%;
-        width:65vw;
-        height:80vh;
-    } */
-    /* #menuPions{
-        font-size: 0.9;
-        left:73%;
-        width:25vw;
+}
+
+/* 1920x1080 */
+@media (width > 1375px){
+    .fond{
+        background-color: red;
+        background-image: none;
     }
-    #menuPions p{
-        padding-right: 0.5em;
-        padding-left: 0.5em;
-    } */
-    /* .chat{
-        top:65%;
-    }
-    #messages{
-        height:30vh;
-    } */
 }
