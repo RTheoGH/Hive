@@ -220,16 +220,13 @@ footer{
     display: block;
 }
 
-@media (max-width: 1600px){
+@media screen and (max-width: 1600px){
     .ajustement{
         top:45%;
     }
 }
 
 /* 1920x1080 */
-@media (width > 1375px){
-    .fond{
-        background-color: red;
-        background-image: none;
-    }
+@media screen and (min-width: 1601px){
+    
 }
