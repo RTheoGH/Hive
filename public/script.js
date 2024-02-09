@@ -6,6 +6,14 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#jeu").hide();
 });
 
+var salle={
+    nom: "",
+    code: "",
+    listeJoueurs: [],
+    type: "",
+    mode: ""
+}
+
 var nomJoueur="";
 var salle="";
 var code="";
@@ -26,7 +34,7 @@ function debutPartie(){
     genereDamier(40,40,40);
 }
 
-function clear(){                    
+function clear(){
     $(".menu").hide();
 }
 
@@ -46,13 +54,24 @@ function retour(){
     $("#creer").hide();
 }
 
+/* Actuallisation d'une salle */
+socket.on('majSalle',(data) => {
+    $("#lobby").show();
+    document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
+    document.getElementById('J1').innerHTML = data.listeJoueurs[0] || ''; // Mettre à jour le joueur 1
+    document.getElementById('J2').innerHTML = data.listeJoueurs[1] || ''; // Mettre à jour le joueur 2
+})
+
 function validerCreation(){
     $("#creer").hide();
     $("#lobby").show();
-    const nomSalle = document.querySelector("input[name='nomSalle']").value;
-    const codeSalle = document.querySelector("input[name='codeSalle']").value;
-    const pseudo = document.querySelector("input[name='pseudo']").value;
-    const typeListe = document.querySelectorAll("input[name='Type']");
+
+    salle.nom = document.getElementById("nomSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');   // Recup le nom de la salle
+    salle.code = document.getElementById("codeSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup le code de la salle
+    nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');     // Recup le nom du créateur de la salle (J1)
+    salle.listeJoueurs.push(nomJoueur);
+
+    const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
     let typeChoix;
     for (const type of typeListe) {
         if (type.checked) {
@@ -60,7 +79,8 @@ function validerCreation(){
             break;
         }
     }
-    const modeListe = document.querySelectorAll("input[name='Mode']");
+    salle.type=typeChoix;
+    const modeListe = document.querySelectorAll("input[name='Mode']");       // Recup si classique/ext1/ext2/ext3
     let modeChoix;
     for (const mode of modeListe) {
         if (mode.checked) {
@@ -68,17 +88,23 @@ function validerCreation(){
             break;
         }
     }
-    nomJoueur = pseudo.trim().replace(/[^a-zA-Z0-9 ]/g,'');
-    salle = nomSalle.trim().replace(/[^a-zA-Z0-9 ]/g,'');
-    code = codeSalle.trim().replace(/[^a-zA-Z0-9 ]/g,'');
-    document.getElementById('nomCodeSalle').innerHTML = salle+' : '+code;
-    document.getElementById('J1').innerHTML += nomJoueur;
-    socket.emit('paramNewSalle',{'nomSalle':nomSalle,'codeSalle':codeSalle,'pseudo':pseudo,'typeChoix':typeChoix,'modeChoix':modeChoix});
+    salle.mode=modeChoix;
+
+    document.getElementById('nomCodeSalle').innerHTML = salle.nom+' : '+salle.code; // Affichage du nom de la salle et du code pour rejoindre
+    document.getElementById('J1').innerHTML = salle.listeJoueurs[0];
+    console.log(salle);
+
+    socket.emit('nouvelleSalle',salle);
 }
 
 function validerRejoindre(){
     $("#rejoindre").hide();
-    $("#lobby").show();
+
+    var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du code entré par le J2
+    nomJoueur = document.getElementById("pseudoR").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');             // J2
+    socket.emit('tentativeRejoindre',{'code':code_rejoindre,'nomJoueur':nomJoueur});
+    console.log(code_rejoindre);
+    console.log(nomJoueur);
 }
 
 function quitter(){
