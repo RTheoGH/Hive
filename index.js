@@ -1,11 +1,13 @@
 const express = require('express')
 const app = express()
-
 const port = 3000
-
 const http = require('http');
 const server = http.createServer(app);
 const io = new require("socket.io")(server);
+
+const salles=[];
+
+/* ========== Partie Express ========== */
 
 server.listen(port, () => {
     console.log(`Serveur écoutant sur le port ${port}`);
@@ -25,13 +27,31 @@ app.get('/public/:nomFichier', (req,res) => {       // chemin permettant d'utili
 
 io.on('connection', (socket) => {
     socket.emit("Salut c'est le serveur ! :)");
-    socket.on('paramNewSalle', (data) =>{
-        console.log(data.nomSalle);
-        console.log(data.codeSalle);
-        console.log(data.pseudo);
-        console.log(data.typeChoix);
-        console.log(data.modeChoix);
+    
+    socket.on('nouvelleSalle',(data) =>{
+        salles.push(data);        // Ajout d'une salle dans la liste des salles
+        console.log("Salle crée : ",data);
+        console.log("Liste des salles : ",salles);
+
+        socket.join(data.code);   // Actualisation uniquement pour cette salle
+        io.to(data.code).emit('majSalle',data);
     });
+
+    socket.on('tentativeRejoindre',(data) => {
+        for(i=0;i<salles.length;i++){
+            if(data.code==salles[i].code && salles[i].listeJoueurs.length<=2){
+                console.log("Salle trouvée : ",salles[i].nom);
+                salles[i].listeJoueurs.push(data.nomJoueur);
+                console.log("Joueurs : ",salles[i].listeJoueurs);
+
+                socket.join(data.code);  // Actualisation uniquement pour cette salle
+                io.to(data.code).emit('majSalle',salles[i]);
+                break;
+            }
+        }
+    })
+
+
     socket.on('discover', (data) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
