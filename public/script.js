@@ -6,13 +6,13 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#jeu").hide();
 });
 
-var salle={
-    nom: "",
-    code: "",
-    listeJoueurs: [],
-    type: "",
-    mode: ""
-}
+// var salle={
+//     nom: "",
+//     code: "",
+//     listeJoueurs: [],
+//     type: "",
+//     mode: ""
+// }
 
 var nomJoueur="";
 
@@ -68,17 +68,22 @@ socket.on('majSalle',(data) => {
     }
 })
 
-
-
-
 function validerCreation(){
     $("#creer").hide();
     $("#lobby").show();
 
+    var salle={
+        nom: "",
+        code: "",
+        listeJoueurs: [],
+        type: "",
+        mode: ""
+    }
+
     salle.nom = document.getElementById("nomSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');   // Recup le nom de la salle
     salle.code = document.getElementById("codeSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup le code de la salle
     nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');     // Recup le nom du créateur de la salle (J1)
-    salle.listeJoueurs.push([nomJoueur,socket.id]);
+    salle.listeJoueurs.push([nomJoueur,null]);
 
     const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
     let typeChoix;
@@ -111,7 +116,7 @@ function validerRejoindre(){
 
     var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du code entré par le J2
     nomJoueur = document.getElementById("pseudoR").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');             // J2
-    socket.emit('tentativeRejoindre',{'code':code_rejoindre,'joueur':[nomJoueur,socket.id]});
+    socket.emit('tentativeRejoindre',{'code':code_rejoindre,'joueur':[nomJoueur,null]});
     console.log(code_rejoindre);
     console.log(nomJoueur);
 }

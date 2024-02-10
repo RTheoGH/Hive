@@ -22,16 +22,18 @@ app.get('/public/:nomFichier', (req,res) => {       // chemin permettant d'utili
     res.sendFile("public/"+req.params.nomFichier,{root: __dirname});
 });
 
-
 /* ========== Partie Socket ========== */
 
 io.on('connection', (socket) => {
     socket.emit("Salut c'est le serveur ! :)");
     
     socket.on('nouvelleSalle',(data) =>{
+        console.log("avant",data);
+        data.listeJoueurs[0][1] = socket.id;
         salles.push(data);        // Ajout d'une salle dans la liste des salles
         console.log("Salle crée : ",data);
         console.log("Liste des salles : ",salles);
+        
 
         socket.join(data.code);   // Actualisation uniquement pour cette salle
         io.to(data.code).emit('majSalle',data);
@@ -41,6 +43,7 @@ io.on('connection', (socket) => {
         for(i=0;i<salles.length;i++){
             if(data.code==salles[i].code && salles[i].listeJoueurs.length<=2){
                 console.log("Salle trouvée : ",salles[i].nom);
+                data.joueur[1] = socket.id;
                 salles[i].listeJoueurs.push(data.joueur);
                 console.log("Joueurs : ",salles[i].listeJoueurs);
 
@@ -56,23 +59,28 @@ io.on('connection', (socket) => {
         let joueurQuittant = null;
         let salleAQuitter = null;
     
-        for (const salle of salles) {  // Parcourir toutes les salles
+        for(const salle of salles){  // Parcourir toutes les salles
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);  // Recherche le joueur dans la liste des joueurs de chaque salle
             console.log(indexJoueur);
-            if (indexJoueur != -1) {  // Si le joueur est trouvé dans la salle
+            if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
                 salleAQuitter = salle;
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
                 salleAQuitter.listeJoueurs.splice(indexJoueur, 1);  // Retire le joueur de la liste des joueurs de la salle
+                socket.leave(salleAQuitter.code);
                 console.log(salleAQuitter.listeJoueurs);
-                if (indexJoueur == 0) {  // Si le joueur est le créateur de la salle, supprime la salle
-                    salles.splice(salles.indexOf(salleAQuitter), 1);
-                }
-    
+                // if(indexJoueur == 0){  // Si le joueur est le créateur de la salle, supprime la salle
+                //     salles.splice(salles.indexOf(salleAQuitter), 1);
+                // }
+
                 // Émettre une mise à jour de la salle aux autres joueurs de la salle
-                socket.join(salleAQuitter.code);
                 io.to(salleAQuitter.code).emit('majSalle',salleAQuitter);
+                
+
+                if(salleAQuitter.listeJoueurs == 0){
+                    salles.splice(salles.indexOf(salleAQuitter),1);
+                }
                 break;
             }
         }
