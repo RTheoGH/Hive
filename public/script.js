@@ -47,9 +47,29 @@ function retour(){
 socket.on('majSalle',(data) => {
     $("#lobby").show();
     document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
-    document.getElementById('J1').innerHTML = data.listeJoueurs[0] || ''; // Mettre à jour le joueur 1
-    document.getElementById('J2').innerHTML = data.listeJoueurs[1] || ''; // Mettre à jour le joueur 2
+    
+    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    // console.log(joueurActuel);
+    if(joueurActuel){
+        if(data.listeJoueurs.length > 0){
+                document.getElementById('J1').innerHTML = data.listeJoueurs[0][0]; // Mettre à jour le joueur 1
+            }else{
+                document.getElementById('J1').innerHTML = '';
+            }
+            if(data.listeJoueurs.length > 1){
+                document.getElementById('J2').innerHTML = data.listeJoueurs[1][0]; // Mettre à jour le joueur 2
+            }else{
+                document.getElementById('J2').innerHTML = '';
+            }
+        }
+    else{
+        // Masquer la salle si le joueur n'est pas dans la salle
+        $("#lobby").hide();
+    }
 })
+
+
+
 
 function validerCreation(){
     $("#creer").hide();
@@ -58,7 +78,7 @@ function validerCreation(){
     salle.nom = document.getElementById("nomSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');   // Recup le nom de la salle
     salle.code = document.getElementById("codeSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup le code de la salle
     nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');     // Recup le nom du créateur de la salle (J1)
-    salle.listeJoueurs.push(nomJoueur);
+    salle.listeJoueurs.push([nomJoueur,socket.id]);
 
     const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
     let typeChoix;
@@ -80,7 +100,7 @@ function validerCreation(){
     salle.mode=modeChoix;
 
     document.getElementById('nomCodeSalle').innerHTML = salle.nom+' : '+salle.code; // Affichage du nom de la salle et du code pour rejoindre
-    document.getElementById('J1').innerHTML = salle.listeJoueurs[0];
+    document.getElementById('J1').innerHTML = salle.listeJoueurs[0][0];
     console.log(salle);
 
     socket.emit('nouvelleSalle',salle);
@@ -91,16 +111,18 @@ function validerRejoindre(){
 
     var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du code entré par le J2
     nomJoueur = document.getElementById("pseudoR").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');             // J2
-    socket.emit('tentativeRejoindre',{'code':code_rejoindre,'nomJoueur':nomJoueur});
+    socket.emit('tentativeRejoindre',{'code':code_rejoindre,'joueur':[nomJoueur,socket.id]});
     console.log(code_rejoindre);
     console.log(nomJoueur);
 }
 
 function quitter(){
     $("#lobby").hide();
-    $("#jeu").hide();
     $(".menu").show();
     $("#accueil").show();
+    console.log("Je quitte la salle");
+    socket.emit('quittePartie');
+    $("#lobby").hide();
 }
 
 function hideHex(position){
