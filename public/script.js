@@ -9,41 +9,118 @@ socket.on("Salut c'est le serveur ! :)", () => {
 var nomJoueur="";
 var salle="";
 var code="";
+var logosPions = {
+    'pionAbeille' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&',
+    'pionFourmi' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492755742800/fourmi.png?ex=65c4e3d9&is=65b26ed9&hm=6a385770c2fde61c2803090fb2ba4547db12abfa4cb0c88ed539d8698a498856&',
+    'pionScarabee' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493556850758/scarabee.png?ex=65c4e3d9&is=65b26ed9&hm=2131d68f3b5b2b2ce4c06e679ae90111accdb11d123d6c1479f3d2fc539db1c5&',
+    'pionCoccinelle' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492424384672/coccinelle.png?ex=65c4e3d9&is=65b26ed9&hm=7ee727fe64fafdb8b90c1ab6c52958debe59d15b9939e2f94f2c2fe6cb192f42&',
+    'pionAraignee' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492164345976/araignee.png?ex=65c4e3d9&is=65b26ed9&hm=ff1c12d7ad6b268da2cc0fdc5060b1f7d7f7fe4c046c61e1fb153fb3ac79793d&',
+    'pionSauterelle' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493225496636/sauterelle.png?ex=65c4e3d9&is=65b26ed9&hm=82cbd9cb1cc8362d85c0f38cabe98eb076b9769ebac5548ebc15312535097a28&',
+    'pionMoustique' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492994814012/moustique.png?ex=65c4e3d9&is=65b26ed9&hm=0818af4e00bf1abdfb89f2a4d363db90c18e46f88faea801b44a93bfeb4394ed&'
+}
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
+    document.getElementById("message_erreur").innerHTML = "";
     clear();
     $("#jeu").show();
     genereDamier(40,40,40);
 }
 
-function clear(){                    
+function clear(){
     $(".menu").hide();
 }
 
 function creer(){
+    document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
     $("#creer").show();
 }
 
 function rejoindre(){
+    document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
     $("#rejoindre").show();
 }
 
 function retour(){
+    document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").show();
     $("#rejoindre").hide();
     $("#creer").hide();
 }
 
+/* Actuallisation d'une salle */
+socket.on('majSalle',(data) => {
+    $("#lobby").show();
+    document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
+    
+    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    if(joueurActuel){
+        if(data.listeJoueurs.length > 0){
+                document.getElementById('J1').innerHTML = data.listeJoueurs[0][0]; // Mettre à jour le joueur 1
+            }else{
+                document.getElementById('J1').innerHTML = '';
+            }
+            if(data.listeJoueurs.length > 1){
+                document.getElementById('J2').innerHTML = data.listeJoueurs[1][0]; // Mettre à jour le joueur 2
+            }else{
+                document.getElementById('J2').innerHTML = '';
+            }
+        }
+    else{
+        $("#lobby").hide();
+    }
+})
+
+socket.on('sallePrise',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
+    $("#accueil").show();
+})
+
+socket.on('sallePleine',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Cette salle est pleine.";
+    $("#accueil").show();
+})
+
+socket.on('pseudoPris',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Ce nom de joueur est déjà pris.";
+    $("#accueil").show();
+});
+
+socket.on('salleIntrouvable',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Cette salle n'existe pas.";
+    $("#accueil").show();
+})
+
+socket.on('codeFaux',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Code faux pour cette salle.";
+    $("#accueil").show();
+})
+
 function validerCreation(){
     $("#creer").hide();
     $("#lobby").show();
-    const nomSalle = document.querySelector("input[name='nomSalle']").value;
-    const codeSalle = document.querySelector("input[name='codeSalle']").value;
-    const pseudo = document.querySelector("input[name='pseudo']").value;
-    const typeListe = document.querySelectorAll("input[name='Type']");
+
+    var salle={
+        nom: "",
+        code: "",
+        listeJoueurs: [],
+        type: "",
+        mode: ""
+    }
+
+    salle.nom = document.getElementById("nomSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');   // Recup le nom de la salle
+    salle.code = document.getElementById("codeSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup le code de la salle
+    nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');     // Recup le nom du créateur de la salle (J1)
+    salle.listeJoueurs.push([nomJoueur,null]);
+
+    const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
     let typeChoix;
     for (const type of typeListe) {
         if (type.checked) {
@@ -51,7 +128,8 @@ function validerCreation(){
             break;
         }
     }
-    const modeListe = document.querySelectorAll("input[name='Mode']");
+    salle.type=typeChoix;
+    const modeListe = document.querySelectorAll("input[name='Mode']");       // Recup si classique/ext1/ext2/ext3
     let modeChoix;
     for (const mode of modeListe) {
         if (mode.checked) {
@@ -59,24 +137,33 @@ function validerCreation(){
             break;
         }
     }
-    nomJoueur = pseudo.trim().replace(/[^a-zA-Z0-9 ]/g,'');
-    salle = nomSalle.trim().replace(/[^a-zA-Z0-9 ]/g,'');
-    code = codeSalle.trim().replace(/[^a-zA-Z0-9 ]/g,'');
-    document.getElementById('nomCodeSalle').innerHTML = salle+' : '+code;
-    document.getElementById('J1').innerHTML += nomJoueur;
-    socket.emit('paramNewSalle',{'nomSalle':nomSalle,'codeSalle':codeSalle,'pseudo':pseudo,'typeChoix':typeChoix,'modeChoix':modeChoix});
+    salle.mode=modeChoix;
+
+    document.getElementById('nomCodeSalle').innerHTML = salle.nom+' : '+salle.code; // Affichage du nom de la salle et du code pour rejoindre
+    document.getElementById('J1').innerHTML = salle.listeJoueurs[0][0];
+    console.log(salle);
+
+    socket.emit('nouvelleSalle',salle);
 }
 
 function validerRejoindre(){
     $("#rejoindre").hide();
-    $("#lobby").show();
+
+    var salle_rejoindre = document.getElementById("nomSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du nom entré par le J2
+    var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du code entré par le J2
+    nomJoueur = document.getElementById("pseudoR").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');             // J2
+    socket.emit('tentativeRejoindre',{'nom':salle_rejoindre,'code':code_rejoindre,'joueur':[nomJoueur,null]});
+    console.log(code_rejoindre);
+    console.log(nomJoueur);
 }
 
 function quitter(){
     $("#lobby").hide();
-    $("#jeu").hide();
     $(".menu").show();
     $("#accueil").show();
+    console.log("Je quitte la salle");
+    socket.emit('quittePartie');
+    $("#lobby").hide();
 }
 
 function hideHex(position){
@@ -242,7 +329,7 @@ socket.on('instructionsRedActivation', (data) => {
     toggleHexagone(data);
 });
 
-
+var rayonGlobal = 0
 
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
@@ -251,6 +338,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==19 && nbColonnes==19){  /* reduire la taille globale du damier*/
         rayon=rayon-5;
     };
+    rayonGlobal = rayon
     var i=0;
     distance =  rayon - (Math.sin(1 * Math.PI / 3) * rayon);  // plus grande distance entre l'hexagone et le cercle circonscrit
 
@@ -336,8 +424,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 else        d +=     x+","+y+" ";
             }
             d += "Z";
-            d3.select("svg")
-                .append("path")
+            svgHexa = d3.select("svg").append("svg")
+            
+            svgHexa.attr("class", "svgHexa")
+            svgHexa.append("path")
                 .attr("d", d)
                 .attr("stroke", "black")
 
@@ -347,6 +437,8 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 })
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function(d) {
+
+                    
                     // d3.select(this).selectAll("svg").remove();
                     // d3.select(this).append("svg").append('image')
                     //.attr("viewBox", "0 0 " + (rayon * 2) + " " + (rayon * 2))  // Ajout de la viewBox
@@ -370,14 +462,17 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         //socket.emit('pion',{'typePion':typePion,'position':position,'numJoueur':jeton});
                         //console.log("typePion hexagone apres emit : "+typePion);
                         // if(typePion=="pion")
-                        d3.select(this).attr('fill', "red");
+                        //d3.select(this).attr('fill', "red");
                         // d3.select(this).attr('fill', couleursJoueurs[jeton]);
                     }
                 });
             }
             
-
+        
     }
+
+
+    
 
 
     // Créer un nouvel élément SVG pour tous les éléments ayant comme classe "pion"
@@ -401,63 +496,53 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         .attr("stroke", "black")
         .attr("fill", "white");
     
+    // Poser le pion sélectionné sur une case
+    $(document).on('click', '.svgHexa', function() {
+        console.log('pistache');
+        if (selectionPion != null) {
+            // console.log("Sélection hexagone");
+
+            var path = $(this).find('path');   // On sélectionne le path à l'intérieur du svg
+            // console.log(path);
+            
+            if (path.length > 0) {            // Si on le trouve
+                var d = path.attr('d');       // On récupère son d
+                // console.log(d);
+                
+                var valeurs = d.split(' ');   // On split par les espaces
+                // console.log(valeurs);
+            
+                var coords = valeurs[0].substring(1).split(','); // Récupère x et y
+                // console.log(coords);
+                var x = parseFloat(coords[0]);
+                var y = parseFloat(coords[1]);
+                // console.log(x,y);
+
+                d3.select(this).append('image')
+                    .attr('xlink:href', logosPions[selectionPion])
+                    .attr('x', x-26)
+                    .attr('y', y+14)
+                    .attr('width', rayonGlobal * 1.3)
+                    .attr('height', rayonGlobal * 1.3);
+            }
+        }
+    });
+    
+    
+
     //Pour mettre les images sur les pions du menu :
     
-    var pionAb = d3.select('#pionAbeille')
-    pionAb.append('image')//.append('svg')
-        .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
-        .attr('x', 14)  
-        .attr('y', 14)  
-        .attr('width', rayon*1.3)  
-        .attr('height', rayon*1.3);
-
-    var pionAr = d3.select('#pionAraignee')
-    pionAr.append('image')
-        .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492164345976/araignee.png?ex=65c4e3d9&is=65b26ed9&hm=ff1c12d7ad6b268da2cc0fdc5060b1f7d7f7fe4c046c61e1fb153fb3ac79793d&')
-        .attr('x', 13)  
-        .attr('y', 14)  
-        .attr('width', rayon*1.3)  
-        .attr('height', rayon*1.3);
-
-    var pionCo = d3.select('#pionCoccinelle')
-    pionCo.append('image')
-        .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492424384672/coccinelle.png?ex=65c4e3d9&is=65b26ed9&hm=7ee727fe64fafdb8b90c1ab6c52958debe59d15b9939e2f94f2c2fe6cb192f42&')
-        .attr('x', 14)  
-        .attr('y', 13)  
-        .attr('width', rayon*1.3)  
-        .attr('height', rayon*1.3);
+    d3.selectAll('.pion').each( function(){
+        d3.select(this).append('image')//.append('svg')
+            .attr('href', logosPions[d3.select(this).attr('id')])
+            .attr('x', 14)  
+            .attr('y', 14)  
+            .attr('width', rayon*1.3)  
+            .attr('height', rayon*1.3);
+        });
     
-    var pionFo = d3.select('#pionFourmi')
-    pionFo.append('image')
-        .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492755742800/fourmi.png?ex=65c4e3d9&is=65b26ed9&hm=6a385770c2fde61c2803090fb2ba4547db12abfa4cb0c88ed539d8698a498856&')
-        .attr('x', 14)  
-        .attr('y', 14)  
-        .attr('width', rayon*1.3)  
-        .attr('height', rayon*1.3);
 
-    var pionMo = d3.select('#pionMoustique')
-    pionMo.append('image')
-        .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492994814012/moustique.png?ex=65c4e3d9&is=65b26ed9&hm=0818af4e00bf1abdfb89f2a4d363db90c18e46f88faea801b44a93bfeb4394ed&')
-        .attr('x', 13)  
-        .attr('y', 14)  
-        .attr('width', rayon*1.3)  
-        .attr('height', rayon*1.3);
-
-    var pionSa = d3.select('#pionSauterelle')
-    pionSa.append('image')
-        .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493225496636/sauterelle.png?ex=65c4e3d9&is=65b26ed9&hm=82cbd9cb1cc8362d85c0f38cabe98eb076b9769ebac5548ebc15312535097a28&')
-        .attr('x', 14)  
-        .attr('y', 14)  
-        .attr('width', rayon*1.3)  
-        .attr('height', rayon*1.3);
-
-    var pionSc = d3.select('#pionScarabee')
-    pionSc.append('image')
-        .attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493556850758/scarabee.png?ex=65c4e3d9&is=65b26ed9&hm=2131d68f3b5b2b2ce4c06e679ae90111accdb11d123d6c1479f3d2fc539db1c5&')
-        .attr('x', 14)  
-        .attr('y', 13)  
-        .attr('width', rayon*1.3)  
-        .attr('height', rayon*1.3);
+    
 /*
     d3.select('#h5250').attr('fill', 'red')
     d3.select('#h5249').attr('fill', 'green')
@@ -489,6 +574,8 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     }
 }
 
+
+
 socket.on('instructionsActivation', (data) => {
     // Activer les hexagones autour selon les instructions du serveur
     for (let indice of data.indices) {
@@ -497,8 +584,9 @@ socket.on('instructionsActivation', (data) => {
 });
 
 
-var selectionPion = false;
+var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
-    selectionPion = true;
+    selectionPion = this.id;
+    console.log("Pion sélectionné : ", this.id);
 });
