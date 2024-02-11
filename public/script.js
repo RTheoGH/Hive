@@ -6,18 +6,11 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#jeu").hide();
 });
 
-// var salle={
-//     nom: "",
-//     code: "",
-//     listeJoueurs: [],
-//     type: "",
-//     mode: ""
-// }
-
 var nomJoueur="";
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
+    document.getElementById("message_erreur").innerHTML = "";
     clear();
     $("#jeu").show();
     genereDamier(40,40,40);
@@ -28,16 +21,19 @@ function clear(){
 }
 
 function creer(){
+    document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
     $("#creer").show();
 }
 
 function rejoindre(){
+    document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
     $("#rejoindre").show();
 }
 
 function retour(){
+    document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").show();
     $("#rejoindre").hide();
     $("#creer").hide();
@@ -49,7 +45,6 @@ socket.on('majSalle',(data) => {
     document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
     
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
-    // console.log(joueurActuel);
     if(joueurActuel){
         if(data.listeJoueurs.length > 0){
                 document.getElementById('J1').innerHTML = data.listeJoueurs[0][0]; // Mettre à jour le joueur 1
@@ -63,9 +58,38 @@ socket.on('majSalle',(data) => {
             }
         }
     else{
-        // Masquer la salle si le joueur n'est pas dans la salle
         $("#lobby").hide();
     }
+})
+
+socket.on('sallePrise',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
+    $("#accueil").show();
+})
+
+socket.on('sallePleine',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Cette salle est pleine.";
+    $("#accueil").show();
+})
+
+socket.on('pseudoPris',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Ce nom de joueur est déjà pris.";
+    $("#accueil").show();
+});
+
+socket.on('salleIntrouvable',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Cette salle n'existe pas.";
+    $("#accueil").show();
+})
+
+socket.on('codeFaux',() => {
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Code faux pour cette salle.";
+    $("#accueil").show();
 })
 
 function validerCreation(){
@@ -114,9 +138,10 @@ function validerCreation(){
 function validerRejoindre(){
     $("#rejoindre").hide();
 
+    var salle_rejoindre = document.getElementById("nomSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du nom entré par le J2
     var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du code entré par le J2
     nomJoueur = document.getElementById("pseudoR").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');             // J2
-    socket.emit('tentativeRejoindre',{'code':code_rejoindre,'joueur':[nomJoueur,null]});
+    socket.emit('tentativeRejoindre',{'nom':salle_rejoindre,'code':code_rejoindre,'joueur':[nomJoueur,null]});
     console.log(code_rejoindre);
     console.log(nomJoueur);
 }
