@@ -158,6 +158,18 @@ io.on('connection', (socket) => {
         socket.emit('instructionsRedActivation', { 'position': position, 'indices': indicesAutour });
     });
 
+    socket.on("EnvoiPoserPionPlateau", (data) => {
+        parcoursDesSalles:
+        for(salle of salles){
+            for(joueur of salle.listeJoueurs){
+                if(joueur.includes(socket.id)){
+                    io.to(salle.code).emit("ReceptPoserPionPlateau", data);
+                    break parcoursDesSalles;
+                }
+            }
+        }
+    });
+
     socket.on('envoieMessage',(data) => {
         io.emit('recoitMessage',data);
     });

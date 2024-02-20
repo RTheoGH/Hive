@@ -331,6 +331,33 @@ socket.on('instructionsRedActivation', (data) => {
 
 var rayonGlobal = 0
 
+//fonction pour poser le pion "pion" sur la case "elemCase" désignée par la balise path
+function posePionSurCase(elemCase, pion){
+
+    var svgElement = elemCase.closest('svg')[0];
+
+    if (elemCase.length > 0) {            // Si on le trouve
+        var d = elemCase.attr('d');       // On récupère son d
+        // console.log(d);
+        
+        var valeurs = d.split(' ');   // On split par les espaces
+        // console.log(valeurs);
+    
+        var coords = valeurs[0].substring(1).split(','); // Récupère x et y
+        // console.log(coords);
+        var x = parseFloat(coords[0]);
+        var y = parseFloat(coords[1]);
+        // console.log(x,y);
+
+        d3.select(svgElement).append('image')
+            .attr('xlink:href', logosPions[pion])
+            .attr('x', x-26)
+            .attr('y', y+14)
+            .attr('width', rayonGlobal * 1.3)
+            .attr('height', rayonGlobal * 1.3);
+    }
+}
+
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
         rayon=rayon+5;
@@ -496,36 +523,23 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         .attr("stroke", "black")
         .attr("fill", "white");
     
+
     // Poser le pion sélectionné sur une case
     $(document).on('click', '.svgHexa', function() {
-        console.log('pistache');
         if (selectionPion != null) {
             // console.log("Sélection hexagone");
 
             var path = $(this).find('path');   // On sélectionne le path à l'intérieur du svg
             // console.log(path);
             
-            if (path.length > 0) {            // Si on le trouve
-                var d = path.attr('d');       // On récupère son d
-                // console.log(d);
-                
-                var valeurs = d.split(' ');   // On split par les espaces
-                // console.log(valeurs);
-            
-                var coords = valeurs[0].substring(1).split(','); // Récupère x et y
-                // console.log(coords);
-                var x = parseFloat(coords[0]);
-                var y = parseFloat(coords[1]);
-                // console.log(x,y);
-
-                d3.select(this).append('image')
-                    .attr('xlink:href', logosPions[selectionPion])
-                    .attr('x', x-26)
-                    .attr('y', y+14)
-                    .attr('width', rayonGlobal * 1.3)
-                    .attr('height', rayonGlobal * 1.3);
-            }
+            posePionSurCase(path, selectionPion);
+            socket.emit("EnvoiPoserPionPlateau", {'case' : path.attr("id"), 'pion' : selectionPion});
         }
+    });
+
+    socket.on("ReceptPoserPionPlateau", (data) => {
+        var path = $('path#' + data.case);
+        posePionSurCase(path, data.pion);
     });
     
     
