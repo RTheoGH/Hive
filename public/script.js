@@ -88,6 +88,25 @@ socket.on('majSalle',(data) => {
     }
 })
 
+socket.on('majPartie',(data) => {
+    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    if(joueurActuel){
+        // Annonce de la victoire si on est le joueur qui reste encore dans la partie
+        var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
+            <br/><button class='newGameButton'\
+            onClick='window.location.reload()'>Nouvelle Partie</button></div></div>";
+        $("body").append(victoire);
+        win.play();
+        }
+    else{
+        // retour à l'accueil pour celui qui quitte
+        console.log("retour à l'accueil");
+        $("#jeu").hide();
+        $("#lobby").hide();
+        $("#accueil").show();
+    }
+})
+
 socket.on('sallePrise',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
@@ -182,6 +201,15 @@ function quitter(){
     console.log("Je quitte la salle");
     socket.emit('quittePartie');
     $("#lobby").hide();
+}
+
+function quitterPartieEnCours(){
+    $("#jeu").hide();
+    select.play();
+    $(".menu").show();
+    $("#accueil").show();
+    console.log("Je quitte la partie");
+    socket.emit('quittePartieEnCours');
 }
 
 function hideHex(position){

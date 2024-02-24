@@ -136,9 +136,39 @@ io.on('connection', (socket) => {
 
                 // Émettre une mise à jour de la salle aux autres joueurs de la salle
                 io.to(salleAQuitter.code).emit('majSalle',salleAQuitter);
-                
 
                 if(salleAQuitter.listeJoueurs == 0){
+                    salles.splice(salles.indexOf(salleAQuitter),1);
+                }
+                break;
+            }
+        }
+        console.log(salles);
+    });
+
+    socket.on('quittePartieEnCours', () => {
+        console.log("Quitter la partie reçu");
+        let joueurQuittant = null;
+        let salleAQuitter = null;
+    
+        for(const salle of salles){  // Parcourir toutes les salles
+            const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);  // Recherche le joueur dans la liste des joueurs de chaque salle
+            console.log(indexJoueur);
+            if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
+                joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
+                salleAQuitter = salle;
+                console.log(joueurQuittant);
+                console.log(salleAQuitter);
+                salleAQuitter.listeJoueurs.splice(indexJoueur, 1);  // Retire le joueur de la liste des joueurs de la salle
+                socket.leave(salleAQuitter.code);
+                console.log(salleAQuitter.listeJoueurs);
+
+                // Émettre une mise à jour de la partie aux autres joueurs de la salle
+                io.to(salleAQuitter.code).emit('majPartie',salleAQuitter);
+
+                console.log(salleAQuitter.listeJoueurs == 0);
+                console.log(salleAQuitter.listeJoueurs.length == 1);
+                if(salleAQuitter.listeJoueurs == 0 || salleAQuitter.listeJoueurs.length == 1){
                     salles.splice(salles.indexOf(salleAQuitter),1);
                 }
                 break;

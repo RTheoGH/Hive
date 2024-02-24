@@ -220,6 +220,51 @@ footer{
     display: block;
 }
 
+/* alterner les couleurs */
+@keyframes colorful {
+    0%{
+      background-color: red;
+    }
+    25%{
+      background-color: yellow;
+    }
+    50%{
+      background-color:royalblue;
+    }
+    75%{
+      background-color: seagreen;
+    }
+    100%{
+      background-color:red;
+    }
+  }
+
+/* fond message de victoire */
+.victoire{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    height: 50%;
+    width: 50%;
+    background-color: red;
+    animation: 2s infinite linear colorful;
+    text-align: center;
+    font-size: 4em;
+}
+
+  /* texte de victoire */
+.textVictoire{
+    margin-top: 20%;
+}
+
+/* bouton nouvelle partie */
+.newGameButton{
+    color: white;
+    padding: 15px 32px;
+    background-color: black;
+}
+
 @media screen and (max-width: 1600px){
     .ajustement{
         top:45%;
