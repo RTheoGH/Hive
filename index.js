@@ -22,6 +22,10 @@ app.get('/public/:nomFichier', (req,res) => {       // chemin permettant d'utili
     res.sendFile("public/"+req.params.nomFichier,{root: __dirname});
 });
 
+app.get('/public/son/:nomFichier', (req,res) => {       // chemin permettant d'utiliser les sons
+    res.sendFile("public/son/"+req.params.nomFichier,{root: __dirname});
+});
+
 /* ========== Partie Socket ========== */
 
 io.on('connection', (socket) => {

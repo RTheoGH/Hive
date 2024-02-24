@@ -6,6 +6,9 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#jeu").hide();
 });
 
+const select = new Audio('public/son/select.ogg');
+const win = new Audio('public/son/win.ogg');
+
 var nomJoueur="";
 var salle="";
 var code="";
@@ -34,20 +37,23 @@ function clear(){
 function creer(){
     document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
+    select.play();
     $("#creer").show();
 }
 
 function rejoindre(){
     document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
+    select.play();
     $("#rejoindre").show();
 }
 
 function retour(){
     document.getElementById("message_erreur").innerHTML = "";
-    $("#accueil").show();
     $("#rejoindre").hide();
     $("#creer").hide();
+    select.play();
+    $("#accueil").show();
 }
 
 /* Actuallisation d'une salle */
@@ -105,6 +111,7 @@ socket.on('codeFaux',() => {
 
 function validerCreation(){
     $("#creer").hide();
+    select.play();
     $("#lobby").show();
 
     var salle={
@@ -148,6 +155,7 @@ function validerCreation(){
 
 function validerRejoindre(){
     $("#rejoindre").hide();
+    select.play();
 
     var salle_rejoindre = document.getElementById("nomSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du nom entré par le J2
     var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du code entré par le J2
@@ -159,6 +167,7 @@ function validerRejoindre(){
 
 function quitter(){
     $("#lobby").hide();
+    select.play();
     $(".menu").show();
     $("#accueil").show();
     console.log("Je quitte la salle");
