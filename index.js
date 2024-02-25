@@ -146,6 +146,25 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
+    socket.on('lancementPartie', () => {
+        console.log("Lancement de Partie reçu");
+        let salleActuelle = null;
+
+        console.log("Je cherche la salle actuelle en cherchant le joueur");
+        for(const salle of salles){
+            const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+            console.log("Joueur qui a lancé : ",indexJoueur)
+            console.log('Salle :',salle);
+            if(indexJoueur != -1){
+                salleActuelle = salle;
+                console.log("J'envoie le maj de lancement à la salle");
+                console.log(salleActuelle.code);
+                io.to(salleActuelle.code).emit('affichagePartie',salleActuelle);
+                break;
+            }
+        }
+    });
+
     socket.on('quittePartieEnCours', () => {
         console.log("Quitter la partie reçu");
         let joueurQuittant = null;

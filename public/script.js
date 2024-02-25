@@ -35,12 +35,14 @@ var logosPions = {
 function debutPartie(){
     document.getElementById("message_erreur").innerHTML = "";
     clear();
-    $("#jeu").show();
+    console.log('Je lance la partie');
+    socket.emit('lancementPartie');
     genereDamier(40,40,40);
 }
 
 function clear(){
     $(".menu").hide();
+    $("#jeu").show();
 }
 
 function creer(){
@@ -86,10 +88,16 @@ socket.on('majSalle',(data) => {
     else{
         $("#lobby").hide();
     }
-})
+});
+
+socket.on('affichagePartie',(data) => {
+    console.log("Ok je rafraichie la page pour afficher le jeu");
+    clear();
+});
 
 socket.on('majPartie',(data) => {
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    console.log(joueurActuel);
     if(joueurActuel){
         // Annonce de la victoire si on est le joueur qui reste encore dans la partie
         var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
@@ -98,26 +106,19 @@ socket.on('majPartie',(data) => {
         $("body").append(victoire);
         win.play();
         }
-    else{
-        // retour à l'accueil pour celui qui quitte
-        console.log("retour à l'accueil");
-        $("#jeu").hide();
-        $("#lobby").hide();
-        $("#accueil").show();
-    }
-})
+});
 
 socket.on('sallePrise',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
     $("#accueil").show();
-})
+});
 
 socket.on('sallePleine',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Cette salle est pleine.";
     $("#accueil").show();
-})
+});
 
 socket.on('pseudoPris',() => {
     $("#lobby").hide();
@@ -129,13 +130,13 @@ socket.on('salleIntrouvable',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Cette salle n'existe pas.";
     $("#accueil").show();
-})
+});
 
 socket.on('codeFaux',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Code faux pour cette salle.";
     $("#accueil").show();
-})
+});
 
 function validerCreation(){
     $("#creer").hide();
@@ -193,23 +194,25 @@ function validerRejoindre(){
     console.log(nomJoueur);
 }
 
-function quitter(){
+function retourAccueil(){
     $("#lobby").hide();
-    select.play();
     $(".menu").show();
     $("#accueil").show();
+}
+
+function quitter(){
+    select.play();
+    retourAccueil();
     console.log("Je quitte la salle");
     socket.emit('quittePartie');
-    $("#lobby").hide();
 }
 
 function quitterPartieEnCours(){
-    $("#jeu").hide();
     select.play();
-    $(".menu").show();
-    $("#accueil").show();
     console.log("Je quitte la partie");
     socket.emit('quittePartieEnCours');
+    $("#jeu").hide();
+    retourAccueil();
 }
 
 function hideHex(position){
