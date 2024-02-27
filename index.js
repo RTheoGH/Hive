@@ -13,10 +13,13 @@ server.listen(port, () => {
     console.log(`Serveur écoutant sur le port ${port}`);
 });
 
-/* ========== Partie Express ========== */
 app.get('/',(req,res) => {
     res.sendFile('public/index.html',{root: __dirname})
 })
+
+app.get('/regles', (req, res) => {
+    res.sendFile('public/regles.html',{root: __dirname});
+});
 
 app.get('/public/:nomFichier', (req,res) => {       // chemin permettant d'utiliser les fichiers
     res.sendFile("public/"+req.params.nomFichier,{root: __dirname});

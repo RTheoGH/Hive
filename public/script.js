@@ -31,6 +31,14 @@ var logosPions = {
     'pionMoustique' : '/public/image/moustique.png'
 }
 
+function ouvrirRegles() {
+    window.location.href = '/regles';
+}
+
+function fermerRegles() {
+    window.location.href = '/';
+}
+
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
     document.getElementById("message_erreur").innerHTML = "";
