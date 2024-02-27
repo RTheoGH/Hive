@@ -53,8 +53,8 @@ io.on('connection', (socket) => {
             console.log("Salle crée : ",data);
             console.log("Liste des salles : ",salles);
 
-            socket.join(data.code);   // Actualisation uniquement pour cette salle
-            io.to(data.code).emit('majSalle',data);
+            socket.join(data.nom);   // Actualisation uniquement pour cette salle
+            io.to(data.nom).emit('majSalle',data);
         }else{
             console.log("Retour à l'accueil");
             socket.emit("sallePrise");  // Sinon on renvoit la personne à l'accueil
@@ -93,8 +93,8 @@ io.on('connection', (socket) => {
                             salles[i].listeJoueurs.push(data.joueur);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
-                            socket.join(data.code);  // Actualisation uniquement pour cette salle
-                            io.to(data.code).emit('majSalle',salles[i]);
+                            socket.join(data.nom);  // Actualisation uniquement pour cette salle
+                            io.to(data.nom).emit('majSalle',salles[i]);
                             break;
                         }
                     }
@@ -128,7 +128,7 @@ io.on('connection', (socket) => {
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
                 salleAQuitter.listeJoueurs.splice(indexJoueur, 1);  // Retire le joueur de la liste des joueurs de la salle
-                socket.leave(salleAQuitter.code);
+                socket.leave(salleAQuitter.nom);
                 console.log(salleAQuitter.listeJoueurs);
                 // if(indexJoueur == 0){  // Si le joueur est le créateur de la salle, supprime la salle
                 //     salles.splice(salles.indexOf(salleAQuitter), 1);
@@ -158,8 +158,8 @@ io.on('connection', (socket) => {
             if(indexJoueur != -1){
                 salleActuelle = salle;
                 console.log("J'envoie le maj de lancement à la salle");
-                console.log(salleActuelle.code);
-                io.to(salleActuelle.code).emit('affichagePartie',salleActuelle);
+                console.log(salleActuelle.nom);
+                io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
                 break;
             }
         }
@@ -179,11 +179,11 @@ io.on('connection', (socket) => {
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
                 salleAQuitter.listeJoueurs.splice(indexJoueur, 1);  // Retire le joueur de la liste des joueurs de la salle
-                socket.leave(salleAQuitter.code);
+                socket.leave(salleAQuitter.nom);
                 console.log(salleAQuitter.listeJoueurs);
 
                 // Émettre une mise à jour de la partie aux autres joueurs de la salle
-                io.to(salleAQuitter.code).emit('majPartie',salleAQuitter);
+                io.to(salleAQuitter.nom).emit('majPartie',salleAQuitter);
 
                 console.log(salleAQuitter.listeJoueurs == 0);
                 console.log(salleAQuitter.listeJoueurs.length == 1);

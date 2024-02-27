@@ -242,14 +242,16 @@ footer{
 /* fond message de victoire */
 .victoire{
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%,-50%);
-    height: 50%;
-    width: 50%;
-    background-color: red;
-    animation: 2s infinite linear colorful;
+    height: 100%;
+    width: 100%;
+    background-image: url("table.jpeg");
+    /* background-color: red; */
+    /* animation: 2s infinite linear colorful; */
     text-align: center;
+    color: white;
     font-size: 4em;
 }
 
