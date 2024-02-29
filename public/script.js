@@ -10,13 +10,13 @@ var nomJoueur="";
 var salle="";
 var code="";
 var logosPions = {
-    'pionAbeille' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&',
-    'pionFourmi' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492755742800/fourmi.png?ex=65c4e3d9&is=65b26ed9&hm=6a385770c2fde61c2803090fb2ba4547db12abfa4cb0c88ed539d8698a498856&',
-    'pionScarabee' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493556850758/scarabee.png?ex=65c4e3d9&is=65b26ed9&hm=2131d68f3b5b2b2ce4c06e679ae90111accdb11d123d6c1479f3d2fc539db1c5&',
-    'pionCoccinelle' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492424384672/coccinelle.png?ex=65c4e3d9&is=65b26ed9&hm=7ee727fe64fafdb8b90c1ab6c52958debe59d15b9939e2f94f2c2fe6cb192f42&',
-    'pionAraignee' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492164345976/araignee.png?ex=65c4e3d9&is=65b26ed9&hm=ff1c12d7ad6b268da2cc0fdc5060b1f7d7f7fe4c046c61e1fb153fb3ac79793d&',
-    'pionSauterelle' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493225496636/sauterelle.png?ex=65c4e3d9&is=65b26ed9&hm=82cbd9cb1cc8362d85c0f38cabe98eb076b9769ebac5548ebc15312535097a28&',
-    'pionMoustique' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492994814012/moustique.png?ex=65c4e3d9&is=65b26ed9&hm=0818af4e00bf1abdfb89f2a4d363db90c18e46f88faea801b44a93bfeb4394ed&'
+    'pionAbeille' : '/public/image/abeille.png',
+    'pionFourmi' : '/public/image/fourmi.png',
+    'pionScarabee' : '/public/image/scarabee.png',
+    'pionCoccinelle' : '/public/image/coccinelle.png',
+    'pionAraignee' : '/public/image/araignee.png',
+    'pionSauterelle' : '/public/image/sauterelle.png',
+    'pionMoustique' : '/public/image/moustique.png'
 }
 
 /* fonction pour "clear" la page web afin d'afficher le jeu */

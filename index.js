@@ -22,6 +22,10 @@ app.get('/public/:nomFichier', (req,res) => {       // chemin permettant d'utili
     res.sendFile("public/"+req.params.nomFichier,{root: __dirname});
 });
 
+app.get('/public/image/:nomFichier', (req,res) => {       // chemin permettant d'utiliser les fichiers
+    res.sendFile("public/image/"+req.params.nomFichier,{root: __dirname});
+});
+
 /* ========== Partie Socket ========== */
 
 io.on('connection', (socket) => {
