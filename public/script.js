@@ -98,6 +98,14 @@ socket.on('majSalle',(data) => {
     }
 });
 
+socket.on('lancerDispo',() => {
+    $("#lancer").prop("disabled",false);
+})
+
+socket.on('lancerPlusDispo', () => {
+    $("#lancer").prop("disabled",true);
+})
+
 socket.on('affichagePartie',(data) => {
     console.log("Ok je rafraichie la page pour afficher le jeu");
     clear();

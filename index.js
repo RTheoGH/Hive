@@ -98,6 +98,9 @@ io.on('connection', (socket) => {
         
                             socket.join(data.nom);  // Actualisation uniquement pour cette salle
                             io.to(data.nom).emit('majSalle',salles[i]);
+                            if(salles[i].listeJoueurs.length == 2){
+                                io.to(data.nom).emit('lancerDispo');
+                            }
                             break;
                         }
                     }
@@ -138,10 +141,13 @@ io.on('connection', (socket) => {
                 // }
 
                 // Émettre une mise à jour de la salle aux autres joueurs de la salle
-                io.to(salleAQuitter.code).emit('majSalle',salleAQuitter);
+                io.to(salleAQuitter.nom).emit('majSalle',salleAQuitter);
 
                 if(salleAQuitter.listeJoueurs == 0){
                     salles.splice(salles.indexOf(salleAQuitter),1);
+                }
+                if(salleAQuitter.listeJoueurs != 2){
+                    io.to(salleAQuitter.nom).emit('lancerPlusDispo');
                 }
                 break;
             }
@@ -160,10 +166,12 @@ io.on('connection', (socket) => {
             console.log('Salle :',salle);
             if(indexJoueur != -1){
                 salleActuelle = salle;
-                console.log("J'envoie le maj de lancement à la salle");
-                console.log(salleActuelle.nom);
-                io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
-                break;
+                if(salleActuelle.listeJoueurs.length ==2){
+                    console.log("J'envoie le maj de lancement à la salle");
+                    console.log(salleActuelle.nom);
+                    io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
+                    break;
+                }
             }
         }
     });

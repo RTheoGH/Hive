@@ -58,7 +58,7 @@
             <p id="J2"></p>
             <hr/>
             <button class="bouton" onClick="quitter()">Quitter</button>
-            <button class="bouton" onClick="debutPartie()">Lancer</button>
+            <button class="bouton" id="lancer" onClick="debutPartie()" disabled>Lancer</button>
         </div>
         <div id="rejoindre">
             <h1>Rejoindre</h1>
@@ -93,9 +93,18 @@
             <svg class="pion" id="pionSauterelle"></svg>
             <svg class="pion" id="pionMoustique"></svg>
         </div>
+        <div id="actions" class="actions">
+            <ul id="actions_action">
+                <li>J1 a posé...</li>
+                <li>J2 a déplacé...</li>
+            </ul>
+        </div>
         <div id='chat' class='chat'>
             <ul id='messages'></ul>
             <input id='message' type='text'><button onClick='send()'>Envoyer</button>
+        </div>
+        <div id="action" class="action">
+            <p>(Joueur 1) doit poser ou déplacer une pièce</p>
         </div>
         <button class="bouton positionQP" onClick="quitterPartieEnCours()">Quitter la partie</button>
     </div>

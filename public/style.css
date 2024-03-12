@@ -177,10 +177,9 @@ footer{
     position:absolute;
     top:75%;
     left:80%;
-    /* width:10vw; */
-    /* height:20vh; */
     transform: translateY(-50%);
     transition: 1s;
+    width: 16.5vw;
 }
 
 .chat:hover{
@@ -257,6 +256,7 @@ footer{
 
   /* texte de victoire */
 .textVictoire{
+    color: black;
     margin-top: 20%;
 }
 
@@ -265,6 +265,54 @@ footer{
     color: white;
     padding: 15px 32px;
     background-color: black;
+}
+
+.actions{
+    background-color:white;
+    opacity: 0.8;
+    border-radius: 24px;
+    padding:8px;
+    position:absolute;
+    top:75%;
+    left:80%;
+    transform: translateY(-50%);
+    width: 16.5vw;
+    height: 35vh;
+}
+
+#actions_action{
+    height:10vh;
+    padding:1em;
+    background-color:whitesmoke;
+    overflow-y: scroll;
+    transition: 1s;
+}
+
+#actions_action li{
+    list-style: none;
+    margin-bottom: 0.5em;
+}
+
+.action{
+    width: 75vw;
+    height: 7vh;
+    opacity: 0.8;
+    background-color: white;
+    top: 2%;
+    position: absolute;
+    left: 12.51%;
+    border-radius: 1em;
+}
+
+.action p{
+    font-family: "Brush Script MT", cursive;
+    color: black;
+    text-align: center;
+    font-size: 2em;
+    padding: 0;
+    margin: 0;
+    top: 1%;
+    margin-top: 0.2em;
 }
 
 /* CSS pour la page des règles */
