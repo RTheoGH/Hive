@@ -282,6 +282,13 @@ function send(){
     $('#message').val("");
 }
 
+// Fonction raccourci pour envoyer un message
+function fsend(event){
+    if (event.keyCode === 13) { // Touche 'Entrer'
+        send();
+    }
+}
+
 // Fonction qui créé un hexagone
 function creeHexagone(rayon) {
     var points = new Array();

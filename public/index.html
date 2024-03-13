@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="/public/images/icone.png">
     <link rel="stylesheet" href="/public/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Handlee&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
             integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI"
             crossorigin="anonymous">
@@ -106,7 +109,7 @@
         </div>
         <div id='chat' class='chat'>
             <ul id='messages'></ul>
-            <input id='message' type='text'><button onClick='send()'>Envoyer</button>
+            <input id='message' type='text' onkeypress='fsend(event)'><button onClick='send()'>Envoyer</button>
         </div>
         <div id="action" class="action">
             <p>(Joueur 1) doit poser ou déplacer une pièce</p>
