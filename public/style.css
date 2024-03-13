@@ -1,32 +1,35 @@
+/* Style du body */
 body{
     overflow: hidden;
 }
 
+/* Classe fond pour le body */
 .fond{
     margin:auto;
-    background-image:url("fond.jpg");
+    background-image:url("images/fond.jpg");
 }
 
+/* Classe principale pour la plupart des menus */
 .menu{
     position:absolute;
     top:40%;
     left:50%;
     transform:translate(-50%,-50%);
     background-color:aliceblue;
-    /* opacity: 0.9; */
     padding: 2em;
     text-align: center;
     width: 20vw;
     border-radius: 24px;
-    /* border: 2px solid black; */
     box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
+/* Titre */
 .hive{
     font-family: "Brush Script MT", cursive;
     font-size: 75px;
 }
 
+/* Classe pour les différents boutons */
 .bouton {
     background-color: #fff000;
     border-radius: 12px;
@@ -57,6 +60,7 @@ body{
     cursor: not-allowed;
 }
 
+/* CSS des input */
 input[type=text],input[type=password] {
     width: 100%;
     padding: 12px 20px;
@@ -64,6 +68,7 @@ input[type=text],input[type=password] {
     box-sizing: border-box;
 }
 
+/* Bas de page */
 footer{
     position: absolute;
     bottom: 0;
@@ -74,17 +79,19 @@ footer{
     height:5vh;
 }
 
+/* Alignement à gauche */
 .left{
     text-align: left;
 }
 
+/* Séparateur flex */
 .barre-droit{
     border-right: 1px solid black;
 }
 
+/* CSS du plateau */
 #tablier{
-    /* background-color: burlywood; */
-    background-image: url("table.jpeg");
+    background-image: url("images/table.jpeg");
     background-size:100%;
     margin: 0;
     position: absolute;
@@ -99,6 +106,8 @@ footer{
     cursor: grab;
 }
 
+/* ------------------------------- */
+/* CSS du menu contenant les pions */
 #menuPions{
     background-color: whitesmoke;
     border-radius: 24px;
@@ -124,7 +133,6 @@ footer{
     text-align: center;
     height:0%;
     transform-origin: 50% 50%;
-    /* box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19); */
     transition: 0.25s;
 }
 
@@ -157,6 +165,7 @@ footer{
         transform: rotate(0deg);
     }
 }
+/* ------------------------------- */
 
 .pion{
     text-align: center;
@@ -186,12 +195,10 @@ footer{
     opacity:1;
     top:60%;
     left:80%;
-    /* width:auto; */
-    /* height:auto; */
     transition: 1s;
 }
   
-/* zone du tchat */
+/* Zone d'affichage des messages */
 #messages{
     height:10vh;
     padding:1em;
@@ -205,7 +212,7 @@ footer{
     transition: 1s;
 }
 
-/* liste des messages */
+/* Liste des messages */
 #messages li{
     list-style: none;
     margin-bottom: 0.5em;
@@ -219,7 +226,7 @@ footer{
     display: block;
 }
 
-/* alterner les couleurs */
+/* Alterner les couleurs */
 @keyframes colorful {
     0%{
       background-color: red;
@@ -238,7 +245,7 @@ footer{
     }
   }
 
-/* fond message de victoire */
+/* Fond message de victoire */
 .victoire{
     position: absolute;
     top: 45%;
@@ -246,53 +253,55 @@ footer{
     transform: translate(-50%,-50%);
     height: 100%;
     width: 100%;
-    background-image: url("table.jpeg");
-    /* background-color: red; */
-    /* animation: 2s infinite linear colorful; */
+    background-image: url("images/table.jpeg");
     text-align: center;
     color: white;
     font-size: 4em;
 }
 
-  /* texte de victoire */
+/* Texte de victoire */
 .textVictoire{
     color: black;
     margin-top: 20%;
 }
 
-/* bouton nouvelle partie */
+/* Bouton nouvelle partie */
 .newGameButton{
     color: white;
     padding: 15px 32px;
     background-color: black;
 }
 
+/* Classe pour les actions des joueurs */
 .actions{
     background-color:white;
     opacity: 0.8;
     border-radius: 24px;
     padding:8px;
     position:absolute;
-    top:75%;
+    top:35%;
     left:80%;
     transform: translateY(-50%);
     width: 16.5vw;
     height: 35vh;
 }
 
+/* Zone d'affichage */
 #actions_action{
-    height:10vh;
+    height:25vh;
     padding:1em;
     background-color:whitesmoke;
     overflow-y: scroll;
     transition: 1s;
 }
 
+/* Chaque action */
 #actions_action li{
     list-style: none;
     margin-bottom: 0.5em;
 }
 
+/* Classe pour l'action en cours */
 .action{
     width: 75vw;
     height: 7vh;
@@ -304,6 +313,7 @@ footer{
     border-radius: 1em;
 }
 
+/* Texte de l'action en cours */
 .action p{
     font-family: "Brush Script MT", cursive;
     color: black;
@@ -315,17 +325,20 @@ footer{
     margin-top: 0.2em;
 }
 
+/* --------------------------- */
 /* CSS pour la page des règles */
+/* --------------------------- */
 
+/* Classe pour les différentes div de la page des règles */
 .fondRegles{
     position: absolute;
     background-color:aliceblue;
     transform: translate(-50%,-50%);
-    background-color:aliceblue;
     box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
     border-radius: 24px;
 }
 
+/* Classe pour le titre de la page */
 .regles{
     left: 20%;
     top: 5%;
@@ -333,10 +346,12 @@ footer{
     text-align: center;
 }
 
+/* Couleur rouge */
 .rouge{
     color: red;
 }
 
+/* Police cursive */
 .cursiveR{
     font-family: "Brush Script MT", cursive;
     font-size: 25px;
@@ -346,6 +361,7 @@ footer{
     top: -5%;
 }
 
+/* Classe pour la description des règles */
 .reglesDesc{
     left: 20%;
     top: 45%;
@@ -354,6 +370,7 @@ footer{
     padding-right: 10px;
 }
 
+/* Classe pour le bouton de retour à l'accueil */
 .posAccueil{
     left: 20%;
     top: 75%;
@@ -362,6 +379,7 @@ footer{
     transform: translate(-50%,-50%);
 }
 
+/* Classe pour la description des insectes */
 .reglesPion{
     left: 70%;
     top: 50%;
@@ -369,20 +387,24 @@ footer{
     padding: 1em;
 }
 
+/* Taille des images */
 .tailleRImg{
     height: 50px;
     width: 50px;
 }
 
 /* --------------------------- */
+/*   Ajustement taille écran   */
+/* --------------------------- */
 
+/* Ecran inférieur à 1600px */
 @media screen and (max-width: 1600px){
     .ajustement{
         top:45%;
     }
 }
 
-/* 1920x1080 */
+/* Ecran supérieur à 1600px */
 @media screen and (min-width: 1601px){
     #menuPions{
         width:4.15vw;

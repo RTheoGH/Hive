@@ -1,3 +1,6 @@
+// --------------------------------------------------------------------------------------------------------
+// ----------------------------------------- Socket de démarrage ------------------------------------------
+// --------------------------------------------------------------------------------------------------------
 socket.on("Salut c'est le serveur ! :)", () => {
     console.log("socket io connecté");
     $("#creer").hide();
@@ -6,76 +9,31 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#jeu").hide();
 });
 
-const select = new Audio('public/son/select.ogg');
-const win = new Audio('public/son/win.ogg');
+// --------------------------------------------------------------------------------------------------------
+// ----------------------------------------- Variables ----------------------------------------------------
+// --------------------------------------------------------------------------------------------------------
+
+const select = new Audio('public/sons/select.ogg');
+const win = new Audio('public/sons/win.ogg');
 
 var nomJoueur="";
 var salle="";
 var code="";
-// var logosPions = {
-//     'pionAbeille' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&',
-//     'pionFourmi' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492755742800/fourmi.png?ex=65c4e3d9&is=65b26ed9&hm=6a385770c2fde61c2803090fb2ba4547db12abfa4cb0c88ed539d8698a498856&',
-//     'pionScarabee' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493556850758/scarabee.png?ex=65c4e3d9&is=65b26ed9&hm=2131d68f3b5b2b2ce4c06e679ae90111accdb11d123d6c1479f3d2fc539db1c5&',
-//     'pionCoccinelle' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492424384672/coccinelle.png?ex=65c4e3d9&is=65b26ed9&hm=7ee727fe64fafdb8b90c1ab6c52958debe59d15b9939e2f94f2c2fe6cb192f42&',
-//     'pionAraignee' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492164345976/araignee.png?ex=65c4e3d9&is=65b26ed9&hm=ff1c12d7ad6b268da2cc0fdc5060b1f7d7f7fe4c046c61e1fb153fb3ac79793d&',
-//     'pionSauterelle' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083493225496636/sauterelle.png?ex=65c4e3d9&is=65b26ed9&hm=82cbd9cb1cc8362d85c0f38cabe98eb076b9769ebac5548ebc15312535097a28&',
-//     'pionMoustique' : 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083492994814012/moustique.png?ex=65c4e3d9&is=65b26ed9&hm=0818af4e00bf1abdfb89f2a4d363db90c18e46f88faea801b44a93bfeb4394ed&'
-// }
 var logosPions = {
-    'pionAbeille' : '/public/image/abeille.png',
-    'pionFourmi' : '/public/image/fourmi.png',
-    'pionScarabee' : '/public/image/scarabee.png',
-    'pionCoccinelle' : '/public/image/coccinelle.png',
-    'pionAraignee' : '/public/image/araignee.png',
-    'pionSauterelle' : '/public/image/sauterelle.png',
-    'pionMoustique' : '/public/image/moustique.png'
+    'pionAbeille' : '/public/insectes/abeille.png',
+    'pionFourmi' : '/public/insectes/fourmi.png',
+    'pionScarabee' : '/public/insectes/scarabee.png',
+    'pionCoccinelle' : '/public/insectes/coccinelle.png',
+    'pionAraignee' : '/public/insectes/araignee.png',
+    'pionSauterelle' : '/public/insectes/sauterelle.png',
+    'pionMoustique' : '/public/insectes/moustique.png'
 }
 
-function ouvrirRegles() {
-    window.location.href = '/regles';
-}
+// --------------------------------------------------------------------------------------------------------
+// ----------------------------------------- Sockets du client --------------------------------------------
+// --------------------------------------------------------------------------------------------------------
 
-function fermerRegles() {
-    window.location.href = '/';
-}
-
-/* fonction pour "clear" la page web afin d'afficher le jeu */
-function debutPartie(){
-    document.getElementById("message_erreur").innerHTML = "";
-    clear();
-    console.log('Je lance la partie');
-    socket.emit('lancementPartie');
-    genereDamier(40,40,40);
-}
-
-function clear(){
-    $(".menu").hide();
-    $("#jeu").show();
-}
-
-function creer(){
-    document.getElementById("message_erreur").innerHTML = "";
-    $("#accueil").hide();
-    select.play();
-    $("#creer").show();
-}
-
-function rejoindre(){
-    document.getElementById("message_erreur").innerHTML = "";
-    $("#accueil").hide();
-    select.play();
-    $("#rejoindre").show();
-}
-
-function retour(){
-    document.getElementById("message_erreur").innerHTML = "";
-    $("#rejoindre").hide();
-    $("#creer").hide();
-    select.play();
-    $("#accueil").show();
-}
-
-/* Actuallisation d'une salle */
+// Actualisation de salle correspondante
 socket.on('majSalle',(data) => {
     $("#lobby").show();
     document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
@@ -98,19 +56,23 @@ socket.on('majSalle',(data) => {
     }
 });
 
+// Vérification du nombre de joueur >2
 socket.on('lancerDispo',() => {
     $("#lancer").prop("disabled",false);
 })
 
+// Vérification du nombre de joueur <2
 socket.on('lancerPlusDispo', () => {
     $("#lancer").prop("disabled",true);
 })
 
+// Affichage de la partie lorqu'un joueur la lance
 socket.on('affichagePartie',(data) => {
     console.log("Ok je rafraichie la page pour afficher le jeu");
     clear();
 });
 
+// Actualisation de la partie en cours
 socket.on('majPartie',(data) => {
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
@@ -124,36 +86,101 @@ socket.on('majPartie',(data) => {
         }
 });
 
+// Message d'erreur si le nom de la salle est déja pris
 socket.on('sallePrise',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
     $("#accueil").show();
 });
 
+// Message d'erreur si la salle est pleine
 socket.on('sallePleine',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Cette salle est pleine.";
     $("#accueil").show();
 });
 
+// Message d'erreur si le pseudonyme choisi est déjà pris par quelqu'un dans la salle
 socket.on('pseudoPris',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Ce nom de joueur est déjà pris.";
     $("#accueil").show();
 });
 
+// Message d'erreur si la salle n'est pas trouvé
 socket.on('salleIntrouvable',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Cette salle n'existe pas.";
     $("#accueil").show();
 });
 
+// Message d'erreur si le code entré par le joueur n'est pas celui de la salle
 socket.on('codeFaux',() => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Code faux pour cette salle.";
     $("#accueil").show();
 });
 
+// Socket de réception des messages
+socket.on('recoitMessage', (data) => {
+    $("#messages").append("<li>"+data.auteur+": "+data.message+"</li>");
+});
+
+// --------------------------------------------------------------------------------------------------------
+// -------------------------------------------- Fonctions -------------------------------------------------
+// --------------------------------------------------------------------------------------------------------
+
+// Redirection vers la page des règles
+function ouvrirRegles() {
+    window.location.href = '/regles';
+}
+
+// Redirection vers l'accueil
+function fermerRegles() {
+    window.location.href = '/';
+}
+
+// fonction de début de partie
+function debutPartie(){
+    document.getElementById("message_erreur").innerHTML = "";
+    clear();
+    console.log('Je lance la partie');
+    socket.emit('lancementPartie');
+    genereDamier(40,40,40);
+}
+
+// fonction qui affiche le jeu
+function clear(){
+    $(".menu").hide();
+    $("#jeu").show();
+}
+
+// fonction qui affiche la page de création d'une partie
+function creer(){
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#accueil").hide();
+    select.play();
+    $("#creer").show();
+}
+
+// fonction qui affiche la page pour rejoindre une partie
+function rejoindre(){
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#accueil").hide();
+    select.play();
+    $("#rejoindre").show();
+}
+
+// fonction qui permet de retourner à l'accueil depuis la page de création ou rejoindre
+function retour(){
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#rejoindre").hide();
+    $("#creer").hide();
+    select.play();
+    $("#accueil").show();
+}
+
+// fonction qui crée et valide une salle
 function validerCreation(){
     $("#creer").hide();
     select.play();
@@ -198,6 +225,7 @@ function validerCreation(){
     socket.emit('nouvelleSalle',salle);
 }
 
+// fonction qui valide la connexion d'un joueur dans une salle
 function validerRejoindre(){
     $("#rejoindre").hide();
     select.play();
@@ -210,12 +238,14 @@ function validerRejoindre(){
     console.log(nomJoueur);
 }
 
+// fonction qui affiche l'accueil
 function retourAccueil(){
     $("#lobby").hide();
     $(".menu").show();
     $("#accueil").show();
 }
 
+// fonction qui permet de quitter la salle actuelle pour retourner à l'accueil
 function quitter(){
     select.play();
     retourAccueil();
@@ -223,6 +253,7 @@ function quitter(){
     socket.emit('quittePartie');
 }
 
+// fonction qui permet de quitter la partie en cours pour retourner à l'accueil
 function quitterPartieEnCours(){
     select.play();
     console.log("Je quitte la partie");
@@ -241,7 +272,7 @@ socket.on('hide', (data) => {
     hideHex(data.position);
 })
 
-/* fonction pour envoyer un message */
+// fonction pour envoyer un message dans le tchat
 function send(){
     let message = $('#message').val().trim().replace(/[^a-zA-Z0-9 ]/g,'');
     if (!message==""){
@@ -250,11 +281,6 @@ function send(){
     }
     $('#message').val("");
 }
-
-/* reception des messages */
-socket.on('recoitMessage', (data) => {
-    $("#messages").append("<li>"+data.auteur+": "+data.message+"</li>");
-});
 
 // Fonction qui créé un hexagone
 function creeHexagone(rayon) {
@@ -639,15 +665,12 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     }
 }
 
-
-
 socket.on('instructionsActivation', (data) => {
     // Activer les hexagones autour selon les instructions du serveur
     for (let indice of data.indices) {
         activerHexagone(indice);
     }
 });
-
 
 var selectionPion = null;
 
