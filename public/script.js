@@ -19,6 +19,7 @@ var logosPions = {
     'pionMoustique' : '/public/image/moustique.png'
 }
 
+
 /* fonction pour "clear" la page web afin d'afficher le jeu */
 function debutPartie(){
     document.getElementById("message_erreur").innerHTML = "";
@@ -118,7 +119,7 @@ function validerCreation(){
     salle.nom = document.getElementById("nomSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');   // Recup le nom de la salle
     salle.code = document.getElementById("codeSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup le code de la salle
     nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');     // Recup le nom du créateur de la salle (J1)
-    salle.listeJoueurs.push([nomJoueur,null]);
+    salle.listeJoueurs.push([nomJoueur,null, null]);
 
     const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
     let typeChoix;
@@ -527,12 +528,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     // Poser le pion sélectionné sur une case
     $(document).on('click', '.svgHexa', function() {
         if (selectionPion != null) {
-            // console.log("Sélection hexagone");
-
             var path = $(this).find('path');   // On sélectionne le path à l'intérieur du svg
-            // console.log(path);
-            
-            posePionSurCase(path, selectionPion);
             socket.emit("EnvoiPoserPionPlateau", {'case' : path.attr("id"), 'pion' : selectionPion});
         }
     });
@@ -597,10 +593,15 @@ socket.on('instructionsActivation', (data) => {
     }
 });
 
+socket.on('envoiNombrePionsRestants', (data) => {
+    console.log(data); //affiche le nombre de pions restantss    
+});
+
+
 
 var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
     selectionPion = this.id;
-    console.log("Pion sélectionné : ", this.id);
+    // console.log("Pion sélectionné : ", this.id);
 });

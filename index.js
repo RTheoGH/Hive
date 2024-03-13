@@ -45,6 +45,15 @@ io.on('connection', (socket) => {
         if(salleLibre){   // Si le nom de salle est disponible
             console.log("La salle est disponible");
             data.listeJoueurs[0][1] = socket.id;
+            data.listeJoueurs[0][2] = { //nombre de pions restants pour le joueur
+                'pionAbeille' : 1,
+                'pionFourmi' : 3,
+                'pionScarabee' : 2,
+                'pionCoccinelle' : 1,
+                'pionAraignee' : 2,
+                'pionSauterelle' : 3,
+                'pionMoustique' : 1
+            }
             salles.push(data);        // Ajout de la salle dans la liste des salles
             console.log("Salle crée : ",data);
             console.log("Liste des salles : ",salles);
@@ -166,7 +175,10 @@ io.on('connection', (socket) => {
         parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
-                if(joueur.includes(socket.id)){
+                if(joueur.includes(socket.id) && joueur[2][data["pion"]] > 0){
+                    joueur[2][data["pion"]] --;
+                    console.log(joueur[2]);
+                    socket.emit('envoiNombrePionsRestants', joueur[2]);
                     io.to(salle.code).emit("ReceptPoserPionPlateau", data);
                     break parcoursDesSalles;
                 }
