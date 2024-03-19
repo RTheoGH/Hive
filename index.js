@@ -52,30 +52,42 @@ io.on('connection', (socket) => {
     
     // Socket de création d'une nouvelle salle
     socket.on('nouvelleSalle',(data) =>{
-        let salleLibre = true;
-        console.log(data);
-        for(i=0;i<salles.length;i++){   //Vérifie si on a pas déja une salle portant ce nom
-            if(data.nom == salles[i].nom){
-                console.log("Ce nom de salle est déjà pris.");
-                salleLibre = false;
-                break;
-            }
-        }
-        console.log(salleLibre);
-        if(salleLibre){   // Si le nom de salle est disponible
-            console.log("La salle est disponible");
-            data.listeJoueurs[0][1] = socket.id;
-            salles.push(data);       // Ajout de la salle dans la liste des salles
-            console.log("Salle crée : ",data);
-            console.log("Liste des salles : ",salles);
-
-            socket.join(data.nom);   // Actualisation uniquement pour cette salle
-            io.to(data.nom).emit('majSalle',data);
+        console.log("nom : '",data.nom,"' code : '",data.code,"' Joueur 1 : '",data.listeJoueurs[0][0],"'");
+        if(data.nom == ''){
+            console.log("nom de salle vide");
+            socket.emit('nomVide');
+        }else if(data.code == ''){
+            console.log("code de salle vide");
+            socket.emit('codeVide');
+        }else if(data.listeJoueurs[0][0] == ''){
+            console.log("nom du joueur vide");
+            socket.emit('joueurVide');
         }else{
-            console.log("Retour à l'accueil");
-            socket.emit("sallePrise");  // Sinon on renvoit la personne à l'accueil
+            let salleLibre = true;
+            console.log(data);
+            for(i=0;i<salles.length;i++){   //Vérifie si on a pas déja une salle portant ce nom
+                if(data.nom == salles[i].nom){
+                    console.log("Ce nom de salle est déjà pris.");
+                    salleLibre = false;
+                    break;
+                }
+            }
+            console.log(salleLibre);
+            if(salleLibre){   // Si le nom de salle est disponible
+                console.log("La salle est disponible");
+                data.listeJoueurs[0][1] = socket.id;
+                salles.push(data);       // Ajout de la salle dans la liste des salles
+                console.log("Salle crée : ",data);
+                console.log("Liste des salles : ",salles);
+
+                socket.join(data.nom);   // Actualisation uniquement pour cette salle
+                io.to(data.nom).emit('majSalle',data);
+            }else{
+                console.log("Retour à l'accueil");
+                socket.emit("sallePrise");  // Sinon on renvoit la personne à l'accueil
+            }
+            console.log(salles);
         }
-        console.log(salles);
     });
 
     // Socket d'une tentative de connexion d'un joueur dans une salle
@@ -182,7 +194,7 @@ io.on('connection', (socket) => {
             console.log('Salle :',salle);
             if(indexJoueur != -1){
                 salleActuelle = salle;
-                if(salleActuelle.listeJoueurs.length ==2){ // S'il y a bien deux joueurs dans la salle
+                if(salleActuelle.listeJoueurs.length == 2){ // S'il y a bien deux joueurs dans la salle
                     console.log("J'envoie le maj de lancement à la salle");
                     console.log(salleActuelle.nom); // On affiche le jeu
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
