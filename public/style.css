@@ -73,7 +73,7 @@ input[type=text],input[type=password] {
 footer{
     position: absolute;
     bottom: 0;
-    width: 105vw;
+    width: 100vw;
     background-color: black;
     color: white;
     text-align:center;
@@ -141,12 +141,30 @@ footer{
     transform-origin: 50% 50%;
 }
 
+#menuPions:hover .pn{
+    height:100%;
+    opacity:1;
+}
+
 #menuPions:hover svg{
     height:100%;
+    opacity:1;
 }
 
 #menuPions svg:hover image{
     animation: shake 0.5s;
+}
+
+.pn {
+    display: flex;
+    align-items: center;
+    margin-right: 5px;
+    opacity: 0;
+}
+
+.nombre {
+    font-family: "Handlee", cursive;
+    margin-left: -10px;
 }
 
 @keyframes shake{

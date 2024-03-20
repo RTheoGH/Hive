@@ -79,6 +79,10 @@ io.on('connection', (socket) => {
                 salles.push(data);       // Ajout de la salle dans la liste des salles
                 console.log("Salle crée : ",data);
                 console.log("Liste des salles : ",salles);
+                
+                if(data.listeJoueurs.length != 2){
+                    socket.emit('lancerPlusDispo');
+                }
 
                 socket.join(data.nom);   // Actualisation uniquement pour cette salle
                 io.to(data.nom).emit('majSalle',data);

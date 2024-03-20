@@ -1,6 +1,7 @@
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Socket de démarrage ------------------------------------------
 // --------------------------------------------------------------------------------------------------------
+
 socket.on("Salut c'est le serveur ! :)", () => {
     console.log("socket io connecté");
     $("#creer").hide();
@@ -89,6 +90,7 @@ socket.on('majPartie', (data) => {
         ambiant.pause();
         ambiant.currentTime = 0;
         win.play();
+        $("#lancer").prop("disabled",true);
     }
 });
 
@@ -300,6 +302,7 @@ function quitter(){
     retourAccueil();
     console.log("Je quitte la salle");
     socket.emit('quittePartie');
+    $("#lancer").prop("disabled",true);
 }
 
 // fonction qui permet de quitter la partie en cours pour retourner à l'accueil
@@ -311,6 +314,7 @@ function quitterPartieEnCours(){
     retourAccueil();
     ambiant.pause();
     ambiant.currentTime = 0;
+    $("#lancer").prop("disabled",true);
 }
 
 function hideHex(position){
