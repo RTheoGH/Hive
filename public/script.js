@@ -294,6 +294,7 @@ function retourAccueil(){
     $("#lobby").hide();
     $(".menu").show();
     $("#accueil").show();
+    window.location.reload();
 }
 
 // fonction qui permet de quitter la salle actuelle pour retourner à l'accueil

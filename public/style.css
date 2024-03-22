@@ -191,7 +191,7 @@ footer{
 }
 
 .positionQP{
-    top:88%;
+    top:85%;
     left:35%;
     position:absolute;
 }
@@ -248,21 +248,21 @@ footer{
 /* Alterner les couleurs */
 @keyframes colorful {
     0%{
-      background-color: red;
+        background-color: red;
     }
     25%{
-      background-color: yellow;
+        background-color: yellow;
     }
     50%{
-      background-color:royalblue;
+        background-color:royalblue;
     }
     75%{
-      background-color: seagreen;
+        background-color: seagreen;
     }
     100%{
-      background-color:red;
+        background-color:red;
     }
-  }
+}
 
 /* Fond message de victoire */
 .victoire{
@@ -303,6 +303,12 @@ footer{
     transform: translateY(-50%);
     width: 16.5vw;
     height: 35vh;
+    transition: 1s;
+}
+
+.actions:hover {
+    opacity: 1;
+    transition: 1s;
 }
 
 /* Zone d'affichage */
@@ -311,7 +317,6 @@ footer{
     padding:1em;
     background-color:whitesmoke;
     overflow-y: scroll;
-    transition: 1s;
 }
 
 /* Chaque action */
@@ -417,24 +422,89 @@ footer{
 /* --------------------------- */
 
 /* Ecran inférieur à 1600px */
-@media screen and (max-width: 1600px){
+@media screen and (min-width: 0px) and (max-width: 1600px){
     .ajustement{
         top:45%;
+        width:30%;
     }
 }
 
-/* Ecran supérieur à 1600px */
-@media screen and (min-width: 1601px){
+/* Ecran inférieur à 1024px */
+@media screen and (min-width: 0px) and (max-width: 1024px){
+    div.fondRegles p.cursiveR{
+        font-size:20px;
+    }
+    div.fondRegles div span.cursiveR{
+        font-size:20px;
+    }
+    h1.fondRegles.hive{
+        font-size:50px;
+    }
+    #menuPions{
+        width:8vw;
+    }
+}
+
+/* Ecran supérieur à 1025px et inférieur à 1280px */
+@media screen and (min-width: 1025px) and (max-width: 1280px){
+    div.fondRegles p.cursiveR{
+        font-size:23px;
+    }
+    div.fondRegles div span.cursiveR{
+        font-size:23px;
+    }
+    h1.fondRegles.hive{
+        font-size:50px;
+    }
+    #menuPions{
+        width:6.2vw;
+    }
+}
+
+/* Ecran supérieur à 1281px et inférieur à 1440px */
+@media screen and (min-width: 1281px) and (max-width: 1440px){
+    #menuPions{
+        width:5.5vw;
+    }
+    #menuPions:hover{
+        padding-bottom:38em;
+    }
+}
+
+/* Ecran supérieur à 1441px et inférieur à 1600px */
+@media screen and (min-width: 1441px) and (max-width: 1600px){
+    div.fondRegles p.cursiveR{
+        font-size:28px;
+    }
+    div.fondRegles div span.cursiveR{
+        font-size:28px;
+    }
+    #menuPions{
+        width:4.8vw;
+    }
+    #menuPions:hover{
+        padding-bottom:45em;
+    }
+}
+
+/* Ecran supérieur à 1681px et inférieur à 1920px */
+@media screen and (min-width: 1681px) and (max-width: 1920px){
+    div.fondRegles p.cursiveR{
+        font-size:28px;
+    }
+    div.fondRegles div span.cursiveR{
+        font-size:28px;
+    }
+    h1.fondRegles.hive{
+        font-size:80px;
+    }
     #menuPions{
         width:4.15vw;
-    }
+    } 
     #menuPions:hover svg{
         height:90px;
     }
-    .chat{
-        left:83%;
-    }
-    .chat:hover{
-        left:83%;
+    #menuPions:hover{
+        padding-bottom:41em;
     }
 }
