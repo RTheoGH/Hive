@@ -285,7 +285,7 @@ io.on('connection', (socket) => {
                     joueur[2][data["pion"]] --;
                     console.log(joueur[2]);
                     socket.emit('envoiNombrePionsRestants', joueur[2]);
-                    io.to(salle.code).emit("ReceptPoserPionPlateau", data);
+                    io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                     break parcoursDesSalles;
                 }
             }
