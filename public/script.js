@@ -1,3 +1,7 @@
+// --------------------------------------------------------------------------------------------------------
+// ----------------------------------------- Socket de démarrage ------------------------------------------
+// --------------------------------------------------------------------------------------------------------
+
 socket.on("Salut c'est le serveur ! :)", () => {
     console.log("socket io connecté");
     $("#creer").hide();
@@ -6,54 +10,37 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#jeu").hide();
 });
 
+// --------------------------------------------------------------------------------------------------------
+// ----------------------------------------- Variables ----------------------------------------------------
+// --------------------------------------------------------------------------------------------------------
+
+const select = new Audio('public/sons/select.mp3');
+const win = new Audio('public/sons/win.mp3');
+const erreur = new Audio('public/sons/erreur.mp3');
+const notif = new Audio('public/sons/notif.mp3');
+const ambiant = new Audio('public/sons/ambiant.mp3');
+
 var nomJoueur="";
 var salle="";
 var code="";
 var logosPions = {
-    'pionAbeille' : '/public/image/abeille.png',
-    'pionFourmi' : '/public/image/fourmi.png',
-    'pionScarabee' : '/public/image/scarabee.png',
-    'pionCoccinelle' : '/public/image/coccinelle.png',
-    'pionAraignee' : '/public/image/araignee.png',
-    'pionSauterelle' : '/public/image/sauterelle.png',
-    'pionMoustique' : '/public/image/moustique.png'
+    'pionAbeille' : '/public/insectes/abeille.png',
+    'pionFourmi' : '/public/insectes/fourmi.png',
+    'pionScarabee' : '/public/insectes/scarabee.png',
+    'pionCoccinelle' : '/public/insectes/coccinelle.png',
+    'pionAraignee' : '/public/insectes/araignee.png',
+    'pionSauterelle' : '/public/insectes/sauterelle.png',
+    'pionMoustique' : '/public/insectes/moustique.png'
 }
 
+// --------------------------------------------------------------------------------------------------------
+// ----------------------------------------- Sockets du client --------------------------------------------
+// --------------------------------------------------------------------------------------------------------
 
-/* fonction pour "clear" la page web afin d'afficher le jeu */
-function debutPartie(){
-    document.getElementById("message_erreur").innerHTML = "";
-    clear();
-    $("#jeu").show();
-    genereDamier(40,40,40);
-}
-
-function clear(){
-    $(".menu").hide();
-}
-
-function creer(){
-    document.getElementById("message_erreur").innerHTML = "";
-    $("#accueil").hide();
-    $("#creer").show();
-}
-
-function rejoindre(){
-    document.getElementById("message_erreur").innerHTML = "";
-    $("#accueil").hide();
-    $("#rejoindre").show();
-}
-
-function retour(){
-    document.getElementById("message_erreur").innerHTML = "";
-    $("#accueil").show();
-    $("#rejoindre").hide();
-    $("#creer").hide();
-}
-
-/* Actuallisation d'une salle */
-socket.on('majSalle',(data) => {
-    $("#lobby").show();
+// Actualisation de salle correspondante
+socket.on('majSalle', (data) => {
+    // $("#lobby").show();
+    $("#lobby").fadeIn(300);
     document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
     
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
@@ -72,41 +59,181 @@ socket.on('majSalle',(data) => {
     else{
         $("#lobby").hide();
     }
-})
+});
 
-socket.on('sallePrise',() => {
+// Vérification du nombre de joueur >2
+socket.on('lancerDispo', () => {
+    $("#lancer").prop("disabled",false);
+});
+
+// Vérification du nombre de joueur <2
+socket.on('lancerPlusDispo', () => {
+    $("#lancer").prop("disabled",true);
+});
+
+// Affichage de la partie lorqu'un joueur la lance
+socket.on('affichagePartie', (data) => {
+    console.log("Ok je rafraichie la page pour afficher le jeu");
+    clear();
+});
+
+// Actualisation de la partie en cours
+socket.on('majPartie', (data) => {
+    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    console.log(joueurActuel);
+    if(joueurActuel){
+        // Annonce de la victoire si on est le joueur qui reste encore dans la partie
+        var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
+            <br/><button class='newGameButton'\
+            onClick='window.location.reload()'>Nouvelle Partie</button></div></div>";
+        $("body").append(victoire);
+        ambiant.pause();
+        ambiant.currentTime = 0;
+        win.play();
+        $("#lancer").prop("disabled",true);
+    }
+});
+
+// Message d'erreur si le nom de la salle est déja pris
+socket.on('sallePrise', () => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
     $("#accueil").show();
-})
+    erreur.play();
+});
 
-socket.on('sallePleine',() => {
+// Message d'erreur si la salle est pleine
+socket.on('sallePleine', () => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Cette salle est pleine.";
     $("#accueil").show();
-})
+    erreur.play();
+});
 
-socket.on('pseudoPris',() => {
+// Message d'erreur si le pseudonyme choisi est déjà pris par quelqu'un dans la salle
+socket.on('pseudoPris', () => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Ce nom de joueur est déjà pris.";
     $("#accueil").show();
+    erreur.play();
 });
 
-socket.on('salleIntrouvable',() => {
+// Message d'erreur si la salle n'est pas trouvé
+socket.on('salleIntrouvable', () => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Cette salle n'existe pas.";
     $("#accueil").show();
-})
+    erreur.play();
+});
 
-socket.on('codeFaux',() => {
+// Message d'erreur si le code entré par le joueur n'est pas celui de la salle
+socket.on('codeFaux', () => {
     $("#lobby").hide();
     document.getElementById("message_erreur").innerHTML += "Code faux pour cette salle.";
     $("#accueil").show();
-})
+    erreur.play();
+});
 
+// Socket de réception des messages
+socket.on('recoitMessage', (data) => {
+    $("#messages").append("<li>"+data.auteur+": "+data.message+"</li>");
+    notif.play();
+});
+
+socket.on('nomVide', () => {
+    $("#creer").hide();
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Nom de salle vide.";
+    $("#accueil").show();
+    erreur.play();
+});
+
+socket.on('codeVide', () => {
+    $("#creer").hide();
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Code de salle vide.";
+    $("#accueil").show();
+    erreur.play();
+});
+
+socket.on('joueurVide', () => {
+    $("#creer").hide();
+    $("#lobby").hide();
+    document.getElementById("message_erreur").innerHTML += "Nom de joueur vide.";
+    $("#accueil").show();
+    erreur.play();
+});
+
+// --------------------------------------------------------------------------------------------------------
+// -------------------------------------------- Fonctions -------------------------------------------------
+// --------------------------------------------------------------------------------------------------------
+
+// Redirection vers la page des règles
+function ouvrirRegles() {
+    window.location.href = '/regles';
+}
+
+// Redirection vers l'accueil
+function fermerRegles() {
+    window.location.href = '/';
+}
+
+// fonction de début de partie
+function debutPartie(){
+    document.getElementById("message_erreur").innerHTML = "";
+    clear();
+    console.log('Je lance la partie');
+    socket.emit('lancementPartie');
+    genereDamier(40,40,40);
+    ambiant.currentTime = 0;
+    ambiant.play();
+    ambiant.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 59){
+            this.currentTime = 0;
+        }
+    });
+}
+
+// fonction qui affiche le jeu
+function clear(){
+    $(".menu").hide();
+    $("#jeu").show();
+}
+
+// fonction qui affiche la page de création d'une partie
+function creer(){
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#accueil").hide();
+    select.play();
+    // $("#creer").show();
+    $("#creer").fadeIn(300);
+}
+
+// fonction qui affiche la page pour rejoindre une partie
+function rejoindre(){
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#accueil").hide();
+    select.play();
+    // $("#rejoindre").show();
+    $("#rejoindre").fadeIn(300);
+}
+
+// fonction qui permet de retourner à l'accueil depuis la page de création ou rejoindre
+function retour(){
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#rejoindre").hide();
+    $("#creer").hide();
+    select.play();
+    // $("#accueil").show();
+    $("#accueil").fadeIn(300);
+}
+
+// fonction qui crée et valide une salle
 function validerCreation(){
     $("#creer").hide();
-    $("#lobby").show();
+    select.play();
+    // $("#lobby").show();
+    $("#lobby").fadeIn(300);
 
     var salle={
         nom: "",
@@ -116,9 +243,9 @@ function validerCreation(){
         mode: ""
     }
 
-    salle.nom = document.getElementById("nomSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');   // Recup le nom de la salle
-    salle.code = document.getElementById("codeSalle").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup le code de la salle
-    nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');     // Recup le nom du créateur de la salle (J1)
+    salle.nom = document.getElementById("nomSalle").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');   // Recup le nom de la salle
+    salle.code = document.getElementById("codeSalle").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,''); // Recup le code de la salle
+    nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');     // Recup le nom du créateur de la salle (J1)
     salle.listeJoueurs.push([nomJoueur,null, null]);
 
     const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
@@ -147,24 +274,48 @@ function validerCreation(){
     socket.emit('nouvelleSalle',salle);
 }
 
+// fonction qui valide la connexion d'un joueur dans une salle
 function validerRejoindre(){
     $("#rejoindre").hide();
+    select.play();
 
-    var salle_rejoindre = document.getElementById("nomSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du nom entré par le J2
-    var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 ]/g,''); // Recup du code entré par le J2
+    var salle_rejoindre = document.getElementById("nomSalleR").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,''); // Recup du nom entré par le J2
+    var code_rejoindre = document.getElementById("codeSalleR").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,''); // Recup du code entré par le J2
+    console.log(salle_rejoindre);
+    console.log(code_rejoindre);
     nomJoueur = document.getElementById("pseudoR").value.trim().replace(/[^a-zA-Z0-9 ]/g,'');             // J2
     socket.emit('tentativeRejoindre',{'nom':salle_rejoindre,'code':code_rejoindre,'joueur':[nomJoueur,null,null]});
     console.log(code_rejoindre);
     console.log(nomJoueur);
 }
 
-function quitter(){
+// fonction qui affiche l'accueil
+function retourAccueil(){
     $("#lobby").hide();
     $(".menu").show();
     $("#accueil").show();
+    window.location.reload();
+}
+
+// fonction qui permet de quitter la salle actuelle pour retourner à l'accueil
+function quitter(){
+    select.play();
+    retourAccueil();
     console.log("Je quitte la salle");
     socket.emit('quittePartie');
-    $("#lobby").hide();
+    $("#lancer").prop("disabled",true);
+}
+
+// fonction qui permet de quitter la partie en cours pour retourner à l'accueil
+function quitterPartieEnCours(){
+    select.play();
+    console.log("Je quitte la partie");
+    socket.emit('quittePartieEnCours');
+    $("#jeu").hide();
+    retourAccueil();
+    ambiant.pause();
+    ambiant.currentTime = 0;
+    $("#lancer").prop("disabled",true);
 }
 
 function hideHex(position){
@@ -177,9 +328,9 @@ socket.on('hide', (data) => {
     hideHex(data.position);
 })
 
-/* fonction pour envoyer un message */
+// fonction pour envoyer un message dans le tchat
 function send(){
-    let message = $('#message').val().trim().replace(/[^a-zA-Z0-9 ]/g,'');
+    let message = $('#message').val().trim().replace(/[^a-zA-Z0-9 'çàéèù?.!]/g,'');
     if (!message==""){
         console.log(message);
         socket.emit('envoieMessage',{'auteur':nomJoueur,'message':message});
@@ -187,10 +338,12 @@ function send(){
     $('#message').val("");
 }
 
-/* reception des messages */
-socket.on('recoitMessage', (data) => {
-    $("#messages").append("<li>"+data.auteur+": "+data.message+"</li>");
-});
+// Fonction raccourci pour envoyer un message
+function fsend(event){
+    if (event.keyCode === 13) { // Touche 'Entrer'
+        send();
+    }
+}
 
 // Fonction qui créé un hexagone
 function creeHexagone(rayon) {
@@ -584,8 +737,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     }
 }
 
-
-
 socket.on('instructionsActivation', (data) => {
     // Activer les hexagones autour selon les instructions du serveur
     for (let indice of data.indices) {
@@ -596,8 +747,6 @@ socket.on('instructionsActivation', (data) => {
 socket.on('envoiNombrePionsRestants', (data) => {
     console.log(data); //affiche le nombre de pions restantss    
 });
-
-
 
 var selectionPion = null;
 
