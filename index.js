@@ -262,9 +262,12 @@ io.on('connection', (socket) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
         let indicesAutour = determinerIndicesAutour(data.position);
-
-        // Envoyer les instructions pour activer les hexagones autour
-        socket.emit('instructionsActivation', { 'indices': indicesAutour });
+        for(salle of salles){
+            for(joueur of salle.listeJoueurs){
+                if(joueur.includes(socket.id)){
+                    // Envoyer les instructions pour activer les hexagones autour
+                    io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
+        }}}
     });
 
     socket.on('ClickHexRed', (data) => {

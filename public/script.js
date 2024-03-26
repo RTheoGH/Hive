@@ -645,7 +645,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                             socket.emit('ClickHexRed', {'position': position});
                         }
                         else {
-                            socket.emit('discover', {'position': position});
+                            if (selectionPion != null){
+                                socket.emit('discover', {'position': position});
+                            }
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -700,6 +702,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
         posePionSurCase(path, data.pion);
+        selectionPion = null;
     });
     
     
