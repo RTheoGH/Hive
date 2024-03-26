@@ -95,6 +95,15 @@ io.on('connection', (socket) => {
                         }else{ // Si le joueur n'est pas dans la salle et que la salle n'est pas surchargée, on peut l'ajouter !
                             console.log("Salle trouvée : ",salles[i].nom);
                             data.joueur[1] = socket.id;
+                            data.joueur[2] = { //nombre de pions restants pour le joueur
+                                'pionAbeille' : 1,
+                                'pionFourmi' : 3,
+                                'pionScarabee' : 2,
+                                'pionCoccinelle' : 1,
+                                'pionAraignee' : 2,
+                                'pionSauterelle' : 3,
+                                'pionMoustique' : 1
+                            }
                             salles[i].listeJoueurs.push(data.joueur);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
