@@ -6,6 +6,7 @@ const server = http.createServer(app);
 const io = new require("socket.io")(server);
 
 const salles=[];
+const matchmaking=[];
 
 // ==================================
 // ========= Partie Express ========= 
@@ -258,6 +259,13 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
+    socket.on('recherchePartie', (data) => {
+        console.log("Joueur en recherche :",data.joueur[1]);
+        console.log("Niveau :",data.joueur[0]);
+        matchmaking.push(data.joueur);
+        console.log(matchmaking);
+    })
+
     socket.on('discover', (data) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
@@ -285,7 +293,7 @@ io.on('connection', (socket) => {
                     joueur[2][data["pion"]] --;
                     console.log(joueur[2]);
                     socket.emit('envoiNombrePionsRestants', joueur[2]);
-                    io.to(salle.code).emit("ReceptPoserPionPlateau", data);
+                    io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                     break parcoursDesSalles;
                 }
             }

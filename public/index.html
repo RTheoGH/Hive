@@ -66,22 +66,38 @@
         <div id="rejoindre">
             <h1>Rejoindre</h1>
             <hr/>
-            <p>Nom de la salle : <input type="text" id="nomSalleR"/></p>
-            <p>Code de la salle : <input type="password" id="codeSalleR"/></p>
-            <p>Pseudonyme : <input type="text" id="pseudoR"/></p>
+            <p class="left">Nom de la salle : <input type="text" id="nomSalleR"/></p>
+            <p class="left">Code de la salle : <input type="password" id="codeSalleR"/></p>
+            <p class="left">Pseudonyme : <input type="text" id="pseudoR"/></p>
             <hr/>
             <button class="bouton" onClick="retour()">Retour</button>
             <button class="bouton" onClick="validerRejoindre()">Valider</button>
         </div>
+        <div id="rechercher">
+            <h1>Rechercher</h1>
+            <p class="timer" id="tempsDAttente"></p>
+            <hr/>
+            <p class="left">Pseudonyme : <input type="text" id="pseudoM"/></p>
+            <p class="left">Niveau :
+                <select name="matchmaking" id="niveau-match">
+                    <option value="debutant">Débutant</option>
+                    <option value="intermediaire">Intermédiaire</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </p>
+            <hr/>
+            <button class="bouton" onClick="retourRecherche()">Retour</button>
+            <button class="bouton" id="boutonRecherche" onClick="lancerRecherche()">Jouer</button>
+        </div>
         <div id="accueil">
             <h1 class="hive">Hive</h1>
-            <button class="bouton" onClick="ouvrirRegles()">Règles</button>
+            <button class="bouton" onClick="ouvrirRegles()" title="Comment jouer à Hive ?">Règles</button>
             <p style="color:red" id="message_erreur"></p>
+            <br/><br/><hr/><br/>
+            <button class="bouton" onClick='creer()' title="Créer un salon.">Créer</button>   
+            <button class="bouton" onClick='rejoindre()' title="Rejoindre un salon.">Rejoindre</button>
             <br/><br/>
-            <hr/>
-            <br/>
-            <button class="bouton" onClick='creer()'>Créer</button>   
-            <button class="bouton" onClick='rejoindre()'>Rejoindre</button><br/>
+            <button class="bouton" onClick='rechercher()' title="Affronter un adversaire à votre taille !">Rechercher</button>
         </div>
     </div>
     <div id="jeu">
