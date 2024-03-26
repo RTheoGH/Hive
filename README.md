@@ -69,8 +69,8 @@ Une pièce doit être placée à côté d’une pièce amie et ne peut en aucun 
 - Page d'accueil, des règles, de création d'une partie, pour rejoindre une partie, du jeu
 - Gestion des erreurs au niveau des salles
 - Système de communication via une messagerie (tchat)
-- 
--
+- Système audio sur les pages
+- Affichage selon les tailles d'écran
 -
 -
 
