@@ -20,6 +20,7 @@ const erreur = new Audio('public/sons/erreur.mp3');
 const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
 
+var color = ['white','black'];
 var nomJoueur="";
 var salle="";
 var code="";
@@ -73,8 +74,14 @@ socket.on('lancerPlusDispo', () => {
 
 // Affichage de la partie lorqu'un joueur la lance
 socket.on('affichagePartie', (data) => {
-    console.log("Ok je rafraichie la page pour afficher le jeu");
-    clear();
+    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    console.log(joueurActuel);
+    console.log("je suis le joueur ",socket.id);
+    if(joueurActuel){
+        console.log("Ok je rafraichie la page pour afficher le jeu");
+        clear();
+        initPartie();
+    }
 });
 
 // Actualisation de la partie en cours
@@ -136,7 +143,8 @@ socket.on('codeFaux', () => {
 
 // Socket de réception des messages
 socket.on('recoitMessage', (data) => {
-    $("#messages").append("<li>"+data.auteur+": "+data.message+"</li>");
+    let puce = ["○", "●"][data.idJ];
+    $("#messages").append("<li>"+puce+" <span style='font-weight:bold'>"+data.auteur+"</span>: "+data.message+"</li>");
     notif.play();
 });
 
@@ -178,12 +186,7 @@ function fermerRegles() {
     window.location.href = '/';
 }
 
-// fonction de début de partie
-function debutPartie(){
-    document.getElementById("message_erreur").innerHTML = "";
-    clear();
-    console.log('Je lance la partie');
-    socket.emit('lancementPartie');
+function initPartie(){
     genereDamier(40,40,40);
     ambiant.currentTime = 0;
     ambiant.play();
@@ -192,6 +195,14 @@ function debutPartie(){
             this.currentTime = 0;
         }
     });
+}
+
+// fonction de début de partie
+function debutPartie(){
+    document.getElementById("message_erreur").innerHTML = "";
+    clear();
+    console.log('Je lance la partie');
+    socket.emit('lancementPartie');
 }
 
 // fonction qui affiche le jeu

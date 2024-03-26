@@ -293,7 +293,15 @@ io.on('connection', (socket) => {
     });
 
     socket.on('envoieMessage',(data) => {
-        io.emit('recoitMessage',data);
+        for(const salle of salles){
+            const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+            data.idJ = indexJoueur;
+            console.log(indexJoueur);
+            if(indexJoueur != -1){
+                console.log("j'envoie le message à la salle :",salle.nom);
+                io.to(salle.nom).emit('recoitMessage',data);
+            }
+        }
     });
 });
 
