@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/public/icone.png">
+    <link rel="icon" type="image/x-icon" href="/public/images/icone.png">
     <link rel="stylesheet" href="/public/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Handlee&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
             integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI"
             crossorigin="anonymous">
@@ -32,17 +35,17 @@
                     <label for="duel">Duel</label>
                     <input name="Type" id="duel" type="radio" value="duel" checked /><br/>
                     <label for="ia">VS IA</label>
-                    <input name="Type" id="ia" type="radio" value="ia"/>
+                    <input name="Type" id="ia" type="radio" value="ia" disabled/>
                 </div>
                 <div style="border: 1px solid black;"></div>
                 <div class="left" style="width: 50%;">
-                    <input name="Mode" id="classique" type="radio" value="classique" checked />
+                    <input name="Mode" id="classique" type="radio" value="classique" disabled/>
                     <label for="classique">Classique</label><br/>
-                    <input name="Mode" id="extension1" type="radio" value="extension1"/>
-                    <label for="extension1" title="Extension avec la coccinelle (plus tard...)">Extension 1</label><br/>
-                    <input name="Mode" id="extension2" type="radio" value="extension2"/>
-                    <label for="extension2" title="Extension avec le moustique (plus tard...)">Extension 2</label><br/>
-                    <input name="Mode" id="extension3" type="radio" value="extension3"/>
+                    <input name="Mode" id="extension1" type="radio" value="extension1" disabled/>
+                    <label for="extension1" title="Extension avec la coccinelle">Extension 1</label><br/>
+                    <input name="Mode" id="extension2" type="radio" value="extension2" checked />
+                    <label for="extension2" title="Extension avec le moustique">Extension 2</label><br/>
+                    <input name="Mode" id="extension3" type="radio" value="extension3" disabled/>
                     <label for="extension3" title="Extension avec le cloporte (plus tard...)">Extension 3</label><br/>
                 </div>
             </div>
@@ -58,7 +61,7 @@
             <p id="J2"></p>
             <hr/>
             <button class="bouton" onClick="quitter()">Quitter</button>
-            <button class="bouton" onClick="debutPartie()">Lancer</button>
+            <button class="bouton" id="lancer" onClick="debutPartie()" disabled>Lancer</button>
         </div>
         <div id="rejoindre">
             <h1>Rejoindre</h1>
@@ -72,7 +75,7 @@
         </div>
         <div id="accueil">
             <h1 class="hive">Hive</h1>
-            <button class="bouton" onClick="window.open('https://www.regledujeu.fr/hive/')">Règles</button>
+            <button class="bouton" onClick="ouvrirRegles()">Règles</button>
             <p style="color:red" id="message_erreur"></p>
             <br/><br/>
             <hr/>
@@ -83,21 +86,57 @@
     </div>
     <div id="jeu">
         <div id = "tablier"></div>
-        <div id = "menuPions">
-            <!-- <p style="opacity:1;" class="pion" id="pionAbeille"></p> -->
-            <svg class="pion" id="pionAbeille"></svg>
-            <svg class="pion" id="pionFourmi"></svg>
-            <svg class="pion" id="pionScarabee"></svg>
-            <svg class="pion" id="pionCoccinelle"></svg>
-            <svg class="pion" id="pionAraignee"></svg>
-            <svg class="pion" id="pionSauterelle"></svg>
-            <svg class="pion" id="pionMoustique"></svg>
+        <div id="menuPions">
+            <div class="pn">
+                <svg class="pion" id="pionAbeille"></svg>
+                <span class="nombre">1</span>
+            </div>
+            <div class="pn">
+                <svg class="pion" id="pionFourmi"></svg>
+                <span class="nombre">3</span>
+            </div>
+            <div class="pn">
+                <svg class="pion" id="pionScarabee"></svg>
+                <span class="nombre">2</span>
+            </div>
+            <div class="pn">
+                <svg class="pion" id="pionCoccinelle"></svg>
+                <span class="nombre">1</span>
+            </div>
+            <div class="pn">
+                <svg class="pion" id="pionAraignee"></svg>
+                <span class="nombre">2</span>
+            </div>
+            <div class="pn">
+                <svg class="pion" id="pionSauterelle"></svg>
+                <span class="nombre">3</span>
+            </div>
+            <div class="pn">
+                <svg class="pion" id="pionMoustique"></svg>
+                <span class="nombre">1</span>
+            </div>
+        </div>
+        
+        <div id="actions" class="actions">
+            <ul id="actions_action">
+                <li>J1 a posé une abeille</li>
+                <li>J2 a posé un scarabée</li>
+                <li>J1 a posé une fourmi</li>
+                <li>J2 a posé un scarabée</li>
+                <li>J1 a déplacé une fourmi</li>
+                <li>J2 a posé une abeille</li>
+                <li>J1 a déplacé une abeille</li>
+                <li>J2 a posé une sauterelle</li>
+            </ul>
         </div>
         <div id='chat' class='chat'>
             <ul id='messages'></ul>
-            <input id='message' type='text'><button onClick='send()'>Envoyer</button>
+            <input id='message' type='text' onkeypress='fsend(event)'><button onClick='send()'>Envoyer</button>
         </div>
-        <button class="bouton positionQP" onClick="quitter()">Quitter la partie</button>
+        <div id="action" class="action">
+            <p>(Joueur 1) doit poser ou déplacer une pièce</p>
+        </div>
+        <button class="bouton positionQP" onClick="quitterPartieEnCours()">Quitter la partie</button>
     </div>
     <footer>
         <p>&copy; 2024 THEO REYNIER | ANTHONY HOMMAIS | CORENTIN FAY | KILLIAN VIGUIER</p>
