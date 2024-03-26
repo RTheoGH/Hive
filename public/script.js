@@ -321,6 +321,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .attr("class", function() {
                     return "hexagone" + (ligne * nbLignes + colonne);
                 })
+                .attr("jeton", "vide")
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function(d) {
                     if (!d3.select(this).classed("desactive")) {
