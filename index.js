@@ -76,6 +76,15 @@ io.on('connection', (socket) => {
             if(salleLibre){   // Si le nom de salle est disponible
                 console.log("La salle est disponible");
                 data.listeJoueurs[0][1] = socket.id;
+                data.listeJoueurs[0][2] = { //nombre de pions restants pour le joueur
+                  'pionAbeille' : 1,
+                  'pionFourmi' : 3,
+                  'pionScarabee' : 2,
+                  'pionCoccinelle' : 1,
+                  'pionAraignee' : 2,
+                  'pionSauterelle' : 3,
+                  'pionMoustique' : 1
+                }
                 salles.push(data);       // Ajout de la salle dans la liste des salles
                 console.log("Salle crée : ",data);
                 console.log("Liste des salles : ",salles);
@@ -123,6 +132,15 @@ io.on('connection', (socket) => {
                         }else{ // Si le joueur n'est pas dans la salle et que la salle n'est pas surchargée, on peut l'ajouter !
                             console.log("Salle trouvée : ",salles[i].nom);
                             data.joueur[1] = socket.id;
+                            data.joueur[2] = { //nombre de pions restants pour le joueur
+                                'pionAbeille' : 1,
+                                'pionFourmi' : 3,
+                                'pionScarabee' : 2,
+                                'pionCoccinelle' : 1,
+                                'pionAraignee' : 2,
+                                'pionSauterelle' : 3,
+                                'pionMoustique' : 1
+                            }
                             salles[i].listeJoueurs.push(data.joueur);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
@@ -259,8 +277,31 @@ io.on('connection', (socket) => {
         socket.emit('instructionsRedActivation', { 'position': position, 'indices': indicesAutour });
     });
 
+    socket.on("EnvoiPoserPionPlateau", (data) => {
+        parcoursDesSalles:
+        for(salle of salles){
+            for(joueur of salle.listeJoueurs){
+                if(joueur.includes(socket.id) && joueur[2][data["pion"]] > 0){
+                    joueur[2][data["pion"]] --;
+                    console.log(joueur[2]);
+                    socket.emit('envoiNombrePionsRestants', joueur[2]);
+                    io.to(salle.code).emit("ReceptPoserPionPlateau", data);
+                    break parcoursDesSalles;
+                }
+            }
+        }
+    });
+
     socket.on('envoieMessage',(data) => {
-        io.emit('recoitMessage',data);
+        for(const salle of salles){
+            const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+            data.idJ = indexJoueur;
+            console.log(indexJoueur);
+            if(indexJoueur != -1){
+                console.log("j'envoie le message à la salle :",salle.nom);
+                io.to(salle.nom).emit('recoitMessage',data);
+            }
+        }
     });
 });
 

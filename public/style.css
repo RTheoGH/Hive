@@ -220,7 +220,7 @@ footer{
 /* Zone d'affichage des messages */
 #messages{
     height:10vh;
-    padding:1em;
+    padding:0.5em;
     background-color:whitesmoke;
     overflow-y: scroll;
     transition: 1s;
@@ -471,8 +471,15 @@ footer{
     }
 }
 
-/* Ecran supérieur à 1441px et inférieur à 1600px */
-@media screen and (min-width: 1441px) and (max-width: 1600px){
+/* Ecran supérieur à 1441px et inférieur à 1540px */
+@media screen and (min-width: 1441px) and (max-width: 1540px){
+    #menuPions:hover{
+        padding-bottom:32em;
+    }
+}
+
+/* Ecran supérieur à 1441px et inférieur à 1680px */
+@media screen and (min-width: 1541px) and (max-width: 1680px){
     div.fondRegles p.cursiveR{
         font-size:28px;
     }
