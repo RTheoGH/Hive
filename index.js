@@ -289,7 +289,7 @@ io.on('connection', (socket) => {
                 if(joueur.includes(socket.id) && joueur[2][data["pion"]] > 0){
                     joueur[2][data["pion"]] --;
                     console.log(joueur[2]);
-                    socket.emit('envoiNombrePionsRestants', joueur[2]);
+                    io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
                     data.couleur = ["white", "black"][indexJoueur];
                     console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);

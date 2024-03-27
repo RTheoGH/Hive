@@ -379,9 +379,7 @@ function activerHexagone(indiceHexagone) {
 
     // Vérifier la couleur de remplissage actuelle
     var couleurRemplissage = hexagone.attr("fill");
-    console.log(couleurRemplissage !== "red"
-    || couleurRemplissage != "white"
-    || couleurRemplissage != "black")
+    
     // Si la couleur de remplissage n'est pas rouge, rendre transparent et cliquable
     if (couleurRemplissage !== "red"
      && couleurRemplissage != "white"
@@ -745,12 +743,21 @@ socket.on('instructionsActivation', (data) => {
 });
 
 socket.on('envoiNombrePionsRestants', (data) => {
-    console.log(data); //affiche le nombre de pions restantss    
+    $(".nombre").each(function() {
+        var nbPionsRestants = $(this);
+        // Vérifier si l'élément a un attribut "id"
+        if (nbPionsRestants.attr("id")) {
+            var idPion = nbPionsRestants.attr("id").replace("nb_", "");
+            nbPionsRestants.text(data[idPion]);
+        }
+    });
+    console.log(data); //affiche le nombre de pions restants  
 });
 
 var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
-    selectionPion = this.id;
+    if($("#nb_"+this.id).text() != 0)
+        selectionPion = this.id;
     // console.log("Pion sélectionné : ", this.id);
 });
