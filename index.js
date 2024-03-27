@@ -259,10 +259,24 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
-    socket.on('recherchePartie', (data) => {
+    socket.on('rejoindreMatchmaking', (data) => {
         console.log("Joueur en recherche :",data.joueur[1]);
         console.log("Niveau :",data.joueur[0]);
         matchmaking.push(data.joueur);
+        console.log(matchmaking);
+    });
+
+    socket.on('quitterMatchmaking', (data) => {
+        let joueurQuittant = data.joueur;
+        console.log("Joueur qui souhaite quitter la recherche :",joueurQuittant[1]);
+        let index = matchmaking.findIndex(joueur => joueur[0] === joueurQuittant[0] && joueur[1] === joueurQuittant[1]);
+        console.log(index);
+        if(index !== -1){
+            matchmaking.splice(index,1);
+            console.log("Le joueur quitte");
+        }else{
+            console.log("Joueur introuvable");
+        }
         console.log(matchmaking);
     })
 

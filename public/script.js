@@ -253,8 +253,6 @@ function updateTimer() {
     timerSeconds++;
     if (timerElement) {
         timerElement.textContent = formatTime(timerSeconds);
-        // console.log(timerElement);
-        // console.log(timerElement.textContent);
     }
 }
 
@@ -264,16 +262,11 @@ let timerSeconds = 0;
 let timerInterval;
 
 function lancerRecherche(){
-    // console.log(timerElement);
     if (!timerElement) {
         timerElement = document.getElementById('tempsDAttente');
-        // console.log(timerElement);
     }
-    
-    // console.log(timerInterval);
     if (!timerInterval) {
         timerInterval = setInterval(updateTimer, 1000); // Appelle updateTimer() toutes les 1000 ms (1 seconde)
-        // console.log(timerInterval);
     }
     file.play();
     file.addEventListener('timeupdate', function(){
@@ -286,14 +279,12 @@ function lancerRecherche(){
     $("#boutonRecherche").prop("disabled",true);
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
-    // console.log(niveau);
-    socket.emit("recherchePartie",{"joueur":[niveau,nomJoueur,null,null]});
+    socket.emit("rejoindreMatchmaking",{"joueur":[niveau,nomJoueur,null,null]});
 }
 
 function retourRecherche(){
     clearInterval(timerInterval);
     timerInterval = undefined;
-    // console.log(timerInterval);
     timerSeconds = 0; // Réinitialiser le compteur de secondes
     if (timerElement) {
         timerElement.textContent = "";
@@ -305,6 +296,11 @@ function retourRecherche(){
     file.currentTime = 0;
     select.play();
     $("#accueil").fadeIn(300);
+    nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
+    console.log(nomJoueur);
+    let niveau = document.getElementById("niveau-match").value;
+    console.log(niveau);
+    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,null,null]});
 }
 
 // fonction qui permet de retourner à l'accueil depuis la page de création ou rejoindre
