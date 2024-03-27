@@ -262,11 +262,13 @@ io.on('connection', (socket) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
         let indicesAutour = determinerIndicesAutour(data.position);
+        parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
                 if(joueur.includes(socket.id)){
                     // Envoyer les instructions pour activer les hexagones autour
                     io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
+                    break parcoursDesSalles;
         }}}
     });
 
@@ -288,6 +290,9 @@ io.on('connection', (socket) => {
                     joueur[2][data["pion"]] --;
                     console.log(joueur[2]);
                     socket.emit('envoiNombrePionsRestants', joueur[2]);
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    data.couleur = ["white", "black"][indexJoueur];
+                    console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
                     io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                     break parcoursDesSalles;
                 }
