@@ -278,6 +278,7 @@ io.on('connection', (socket) => {
                         console.log(matchmaking[i][1],"VS",matchmaking[j][1],"?");
                         let matchTrouve = [matchmaking[i],matchmaking[j]];
                         matchTrouve.forEach(element => {
+                            console.log(element);
                             io.to(element[2]).emit("matchTrouve");
                         });
                         // matchmaking[i][3] = pions;

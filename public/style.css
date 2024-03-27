@@ -421,6 +421,10 @@ footer{
     font-size: 2em;
 }
 
+.ldBar-label{
+    opacity:0;
+}
+
 /* --------------------------- */
 /*   Ajustement taille écran   */
 /* --------------------------- */

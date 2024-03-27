@@ -7,6 +7,7 @@ socket.on("Salut c'est le serveur ! :)", () => {
     $("#creer").hide();
     $("#rejoindre").hide();
     $("#rechercher").hide();
+    $("#matchTrouve").hide();
     $("#lobby").hide();
     $("#jeu").hide();
 });
@@ -21,6 +22,8 @@ const erreur = new Audio('public/sons/erreur.mp3');
 const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
 const file = new Audio('public/sons/file.mp3');
+const found = new Audio('public/sons/found.mp3');
+const miss = new Audio('public/sons/miss.mp3');
 
 var color = ['white','black'];
 var nomJoueur="";
@@ -174,6 +177,43 @@ socket.on('joueurVide', () => {
     erreur.play();
 });
 
+socket.on('matchTrouve', () => {
+    $("#rechercher").hide();
+    recherche = false;
+    let progress = 100;
+    bar1.set(progress);
+    let rompiche = setInterval(() => {
+        progress = progress - 0.769;
+        bar1.set(progress);
+        if(progress <= 0){
+            clearInterval(rompiche);
+            found.pause();
+            found.currentTime = 0
+            miss.play();
+            $("#matchTrouve").hide();
+            $("#rechercher").fadeIn(300);
+            $("#pseudoM").prop("disabled",false);
+            $("#niveau-match").prop("disabled",false);
+            $("#boutonRecherche").prop("disabled",false);
+            nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
+            let niveau = document.getElementById("niveau-match").value;
+            console.log(nomJoueur,"n'a pas accepté la partie.");
+            socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
+            clearInterval(timerInterval);
+            timerInterval = undefined;
+            timerSeconds = 0; // Réinitialiser le compteur de secondes
+            if (timerElement) {
+                timerElement.textContent = "";
+                timerElement = undefined; // Effacer le contenu du timerElement
+            }
+        }
+    },100);
+    found.play();
+    file.pause();
+    file.currentTime = 0;
+    $("#matchTrouve").fadeIn(300);
+});
+
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
 // --------------------------------------------------------------------------------------------------------
@@ -277,6 +317,7 @@ function attente(temps){
 function lancerRecherche(){
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
+    console.log("Je lance la file :",nomJoueur);
     socket.emit("rejoindreMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
     if (!timerElement) {
         timerElement = document.getElementById('tempsDAttente');
@@ -314,7 +355,7 @@ function retourRecherche(){
     console.log(nomJoueur);
     let niveau = document.getElementById("niveau-match").value;
     console.log(niveau);
-    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,null,null]});
+    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
 }
 
 // fonction qui permet de retourner à l'accueil depuis la page de création ou rejoindre
