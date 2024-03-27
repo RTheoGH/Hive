@@ -260,8 +260,24 @@ function updateTimer() {
 let timerElement;
 let timerSeconds = 0;
 let timerInterval;
+let recherche = false;
+
+async function recherchePartie() {
+    recherche = true;
+    while(recherche){
+        socket.emit("recherchePartie");
+        await attente(1000);
+    }
+}
+
+function attente(temps){
+    return new Promise(resolve => setTimeout(resolve,temps));
+}
 
 function lancerRecherche(){
+    nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
+    let niveau = document.getElementById("niveau-match").value;
+    socket.emit("rejoindreMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
     if (!timerElement) {
         timerElement = document.getElementById('tempsDAttente');
     }
@@ -277,9 +293,7 @@ function lancerRecherche(){
     $("#pseudoM").prop("disabled",true);
     $("#niveau-match").prop("disabled",true);
     $("#boutonRecherche").prop("disabled",true);
-    nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
-    let niveau = document.getElementById("niveau-match").value;
-    socket.emit("rejoindreMatchmaking",{"joueur":[niveau,nomJoueur,null,null]});
+    recherchePartie();
 }
 
 function retourRecherche(){

@@ -7,6 +7,12 @@ const io = new require("socket.io")(server);
 
 const salles=[];
 const matchmaking=[];
+const pions = {
+    'pionAbeille' : 1,'pionFourmi' : 3,
+    'pionScarabee' : 2,'pionCoccinelle' : 1,
+    'pionAraignee' : 2,'pionSauterelle' : 3,
+    'pionMoustique' : 1
+}
 
 // ==================================
 // ========= Partie Express ========= 
@@ -77,15 +83,7 @@ io.on('connection', (socket) => {
             if(salleLibre){   // Si le nom de salle est disponible
                 console.log("La salle est disponible");
                 data.listeJoueurs[0][1] = socket.id;
-                data.listeJoueurs[0][2] = { //nombre de pions restants pour le joueur
-                  'pionAbeille' : 1,
-                  'pionFourmi' : 3,
-                  'pionScarabee' : 2,
-                  'pionCoccinelle' : 1,
-                  'pionAraignee' : 2,
-                  'pionSauterelle' : 3,
-                  'pionMoustique' : 1
-                }
+                data.listeJoueurs[0][2] = pions;
                 salles.push(data);       // Ajout de la salle dans la liste des salles
                 console.log("Salle crée : ",data);
                 console.log("Liste des salles : ",salles);
@@ -133,15 +131,7 @@ io.on('connection', (socket) => {
                         }else{ // Si le joueur n'est pas dans la salle et que la salle n'est pas surchargée, on peut l'ajouter !
                             console.log("Salle trouvée : ",salles[i].nom);
                             data.joueur[1] = socket.id;
-                            data.joueur[2] = { //nombre de pions restants pour le joueur
-                                'pionAbeille' : 1,
-                                'pionFourmi' : 3,
-                                'pionScarabee' : 2,
-                                'pionCoccinelle' : 1,
-                                'pionAraignee' : 2,
-                                'pionSauterelle' : 3,
-                                'pionMoustique' : 1
-                            }
+                            data.joueur[2] = pions;
                             salles[i].listeJoueurs.push(data.joueur);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
@@ -270,15 +260,37 @@ io.on('connection', (socket) => {
         let joueurQuittant = data.joueur;
         console.log("Joueur qui souhaite quitter la recherche :",joueurQuittant[1]);
         let index = matchmaking.findIndex(joueur => joueur[0] === joueurQuittant[0] && joueur[1] === joueurQuittant[1]);
-        console.log(index);
         if(index !== -1){
             matchmaking.splice(index,1);
             console.log("Le joueur quitte");
-        }else{
-            console.log("Joueur introuvable");
         }
         console.log(matchmaking);
-    })
+    });
+
+    socket.on("recherchePartie", () => {
+        console.log("recherche...");
+        console.log(matchmaking);
+        if(matchmaking.length >= 2){
+            console.log("L>2");
+            for(i=0;i<matchmaking.length;i++){
+                for(j=0;j<matchmaking.length;j++){
+                    if(matchmaking[i][0] == matchmaking[j][0] && matchmaking[i][1] != matchmaking[j][1]){
+                        console.log(matchmaking[i][1],"VS",matchmaking[j][1],"?");
+                        let matchTrouve = [matchmaking[i],matchmaking[j]];
+                        matchTrouve.forEach(element => {
+                            io.to(element[2]).emit("matchTrouve");
+                        });
+                        // matchmaking[i][3] = pions;
+                        // matchmaking[j][3] = pions;
+                        // console.log(matchmaking[i],matchmaking[j]);
+                        // let salle = [generateRandomText(),'',[matchmaking[i],matchmaking[j]],'duel','extension2'];
+                        // salles.push(salle);
+                        // console.log(salles);
+                    }
+                }
+            }
+        }
+    });
 
     socket.on('discover', (data) => {
         const position = data.position;
@@ -326,6 +338,16 @@ io.on('connection', (socket) => {
         }
     });
 });
+
+function generateRandomText() {
+    let text = "";
+    const possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    for (let i = 0; i < 4; i++) {
+        const randomIndex = Math.floor(Math.random() * possibleChars.length);
+        text += possibleChars.charAt(randomIndex);
+    }
+    return text;
+}
 
 function determinerIndicesAutour(position) {
     let indicesAutour = [];
