@@ -689,7 +689,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     svgPions.append("path")
         .attr("d", d2)
         .attr("stroke", "black")
-        .attr("fill", "white");
     
 
     // Poser le pion sélectionné sur une case
@@ -702,7 +701,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
-        console.log("Le type de",data.couleur,"est",typeof(data.couleur));
         posePionSurCase(path, data.pion, data.couleur);
         selectionPion = null;
     });
@@ -751,7 +749,11 @@ socket.on('envoiNombrePionsRestants', (data) => {
             nbPionsRestants.text(data[idPion]);
         }
     });
-    console.log(data); //affiche le nombre de pions restants  
+});
+
+//Affichage de la couleur du joueur pour les pions du menu
+socket.on("genereCouleurJoueur", (couleurGeneree) =>{
+    d3.selectAll('.pion').attr("fill", couleurGeneree);
 });
 
 var selectionPion = null;
@@ -759,5 +761,4 @@ var selectionPion = null;
 $(document).on('click', '.pion', function(){
     if($("#nb_"+this.id).text() != 0)
         selectionPion = this.id;
-    // console.log("Pion sélectionné : ", this.id);
 });
