@@ -43,6 +43,7 @@ let timerSeconds = 0;
 let timerInterval;
 let recherche = false;
 let accepter = false;
+let matchID = "";
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -182,7 +183,8 @@ socket.on('joueurVide', () => {
     erreur.play();
 });
 
-socket.on('matchTrouve', () => {
+socket.on('matchTrouve', (data) => {
+    matchID = data.MatchID;
     $("#rechercher").hide();
     $("#accepterM").prop("disabled",false);
     $("#matchTrouve").fadeIn(300);
@@ -198,7 +200,7 @@ socket.on('matchTrouve', () => {
         // }else 
         if(progress <= 0){
             clearInterval(chrono);
-            progress = 100;
+            // progress = 100;
             found.pause();
             found.currentTime = 0
             $("#matchTrouve").hide();
@@ -209,10 +211,10 @@ socket.on('matchTrouve', () => {
                 $("#pseudoM").prop("disabled",false);
                 $("#niveau-match").prop("disabled",false);
                 $("#boutonRecherche").prop("disabled",false);
-                nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
-                let niveau = document.getElementById("niveau-match").value;
-                console.log(nomJoueur,"n'a pas accepté la partie.");
-                socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
+                // nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
+                // let niveau = document.getElementById("niveau-match").value;
+                // console.log(nomJoueur,"n'a pas accepté la partie.");
+                // socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
                 clearInterval(timerInterval);
                 timerInterval = undefined;
                 timerSeconds = 0; // Réinitialiser le compteur de secondes
@@ -335,7 +337,7 @@ function lancerRecherche(){
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
     console.log("Je lance la file :",nomJoueur);
-    socket.emit("rejoindreMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
+    socket.emit("rejoindreFile",{"joueur":[niveau,nomJoueur,socket.id,null]});
     if (!timerElement) {
         timerElement = document.getElementById('tempsDAttente');
     }
@@ -381,7 +383,7 @@ function accepterMatch(){
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
     $("#accepterM").prop("disabled",true);
-    socket.emit("accepterMatch",{"joueur":[niveau,nomJoueur,socket.id,null]});
+    socket.emit("accepterMatch",{"joueur":[niveau,nomJoueur,socket.id,null],"matchID":matchID});
 }
 
 // fonction qui permet de retourner à l'accueil depuis la page de création ou rejoindre

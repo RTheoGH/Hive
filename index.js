@@ -5,8 +5,9 @@ const http = require('http');
 const server = http.createServer(app);
 const io = new require("socket.io")(server);
 
-const salles=[];
-const matchmaking=[];
+var salles=[];
+var file=[];
+var matchmaking=[];
 const pions = {
     'pionAbeille' : 1,'pionFourmi' : 3,
     'pionScarabee' : 2,'pionCoccinelle' : 1,
@@ -249,47 +250,91 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
-    socket.on('rejoindreMatchmaking', (data) => {
+    socket.on('rejoindreFile', (data) => {
         console.log("Joueur en recherche :",data.joueur[1]);
         console.log("Niveau :",data.joueur[0]);
-        matchmaking.push(data.joueur);
-        console.log(matchmaking);
+        file.push(data.joueur);
+        console.log(file);
     });
 
-    socket.on('quitterMatchmaking', (data) => {
+    socket.on('quitterFile', (data) => {
         let joueurQuittant = data.joueur;
         console.log("Joueur qui souhaite quitter la recherche :",joueurQuittant[1]);
-        let index = matchmaking.findIndex(joueur => joueur[0] === joueurQuittant[0] && joueur[1] === joueurQuittant[1]);
+        let index = file.findIndex(joueur => joueur[0] === joueurQuittant[0] && joueur[1] === joueurQuittant[1]);
         if(index !== -1){
-            matchmaking.splice(index,1);
+            file.splice(index,1);
             console.log("Le joueur quitte");
         }
-        console.log(matchmaking);
+        console.log(file);
     });
 
     socket.on("recherchePartie", () => {
         console.log("recherche...");
-        console.log(matchmaking);
-        if(matchmaking.length >= 2){
+        console.log(file);
+        if(file.length >= 2){
             console.log("L>2");
-            for(i=0;i<matchmaking.length;i++){
-                for(j=0;j<matchmaking.length;j++){
-                    if(matchmaking[i][0] == matchmaking[j][0] && matchmaking[i][1] != matchmaking[j][1]){
-                        console.log(matchmaking[i][1],"VS",matchmaking[j][1],"?");
-                        let matchTrouve = [matchmaking[i],matchmaking[j]];
-                        matchTrouve.forEach(element => {
-                            console.log(element);
-                            io.to(element[2]).emit("matchTrouve");
-                        });
-                        // matchmaking[i][3] = pions;
-                        // matchmaking[j][3] = pions;
-                        // console.log(matchmaking[i],matchmaking[j]);
-                        // let salle = [generateRandomText(),'',[matchmaking[i],matchmaking[j]],'duel','extension2'];
-                        // salles.push(salle);
-                        // console.log(salles);
+            for(i=0;i<file.length;i++){
+                for(j=0;j<file.length;j++){
+                    if(file[i][0] == file[j][0] && file[i][1] != file[j][1]){
+                        console.log(file[i][1],"VS",file[j][1],"?");
+                        let matchID = generateRandomText();
+                        console.log("Match :",matchID);
+                        let match = {"J1":file[i],"J2":file[j],"MatchID":matchID,"accept":[false,false]};
+                        matchmaking.push(match);
+                        io.to(file[i]).emit("matchTrouve",match);
+                        io.to(file[j]).emit("matchTrouve",match);
+                        file.pop(file[i]);
+                        file.pop(file[j]);
+
+                        setTimeout(() => {
+                            //TODO
+                            let leMatch = matchmaking.find(m => m.MatchID == match.MatchID);
+                            if(leMatch != undefined){
+                                console.log("Temps écoulé pour le match ",leMatch.MatchID);
+                                matchmaking.pop(leMatch);
+                                if(leMatch.accept[0]){
+                                    console.log("J1 a accepté");
+                                    file.push(leMatch.J1);
+                                    console.log(file);
+                                }
+                                if(leMatch.accept[1]){
+                                    file.push(leMatch.J2);
+                                }
+                            }
+                        }, 13000);
                     }
                 }
             }
+        }
+    });
+
+    socket.on('accepterMatch', (data) => {
+        console.log(data.joueur[1],"accepte");
+        matchmaking = matchmaking.map(match => {
+            // Vérifier si l'id correspond à celui que nous voulons mettre à jour
+            if (match.MatchID === data.matchID) {
+                // Si la condition est remplie, mettre à jour la propriété accept
+                if(data.joueur[2] == match.J1[2]){
+                    match.accept[0] = true;
+                }else{
+                    match.accept[1] = true;
+                }
+            }
+            // Retourner l'objet, modifié ou non
+            return match;
+        });
+        console.log(matchmaking);
+        let matchPop = matchmaking.find(match => match.MatchID == data.matchID);
+        if(matchPop.accept == 2){
+            matchmaking.pop(matchPop);
+            console.log("CHEEEEEEEEEFFFFFFFFFFFFFFFFFF");
+            // Lancer la game quoi
+            // file[i][3] = pions;
+            // file[j][3] = pions;
+            // console.log(file[i],file[j]);
+            // let salle = [generateRandomText(),'',[file[i],file[j]],'duel','extension2'];
+            // salles.push(salle);
+            // console.log(salles);
         }
     });
 
@@ -343,7 +388,7 @@ io.on('connection', (socket) => {
 function generateRandomText() {
     let text = "";
     const possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 10; i++) {
         const randomIndex = Math.floor(Math.random() * possibleChars.length);
         text += possibleChars.charAt(randomIndex);
     }
