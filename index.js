@@ -295,6 +295,7 @@ io.on('connection', (socket) => {
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
                     data.couleur = ["white", "black"][indexJoueur];
                     console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
+                    data.joueur = indexJoueur + 1;
                     io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                     break parcoursDesSalles;
                 }
