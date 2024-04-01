@@ -417,15 +417,29 @@ footer{
     width: 50px;
 }
 
+.timer{
+    font-size: 2em;
+}
+
+.ldBar-label{
+    opacity:0;
+}
+
 /* --------------------------- */
 /*   Ajustement taille écran   */
 /* --------------------------- */
 
 /* Ecran inférieur à 1600px */
-@media screen and (min-width: 0px) and (max-width: 1600px){
+@media screen and (min-width: 0px) and (max-width: 1440px){
     .ajustement{
         top:45%;
         width:30%;
+    }
+}
+
+@media screen and (min-width: 0px) and (max-width: 1680px){
+    .ajustement{
+        top:45%;
     }
 }
 

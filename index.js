@@ -5,7 +5,15 @@ const http = require('http');
 const server = http.createServer(app);
 const io = new require("socket.io")(server);
 
-const salles=[];
+var salles=[];
+var file=[];
+var matchmaking=[];
+const pions = {
+    'pionAbeille' : 1,'pionFourmi' : 3,
+    'pionScarabee' : 2,'pionCoccinelle' : 1,
+    'pionAraignee' : 2,'pionSauterelle' : 3,
+    'pionMoustique' : 1
+}
 
 // ==================================
 // ========= Partie Express ========= 
@@ -76,15 +84,7 @@ io.on('connection', (socket) => {
             if(salleLibre){   // Si le nom de salle est disponible
                 console.log("La salle est disponible");
                 data.listeJoueurs[0][1] = socket.id;
-                data.listeJoueurs[0][2] = { //nombre de pions restants pour le joueur
-                  'pionAbeille' : 1,
-                  'pionFourmi' : 3,
-                  'pionScarabee' : 2,
-                  'pionCoccinelle' : 1,
-                  'pionAraignee' : 2,
-                  'pionSauterelle' : 3,
-                  'pionMoustique' : 1
-                }
+                data.listeJoueurs[0][2] = pions;
                 salles.push(data);       // Ajout de la salle dans la liste des salles
                 console.log("Salle crée : ",data);
                 console.log("Liste des salles : ",salles);
@@ -132,15 +132,7 @@ io.on('connection', (socket) => {
                         }else{ // Si le joueur n'est pas dans la salle et que la salle n'est pas surchargée, on peut l'ajouter !
                             console.log("Salle trouvée : ",salles[i].nom);
                             data.joueur[1] = socket.id;
-                            data.joueur[2] = { //nombre de pions restants pour le joueur
-                                'pionAbeille' : 1,
-                                'pionFourmi' : 3,
-                                'pionScarabee' : 2,
-                                'pionCoccinelle' : 1,
-                                'pionAraignee' : 2,
-                                'pionSauterelle' : 3,
-                                'pionMoustique' : 1
-                            }
+                            data.joueur[2] = pions;
                             salles[i].listeJoueurs.push(data.joueur);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
@@ -260,6 +252,95 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
+    socket.on('rejoindreFile', (data) => {
+        console.log("Joueur en recherche :",data.joueur[1]);
+        console.log("Niveau :",data.joueur[0]);
+        file.push(data.joueur);
+        console.log(file);
+    });
+
+    socket.on('quitterFile', (data) => {
+        let joueurQuittant = data.joueur;
+        console.log("Joueur qui souhaite quitter la recherche :",joueurQuittant[1]);
+        let index = file.findIndex(joueur => joueur[0] === joueurQuittant[0] && joueur[1] === joueurQuittant[1]);
+        if(index !== -1){
+            file.splice(index,1);
+            console.log("Le joueur quitte");
+        }
+        console.log(file);
+    });
+
+    socket.on("recherchePartie", () => {
+        console.log("recherche...");
+        console.log(file);
+        if(file.length >= 2){
+            console.log("L>2");
+            for(i=0;i<file.length;i++){
+                for(j=0;j<file.length;j++){
+                    if(file[i][0] == file[j][0] && file[i][1] != file[j][1]){
+                        console.log(file[i][1],"VS",file[j][1],"?");
+                        let matchID = generateRandomText();
+                        console.log("Match :",matchID);
+                        let match = {"J1":file[i],"J2":file[j],"MatchID":matchID,"accept":[false,false]};
+                        matchmaking.push(match);
+                        io.to(file[i]).emit("matchTrouve",match);
+                        io.to(file[j]).emit("matchTrouve",match);
+                        file.pop(file[i]);
+                        file.pop(file[j]);
+
+                        setTimeout(() => {
+                            //TODO
+                            let leMatch = matchmaking.find(m => m.MatchID == match.MatchID);
+                            if(leMatch != undefined){
+                                console.log("Temps écoulé pour le match ",leMatch.MatchID);
+                                matchmaking.pop(leMatch);
+                                if(leMatch.accept[0]){
+                                    console.log("J1 a accepté");
+                                    file.push(leMatch.J1);
+                                    io.to(leMatch.J1).emit("repriseSonFile");
+                                    console.log(file);
+                                }
+                                if(leMatch.accept[1]){
+                                    file.push(leMatch.J2);
+                                    io.to(leMatch.J2).emit("repriseSonFile");
+                                }
+                            }
+                        }, 13000);
+                    }
+                }
+            }
+        }
+    });
+
+    socket.on('accepterMatch', (data) => {
+        console.log(data.joueur[1],"accepte");
+        matchmaking = matchmaking.map(match => {
+            // Vérifier si l'id correspond à celui que nous voulons mettre à jour
+            if (match.MatchID === data.matchID) {
+                // Si la condition est remplie, mettre à jour la propriété accept
+                if(data.joueur[2] == match.J1[2]){
+                    match.accept[0] = true;
+                }else{
+                    match.accept[1] = true;
+                }
+            }
+            // Retourner l'objet, modifié ou non
+            return match;
+        });
+        console.log(matchmaking);
+        let matchPop = matchmaking.find(match => match.MatchID == data.matchID);
+        if(matchPop.accept[0] == true && matchPop.accept[1] == true){
+            console.log(matchPop);
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],pions],[matchPop.J2[1],matchPop.J2[2],pions]],"type":"VS","mode":"extension2"}
+            salles.push(nouvelle_salle);
+            io.to(matchPop.J1).emit("affichagePartie",nouvelle_salle);
+            io.to(matchPop.J2).emit("affichagePartie",nouvelle_salle);
+            matchmaking.pop(matchPop);
+            console.log(matchmaking);
+            console.log(salles);
+        }
+    });
+
     socket.on('discover', (data) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
@@ -314,6 +395,16 @@ io.on('connection', (socket) => {
         }
     });
 });
+
+function generateRandomText() {
+    let text = "";
+    const possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    for (let i = 0; i < 10; i++) {
+        const randomIndex = Math.floor(Math.random() * possibleChars.length);
+        text += possibleChars.charAt(randomIndex);
+    }
+    return text;
+}
 
 function determinerIndicesAutour(position) {
     let indicesAutour = [];

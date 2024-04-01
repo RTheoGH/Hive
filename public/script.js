@@ -6,6 +6,8 @@ socket.on("Salut c'est le serveur ! :)", () => {
     console.log("socket io connecté");
     $("#creer").hide();
     $("#rejoindre").hide();
+    $("#rechercher").hide();
+    $("#matchTrouve").hide();
     $("#lobby").hide();
     $("#jeu").hide();
 });
@@ -19,6 +21,9 @@ const win = new Audio('public/sons/win.mp3');
 const erreur = new Audio('public/sons/erreur.mp3');
 const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
+const file = new Audio('public/sons/file.mp3');
+const found = new Audio('public/sons/found.mp3');
+const miss = new Audio('public/sons/miss.mp3');
 
 var color = ['white','black'];
 var nomJoueur="";
@@ -33,6 +38,12 @@ var logosPions = {
     'pionSauterelle' : '/public/insectes/sauterelle.png',
     'pionMoustique' : '/public/insectes/moustique.png'
 }
+let timerElement;
+let timerSeconds = 0;
+let timerInterval;
+let recherche = false;
+let accepter = false;
+let matchID = "";
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -172,6 +183,57 @@ socket.on('joueurVide', () => {
     erreur.play();
 });
 
+socket.on('matchTrouve', (data) => {
+    matchID = data.MatchID;
+    $("#rechercher").hide();
+    $("#accepterM").prop("disabled",false);
+    $("#matchTrouve").fadeIn(300);
+    recherche = false;
+    let progress = 100;
+    bar1.set(progress);
+    let chrono = setInterval(() => {
+        progress = progress - 0.769;
+        // console.log(progress);
+        bar1.set(progress);
+        if(progress <= 0){
+            clearInterval(chrono);
+            found.pause();
+            found.currentTime = 0
+            $("#matchTrouve").hide();
+            $("#rechercher").fadeIn(300);
+            if(!accepter){
+                // accepter = false;
+                miss.play();
+                $("#pseudoM").prop("disabled",false);
+                $("#niveau-match").prop("disabled",false);
+                $("#boutonRecherche").prop("disabled",false);
+                clearInterval(timerInterval);
+                timerInterval = undefined;
+                timerSeconds = 0; // Réinitialiser le compteur de secondes
+                if (timerElement) {
+                    timerElement.textContent = "";
+                    timerElement = undefined; // Effacer le contenu du timerElement
+                }
+            }else{
+                accepter = false;
+            }
+        }
+    },100);
+    found.play();
+    file.pause();
+    file.currentTime = 0;
+});
+
+socket.on("repriseSonFile", () => {
+    console.log("reprise de la file");
+    file.play();
+    file.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 72){
+            this.currentTime = 0;
+        }
+    });
+})
+
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
 // --------------------------------------------------------------------------------------------------------
@@ -216,7 +278,6 @@ function creer(){
     document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
     select.play();
-    // $("#creer").show();
     $("#creer").fadeIn(300);
 }
 
@@ -225,8 +286,99 @@ function rejoindre(){
     document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
     select.play();
-    // $("#rejoindre").show();
     $("#rejoindre").fadeIn(300);
+}
+
+function rechercher(){
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#accueil").hide();
+    $("#pseudoM").prop("disabled",false);
+    $("#niveau-match").prop("disabled",false);
+    $("#boutonRecherche").prop("disabled",false);
+    select.play();
+    $("#rechercher").fadeIn(300);
+}
+
+// Fonction pour formater le temps au format mm:ss
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+    return `${formattedMinutes}:${formattedSeconds}`;
+}
+
+// Fonction pour mettre à jour le timer chaque seconde
+function updateTimer() {
+    timerSeconds++;
+    if (timerElement) {
+        timerElement.textContent = formatTime(timerSeconds);
+    }
+}
+
+async function recherchePartie() {
+    recherche = true;
+    while(recherche){
+        socket.emit("recherchePartie");
+        await attente(1000);
+    }
+}
+
+function attente(temps){
+    return new Promise(resolve => setTimeout(resolve,temps));
+}
+
+function lancerRecherche(){
+    nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
+    let niveau = document.getElementById("niveau-match").value;
+    console.log("Je lance la file :",nomJoueur);
+    socket.emit("rejoindreFile",{"joueur":[niveau,nomJoueur,socket.id,null]});
+    if (!timerElement) {
+        timerElement = document.getElementById('tempsDAttente');
+    }
+    if (!timerInterval) {
+        timerInterval = setInterval(updateTimer, 1000); // Appelle updateTimer() toutes les 1000 ms (1 seconde)
+    }
+    file.play();
+    file.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 72){
+            this.currentTime = 0;
+        }
+    });
+    $("#pseudoM").prop("disabled",true);
+    $("#niveau-match").prop("disabled",true);
+    $("#boutonRecherche").prop("disabled",true);
+    recherchePartie();
+}
+
+function retourRecherche(){
+    clearInterval(timerInterval);
+    timerInterval = undefined;
+    timerSeconds = 0; // Réinitialiser le compteur de secondes
+    if (timerElement) {
+        timerElement.textContent = "";
+        timerElement = undefined; // Effacer le contenu du timerElement
+    }
+    document.getElementById("message_erreur").innerHTML = "";
+    $("#rechercher").hide();
+    file.pause();
+    file.currentTime = 0;
+    select.play();
+    $("#accueil").fadeIn(300);
+    nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
+    console.log(nomJoueur);
+    let niveau = document.getElementById("niveau-match").value;
+    console.log(niveau);
+    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
+}
+
+function accepterMatch(){
+    accepter = true;
+    console.log("Accepter :",accepter);
+    nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
+    let niveau = document.getElementById("niveau-match").value;
+    $("#accepterM").prop("disabled",true);
+    socket.emit("accepterMatch",{"joueur":[niveau,nomJoueur,socket.id,null],"matchID":matchID});
 }
 
 // fonction qui permet de retourner à l'accueil depuis la page de création ou rejoindre
@@ -235,7 +387,6 @@ function retour(){
     $("#rejoindre").hide();
     $("#creer").hide();
     select.play();
-    // $("#accueil").show();
     $("#accueil").fadeIn(300);
 }
 
