@@ -530,9 +530,11 @@ function activerHexagone(indiceHexagone) {
 
     // Vérifier la couleur de remplissage actuelle
     var couleurRemplissage = hexagone.attr("fill");
-
+    
     // Si la couleur de remplissage n'est pas rouge, rendre transparent et cliquable
-    if (couleurRemplissage !== "red") {
+    if (couleurRemplissage !== "red"
+     && couleurRemplissage != "white"
+     && couleurRemplissage != "black") {
         hexagone
             .classed("desactive", false)
             .classed("hexagoneReactive", true)
@@ -648,8 +650,8 @@ socket.on('instructionsRedActivation', (data) => {
 var rayonGlobal = 0
 
 //fonction pour poser le pion "pion" sur la case "elemCase" désignée par la balise path
-function posePionSurCase(elemCase, pion){
-
+function posePionSurCase(elemCase, pion, couleur){
+    console.log("La couleur est", couleur);
     var svgElement = elemCase.closest('svg')[0];
 
     if (elemCase.length > 0) {            // Si on le trouve
@@ -664,7 +666,7 @@ function posePionSurCase(elemCase, pion){
         var x = parseFloat(coords[0]);
         var y = parseFloat(coords[1]);
         // console.log(x,y);
-
+        elemCase.attr('fill', couleur);
         d3.select(svgElement).append('image')
             .attr('xlink:href', logosPions[pion])
             .attr('x', x-26)
@@ -773,8 +775,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             svgHexa.append("path")
                 .attr("d", d)
                 .attr("stroke", "black")
-
-                .attr("fill", "white")
+                .attr("fill", "transparent")
                 .attr("class", function() {
                     return "hexagone" + (ligne * nbLignes + colonne);
                 })
@@ -796,7 +797,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                             socket.emit('ClickHexRed', {'position': position});
                         }
                         else {
-                            socket.emit('discover', {'position': position});
+                            if (selectionPion != null){
+                                socket.emit('discover', {'position': position});
+                            }
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -837,7 +840,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     svgPions.append("path")
         .attr("d", d2)
         .attr("stroke", "black")
-        .attr("fill", "white");
     
 
     // Poser le pion sélectionné sur une case
@@ -850,7 +852,8 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
-        posePionSurCase(path, data.pion);
+        posePionSurCase(path, data.pion, data.couleur);
+        selectionPion = null;
     });
     
     
@@ -868,25 +871,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     
 
     
-/*
-    d3.select('#h5250').attr('fill', 'red')
-    d3.select('#h5249').attr('fill', 'green')
-    d3.select('#h5251').attr('fill', 'green')
-    d3.select('#h5150').attr('fill', 'green')
-    d3.select('#h5151').attr('fill', 'green')
-    d3.select('#h5350').attr('fill', 'green')
-    d3.select('#h5351').attr('fill', 'green')
 
-    d3.select('#h5325').attr('fill', 'orange')
-    d3.select('#h5326').attr('fill', 'blue')
-    d3.select('#h5324').attr('fill', 'blue')
-    d3.select('#h5225').attr('fill', 'blue')
-    d3.select('#h5226').attr('fill', 'blue')
-    d3.select('#h5425').attr('fill', 'blue')
-    d3.select('#h5426').attr('fill', 'blue')
-*/
-    //Quand la centaine est paire, il faut faire +1
-    //Quand la centaine est impaire, il faut faire -1
 
     for(i of milieu) {
         console.log(milieu.includes(i),i);
@@ -907,12 +892,24 @@ socket.on('instructionsActivation', (data) => {
 });
 
 socket.on('envoiNombrePionsRestants', (data) => {
-    console.log(data); //affiche le nombre de pions restantss    
+    $(".nombre").each(function() {
+        var nbPionsRestants = $(this);
+        // Vérifier si l'élément a un attribut "id"
+        if (nbPionsRestants.attr("id")) {
+            var idPion = nbPionsRestants.attr("id").replace("nb_", "");
+            nbPionsRestants.text(data[idPion]);
+        }
+    });
+});
+
+//Affichage de la couleur du joueur pour les pions du menu
+socket.on("genereCouleurJoueur", (couleurGeneree) =>{
+    d3.selectAll('.pion').attr("fill", couleurGeneree);
 });
 
 var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
-    selectionPion = this.id;
-    // console.log("Pion sélectionné : ", this.id);
+    if($("#nb_"+this.id).text() != 0)
+        selectionPion = this.id;
 });
