@@ -650,10 +650,8 @@ socket.on('instructionsRedActivation', (data) => {
 var rayonGlobal = 0
 
 //fonction pour poser le pion "pion" sur la case "elemCase" désignée par la balise path
-function posePionSurCase(elemCase, pion, couleur){
-    console.log("La couleur est", couleur);
+function posePionSurCase(elemCase, pion, couleur, joueur){
     var svgElement = elemCase.closest('svg')[0];
-
     if (elemCase.length > 0) {            // Si on le trouve
         var d = elemCase.attr('d');       // On récupère son d
         // console.log(d);
@@ -673,6 +671,16 @@ function posePionSurCase(elemCase, pion, couleur){
             .attr('y', y+14)
             .attr('width', rayonGlobal * 1.3)
             .attr('height', rayonGlobal * 1.3);
+        const dicoPionHistorique = {
+            'pionAbeille' : 'une abeille',
+            'pionFourmi' : 'une fourmi',
+            'pionScarabee' : 'un scarabée',
+            'pionCoccinelle' : 'une coccinelle',
+            'pionAraignee' : 'une araignée',
+            'pionSauterelle' : 'une sauterelle',
+            'pionMoustique' : 'un moustique'
+        };
+        $("#actions_action").append("<li>J"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
     }
 }
 
@@ -852,7 +860,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
-        posePionSurCase(path, data.pion, data.couleur);
+        posePionSurCase(path, data.pion, data.couleur, data.joueur);
         selectionPion = null;
     });
     
