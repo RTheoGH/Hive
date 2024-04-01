@@ -193,14 +193,10 @@ socket.on('matchTrouve', (data) => {
     bar1.set(progress);
     let chrono = setInterval(() => {
         progress = progress - 0.769;
+        // console.log(progress);
         bar1.set(progress);
-        // if(accepter && progress > 0){
-        //     // Si le joueur a accepté
-        //     // Il faut vérifier que l'autre joueur a bien cliqué sur accepter aussi
-        // }else 
         if(progress <= 0){
             clearInterval(chrono);
-            // progress = 100;
             found.pause();
             found.currentTime = 0
             $("#matchTrouve").hide();
@@ -211,10 +207,6 @@ socket.on('matchTrouve', (data) => {
                 $("#pseudoM").prop("disabled",false);
                 $("#niveau-match").prop("disabled",false);
                 $("#boutonRecherche").prop("disabled",false);
-                // nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
-                // let niveau = document.getElementById("niveau-match").value;
-                // console.log(nomJoueur,"n'a pas accepté la partie.");
-                // socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
                 clearInterval(timerInterval);
                 timerInterval = undefined;
                 timerSeconds = 0; // Réinitialiser le compteur de secondes
@@ -224,13 +216,6 @@ socket.on('matchTrouve', (data) => {
                 }
             }else{
                 accepter = false;
-                console.log("reprise de la file");
-                file.play();
-                file.addEventListener('timeupdate', function(){
-                    if(this.currentTime >= 72){
-                        this.currentTime = 0;
-                    }
-                });
             }
         }
     },100);
@@ -238,6 +223,16 @@ socket.on('matchTrouve', (data) => {
     file.pause();
     file.currentTime = 0;
 });
+
+socket.on("repriseSonFile", () => {
+    console.log("reprise de la file");
+    file.play();
+    file.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 72){
+            this.currentTime = 0;
+        }
+    });
+})
 
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------

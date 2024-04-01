@@ -295,10 +295,12 @@ io.on('connection', (socket) => {
                                 if(leMatch.accept[0]){
                                     console.log("J1 a accepté");
                                     file.push(leMatch.J1);
+                                    io.to(leMatch.J1).emit("repriseSonFile");
                                     console.log(file);
                                 }
                                 if(leMatch.accept[1]){
                                     file.push(leMatch.J2);
+                                    io.to(leMatch.J2).emit("repriseSonFile");
                                 }
                             }
                         }, 13000);
@@ -325,16 +327,15 @@ io.on('connection', (socket) => {
         });
         console.log(matchmaking);
         let matchPop = matchmaking.find(match => match.MatchID == data.matchID);
-        if(matchPop.accept == 2){
+        if(matchPop.accept[0] == true && matchPop.accept[1] == true){
+            console.log(matchPop);
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],pions],[matchPop.J2[1],matchPop.J2[2],pions]],"type":"VS","mode":"extension2"}
+            salles.push(nouvelle_salle);
+            io.to(matchPop.J1).emit("affichagePartie",nouvelle_salle);
+            io.to(matchPop.J2).emit("affichagePartie",nouvelle_salle);
             matchmaking.pop(matchPop);
-            console.log("CHEEEEEEEEEFFFFFFFFFFFFFFFFFF");
-            // Lancer la game quoi
-            // file[i][3] = pions;
-            // file[j][3] = pions;
-            // console.log(file[i],file[j]);
-            // let salle = [generateRandomText(),'',[file[i],file[j]],'duel','extension2'];
-            // salles.push(salle);
-            // console.log(salles);
+            console.log(matchmaking);
+            console.log(salles);
         }
     });
 
