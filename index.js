@@ -204,15 +204,13 @@ io.on('connection', (socket) => {
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
-            
+            console.log("Joueur qui a lancé : ",indexJoueur)
             console.log('Salle :',salle);
             if(indexJoueur != -1){
                 salleActuelle = salle;
                 if(salleActuelle.listeJoueurs.length == 2){ // S'il y a bien deux joueurs dans la salle
                     console.log("J'envoie le maj de lancement à la salle");
                     console.log(salleActuelle.nom); // On affiche le jeu
-                    io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "black");
-                    io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "white");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
                     break;
                 }
@@ -345,14 +343,9 @@ io.on('connection', (socket) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
         let indicesAutour = determinerIndicesAutour(data.position);
-        parcoursDesSalles:
-        for(salle of salles){
-            for(joueur of salle.listeJoueurs){
-                if(joueur.includes(socket.id)){
-                    // Envoyer les instructions pour activer les hexagones autour
-                    io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
-                    break parcoursDesSalles;
-        }}}
+
+        // Envoyer les instructions pour activer les hexagones autour
+        socket.emit('instructionsActivation', { 'indices': indicesAutour });
     });
 
     socket.on('ClickHexRed', (data) => {
@@ -372,10 +365,7 @@ io.on('connection', (socket) => {
                 if(joueur.includes(socket.id) && joueur[2][data["pion"]] > 0){
                     joueur[2][data["pion"]] --;
                     console.log(joueur[2]);
-                    io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
-                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
-                    data.couleur = ["white", "black"][indexJoueur];
-                    console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
+                    socket.emit('envoiNombrePionsRestants', joueur[2]);
                     io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                     break parcoursDesSalles;
                 }
