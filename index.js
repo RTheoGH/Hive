@@ -211,8 +211,8 @@ io.on('connection', (socket) => {
                 if(salleActuelle.listeJoueurs.length == 2){ // S'il y a bien deux joueurs dans la salle
                     console.log("J'envoie le maj de lancement à la salle");
                     console.log(salleActuelle.nom); // On affiche le jeu
-                    io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "black");
-                    io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "white");
+                    io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
+                    io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
                     break;
                 }
@@ -333,12 +333,20 @@ io.on('connection', (socket) => {
             console.log(matchPop);
             let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],pions],[matchPop.J2[1],matchPop.J2[2],pions]],"type":"VS","mode":"extension2"}
             salles.push(nouvelle_salle);
-            io.to(matchPop.J1).emit("affichagePartie",nouvelle_salle);
-            io.to(matchPop.J2).emit("affichagePartie",nouvelle_salle);
+            io.to(matchPop.J1).emit("designationSalle",nouvelle_salle);
+            io.to(matchPop.J2).emit("designationSalle",nouvelle_salle);
             matchmaking.pop(matchPop);
             console.log(matchmaking);
             console.log(salles);
         }
+    });
+
+    socket.on('lancementMatchR', (data) => {
+        console.log("Lancement de Partie reçu");
+        console.log(data);
+        io.to(data.listeJoueurs[0][1]).emit("genereCouleurJoueur", "white");
+        io.to(data.listeJoueurs[1][1]).emit("genereCouleurJoueur", "black");
+        io.to(data.nom).emit('affichagePartie',data);
     });
 
     socket.on('discover', (data) => {
