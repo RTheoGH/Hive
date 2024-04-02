@@ -84,7 +84,8 @@ io.on('connection', (socket) => {
             if(salleLibre){   // Si le nom de salle est disponible
                 console.log("La salle est disponible");
                 data.listeJoueurs[0][1] = socket.id;
-                data.listeJoueurs[0][2] = pions;
+                const copiePions = JSON.parse(JSON.stringify(pions));
+                data.listeJoueurs[0][2] = copiePions;
                 salles.push(data);       // Ajout de la salle dans la liste des salles
                 console.log("Salle crée : ",data);
                 console.log("Liste des salles : ",salles);
@@ -132,7 +133,8 @@ io.on('connection', (socket) => {
                         }else{ // Si le joueur n'est pas dans la salle et que la salle n'est pas surchargée, on peut l'ajouter !
                             console.log("Salle trouvée : ",salles[i].nom);
                             data.joueur[1] = socket.id;
-                            data.joueur[2] = pions;
+                            const copiePions = JSON.parse(JSON.stringify(pions));
+                            data.joueur[2] = copiePions;
                             salles[i].listeJoueurs.push(data.joueur);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
@@ -203,16 +205,16 @@ io.on('connection', (socket) => {
 
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
-            const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
-            
+            var indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
             console.log('Salle :',salle);
             if(indexJoueur != -1){
                 salleActuelle = salle;
                 if(salleActuelle.listeJoueurs.length == 2){ // S'il y a bien deux joueurs dans la salle
                     console.log("J'envoie le maj de lancement à la salle");
                     console.log(salleActuelle.nom); // On affiche le jeu
-                    io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "black");
-                    io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "white");
+                    if (indexJoueur != 0){indexJoueur = 1-indexJoueur;}
+                    io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
+                    io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
                     break;
                 }
@@ -331,7 +333,8 @@ io.on('connection', (socket) => {
         let matchPop = matchmaking.find(match => match.MatchID == data.matchID);
         if(matchPop.accept[0] == true && matchPop.accept[1] == true){
             console.log(matchPop);
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],pions],[matchPop.J2[1],matchPop.J2[2],pions]],"type":"VS","mode":"extension2"}
+            const copiePions = JSON.parse(JSON.stringify(pions));
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2"}
             salles.push(nouvelle_salle);
             io.to(matchPop.J1).emit("affichagePartie",nouvelle_salle);
             io.to(matchPop.J2).emit("affichagePartie",nouvelle_salle);
@@ -369,7 +372,7 @@ io.on('connection', (socket) => {
         parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
-                if(joueur.includes(socket.id) && joueur[2][data["pion"]] > 0){
+                if(joueur[1] == socket.id && joueur[2][data["pion"]] > 0){
                     joueur[2][data["pion"]] --;
                     console.log(joueur[2]);
                     io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
