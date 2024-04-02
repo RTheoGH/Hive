@@ -207,7 +207,6 @@ io.on('connection', (socket) => {
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
             var indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
-            
             console.log('Salle :',salle);
             if(indexJoueur != -1){
                 salleActuelle = salle;
