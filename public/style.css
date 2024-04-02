@@ -419,10 +419,15 @@ footer{
 
 .timer{
     font-size: 2em;
+    font-family: "Audiowide", sans-serif;
 }
 
-.ldBar-label{
-    opacity:0;
+.progress-bar {
+    width: 100%;
+    height: 20px; /* Hauteur de votre choix */
+    background-color: blue;
+    border-radius: 5px;
+    overflow: hidden;
 }
 
 /* --------------------------- */

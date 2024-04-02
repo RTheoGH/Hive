@@ -92,13 +92,20 @@ socket.on('affichagePartie', (data) => {
         console.log("Ok je rafraichie la page pour afficher le jeu");
         clear();
         initPartie();
+        found.pause();
+        found.currentTime = 0;
     }
 });
+
+socket.on('lancementR',() => {
+    debutPartie();
+})
 
 // Actualisation de la partie en cours
 socket.on('majPartie', (data) => {
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
+    socket.emit("sortieDePartie",data);
     if(joueurActuel){
         // Annonce de la victoire si on est le joueur qui reste encore dans la partie
         var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
@@ -189,12 +196,15 @@ socket.on('matchTrouve', (data) => {
     $("#accepterM").prop("disabled",false);
     $("#matchTrouve").fadeIn(300);
     recherche = false;
-    let progress = 100;
-    bar1.set(progress);
+
+    // Initialiser la barre de progression à 100%
+    progress = 100;
+    updateProgressBar();
+
     let chrono = setInterval(() => {
-        progress = progress - 0.769;
-        // console.log(progress);
-        bar1.set(progress);
+        progress -= 0.769; // Réduire la progression
+        updateProgressBar();
+
         if(progress <= 0){
             clearInterval(chrono);
             found.pause();
@@ -202,17 +212,16 @@ socket.on('matchTrouve', (data) => {
             $("#matchTrouve").hide();
             $("#rechercher").fadeIn(300);
             if(!accepter){
-                // accepter = false;
                 miss.play();
                 $("#pseudoM").prop("disabled",false);
                 $("#niveau-match").prop("disabled",false);
                 $("#boutonRecherche").prop("disabled",false);
                 clearInterval(timerInterval);
                 timerInterval = undefined;
-                timerSeconds = 0; // Réinitialiser le compteur de secondes
+                timerSeconds = 0;
                 if (timerElement) {
                     timerElement.textContent = "";
-                    timerElement = undefined; // Effacer le contenu du timerElement
+                    timerElement = undefined;
                 }
             }else{
                 accepter = false;
@@ -224,6 +233,10 @@ socket.on('matchTrouve', (data) => {
     file.currentTime = 0;
 });
 
+function updateProgressBar() {
+    progressElement.style.width = progress + '%'; // Mettre à jour la largeur de la barre de progression
+}
+
 socket.on("repriseSonFile", () => {
     console.log("reprise de la file");
     file.play();
@@ -232,7 +245,13 @@ socket.on("repriseSonFile", () => {
             this.currentTime = 0;
         }
     });
-})
+});
+
+socket.on("clientJoin",(data) => {
+    console.log(data);
+    console.log("tentative de connexion à la salle",data.salle.nom);
+    socket.emit("joinRoom",data);
+});
 
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
