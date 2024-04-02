@@ -212,6 +212,7 @@ io.on('connection', (socket) => {
                 if(salleActuelle.listeJoueurs.length == 2){ // S'il y a bien deux joueurs dans la salle
                     console.log("J'envoie le maj de lancement à la salle");
                     console.log(salleActuelle.nom); // On affiche le jeu
+                    if (indexJoueur != 0){indexJoueur = 1-indexJoueur;}
                     io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
                     io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
