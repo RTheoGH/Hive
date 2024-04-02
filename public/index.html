@@ -15,6 +15,8 @@
     <script>const socket = io();</script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@loadingio/loading-bar@0.1.1/dist/loading-bar.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@loadingio/loading-bar@0.1.1/dist/loading-bar.min.css" rel="stylesheet">
     <script src="/public/script.js"></script>
     <title>Hive</title>
 </head>
@@ -40,9 +42,9 @@
                 <div style="border: 1px solid black;"></div>
                 <div class="left" style="width: 50%;">
                     <input name="Mode" id="classique" type="radio" value="classique" disabled/>
-                    <label for="classique">Classique</label><br/>
+                    <label for="classique" title="(plus tard...)">Classique</label><br/>
                     <input name="Mode" id="extension1" type="radio" value="extension1" disabled/>
-                    <label for="extension1" title="Extension avec la coccinelle">Extension 1</label><br/>
+                    <label for="extension1" title="Extension avec la coccinelle (plus tard...)">Extension 1</label><br/>
                     <input name="Mode" id="extension2" type="radio" value="extension2" checked />
                     <label for="extension2" title="Extension avec le moustique">Extension 2</label><br/>
                     <input name="Mode" id="extension3" type="radio" value="extension3" disabled/>
@@ -66,22 +68,63 @@
         <div id="rejoindre">
             <h1>Rejoindre</h1>
             <hr/>
-            <p>Nom de la salle : <input type="text" id="nomSalleR"/></p>
-            <p>Code de la salle : <input type="password" id="codeSalleR"/></p>
-            <p>Pseudonyme : <input type="text" id="pseudoR"/></p>
+            <p class="left">Nom de la salle : <input type="text" id="nomSalleR"/></p>
+            <p class="left">Code de la salle : <input type="password" id="codeSalleR"/></p>
+            <p class="left">Pseudonyme : <input type="text" id="pseudoR"/></p>
             <hr/>
             <button class="bouton" onClick="retour()">Retour</button>
             <button class="bouton" onClick="validerRejoindre()">Valider</button>
         </div>
-        <div id="accueil">
-            <h1 class="hive">Hive</h1>
-            <button class="bouton" onClick="ouvrirRegles()">Règles</button>
-            <p style="color:red" id="message_erreur"></p>
-            <br/><br/>
+        <div id="rechercher">
+            <h1>Rechercher</h1>
+            <p class="timer" id="tempsDAttente"></p>
+            <hr/>
+            <p class="left">Pseudonyme : <input type="text" id="pseudoM"/></p>
+            <p class="left">Niveau :
+                <select name="matchmaking" id="niveau-match">
+                    <option value="debutant">Débutant</option>
+                    <option value="intermediaire">Intermédiaire</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </p>
+            <hr/>
+            <button class="bouton" onClick="retourRecherche()">Retour</button>
+            <button class="bouton" id="boutonRecherche" onClick="lancerRecherche()">Jouer</button>
+        </div>
+        <div id="matchTrouve">
+            <h1>Match trouvé !</h1>
             <hr/>
             <br/>
-            <button class="bouton" onClick='creer()'>Créer</button>   
-            <button class="bouton" onClick='rejoindre()'>Rejoindre</button><br/>
+            <div id="tempsRestant" style="width: 100%; height: 100px;"></div>
+            <script>
+                var bar1 = new ldBar("#tempsRestant", {
+                    'preset': 'line',
+                    'stroke': '#000000',
+                    'stroke-width': 10,
+                    'stroke-trail': '#f5f5f5',
+                    'stroke-trail-width': 10,
+                    'value': 100,
+                    'fill-dir': 'ltr',
+                    'fill-background': '#ffffff',
+                    'fill-background-extrude': 1,
+                    'fill-background-extrude-color': '#ffffff',
+                    'hide-text': true
+                });
+                var bar2 = document.getElementById('tempsRestant').ldBar;
+                bar1.set(100);
+            </script>
+            <br/>
+            <button class="bouton" id="accepterM" onClick="accepterMatch()">Accepter</button>
+        </div>
+        <div id="accueil">
+            <h1 class="hive">Hive</h1>
+            <button class="bouton" onClick="ouvrirRegles()" title="Comment jouer à Hive ?">Règles</button>
+            <p style="color:red" id="message_erreur"></p>
+            <br/><br/><hr/><br/>
+            <button class="bouton" onClick='creer()' title="Créer un salon.">Créer</button>   
+            <button class="bouton" onClick='rejoindre()' title="Rejoindre un salon.">Rejoindre</button>
+            <br/><br/>
+            <button class="bouton" onClick='rechercher()' title="Affronter un adversaire à votre taille !">Rechercher</button>
         </div>
     </div>
     <div id="jeu">
