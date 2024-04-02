@@ -14,6 +14,7 @@ const pions = {
     'pionAraignee' : 2,'pionSauterelle' : 3,
     'pionMoustique' : 1
 }
+var etatP = false;
 
 // ==================================
 // ========= Partie Express ========= 
@@ -252,6 +253,10 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
+    socket.on("sortieDePartie", (data) => {
+        socket.leave(data.nom);
+    })
+
     socket.on('rejoindreFile', (data) => {
         console.log("Joueur en recherche :",data.joueur[1]);
         console.log("Niveau :",data.joueur[0]);
@@ -271,10 +276,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on("recherchePartie", () => {
-        console.log("recherche...");
-        console.log(file);
+        // console.log("recherche...");
+        // console.log(file);
         if(file.length >= 2){
-            console.log("L>2");
+            // console.log("L>2");
             for(i=0;i<file.length;i++){
                 for(j=0;j<file.length;j++){
                     if(file[i][0] == file[j][0] && file[i][1] != file[j][1]){
@@ -289,7 +294,6 @@ io.on('connection', (socket) => {
                         file.pop(file[j]);
 
                         setTimeout(() => {
-                            //TODO
                             let leMatch = matchmaking.find(m => m.MatchID == match.MatchID);
                             if(leMatch != undefined){
                                 console.log("Temps écoulé pour le match ",leMatch.MatchID);
@@ -298,9 +302,10 @@ io.on('connection', (socket) => {
                                     console.log("J1 a accepté");
                                     file.push(leMatch.J1);
                                     io.to(leMatch.J1).emit("repriseSonFile");
-                                    console.log(file);
+                                    // console.log(file);
                                 }
                                 if(leMatch.accept[1]){
+                                    console.log("J2 a accepté");
                                     file.push(leMatch.J2);
                                     io.to(leMatch.J2).emit("repriseSonFile");
                                 }
@@ -333,20 +338,45 @@ io.on('connection', (socket) => {
             console.log(matchPop);
             let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],pions],[matchPop.J2[1],matchPop.J2[2],pions]],"type":"VS","mode":"extension2"}
             salles.push(nouvelle_salle);
-            io.to(matchPop.J1).emit("designationSalle",nouvelle_salle);
-            io.to(matchPop.J2).emit("designationSalle",nouvelle_salle);
+            let cpt = 0;
+            // console.log("1-compteur à ",cpt);
+            io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt});
+            cpt++;
+            // console.log("2-compteur à ",cpt);
+            io.to(matchPop.J2).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt});
             matchmaking.pop(matchPop);
-            console.log(matchmaking);
+            // console.log(matchmaking);
             console.log(salles);
         }
     });
 
-    socket.on('lancementMatchR', (data) => {
-        console.log("Lancement de Partie reçu");
-        console.log(data);
-        io.to(data.listeJoueurs[0][1]).emit("genereCouleurJoueur", "white");
-        io.to(data.listeJoueurs[1][1]).emit("genereCouleurJoueur", "black");
-        io.to(data.nom).emit('affichagePartie',data);
+    socket.on("joinRoom", (data) => {
+        console.log("connexion à la salle",data);
+        console.log("cpt :",data.cpt);
+        socket.join(data.salle.nom);
+        // let etatP = false;
+        if(data.cpt == 0) {
+            if(!etatP){
+                io.to(data.salle.nom).emit('lancementR');
+                etatP = true;
+                console.log("cpt:0, etatP:false");
+            }else{
+                io.to(data.salle).emit('affichagePartie');
+                etatP = false;
+                console.log("cpt:0, etatP:true");
+            }
+        }
+        if(data.cpt == 1){
+            if(!etatP){
+                io.to(data.salle.nom).emit('lancementR');
+                etatP = true;
+                console.log("cpt:1, etatP:false");
+            }else{
+                io.to(data.salle).emit('affichagePartie');
+                etatP = false;
+                console.log("cpt:1, etatP:true");
+            }
+        }
     });
 
     socket.on('discover', (data) => {

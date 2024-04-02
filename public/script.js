@@ -92,13 +92,20 @@ socket.on('affichagePartie', (data) => {
         console.log("Ok je rafraichie la page pour afficher le jeu");
         clear();
         initPartie();
+        found.pause();
+        found.currentTime = 0;
     }
 });
+
+socket.on('lancementR',() => {
+    debutPartie();
+})
 
 // Actualisation de la partie en cours
 socket.on('majPartie', (data) => {
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
+    socket.emit("sortieDePartie",data);
     if(joueurActuel){
         // Annonce de la victoire si on est le joueur qui reste encore dans la partie
         var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
@@ -238,21 +245,13 @@ socket.on("repriseSonFile", () => {
             this.currentTime = 0;
         }
     });
-})
+});
 
-socket.on("designationSalle", (data) => {
-    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
-    console.log(joueurActuel);
-    console.log("je suis le joueur ",socket.id);
-    if(joueurActuel){
-        console.log("Ok je rafraichie la page pour afficher le jeu");
-        clear();
-        initPartie();
-        found.pause();
-        found.currentTime = 0;
-        socket.emit("lancementMatchR",data);
-    }
-})
+socket.on("clientJoin",(data) => {
+    console.log(data);
+    console.log("tentative de connexion à la salle",data.salle.nom);
+    socket.emit("joinRoom",data);
+});
 
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
