@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Handlee&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide">
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
             integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI"
             crossorigin="anonymous">
@@ -40,9 +41,9 @@
                 <div style="border: 1px solid black;"></div>
                 <div class="left" style="width: 50%;">
                     <input name="Mode" id="classique" type="radio" value="classique" disabled/>
-                    <label for="classique">Classique</label><br/>
+                    <label for="classique" title="(plus tard...)">Classique</label><br/>
                     <input name="Mode" id="extension1" type="radio" value="extension1" disabled/>
-                    <label for="extension1" title="Extension avec la coccinelle">Extension 1</label><br/>
+                    <label for="extension1" title="Extension avec la coccinelle (plus tard...)">Extension 1</label><br/>
                     <input name="Mode" id="extension2" type="radio" value="extension2" checked />
                     <label for="extension2" title="Extension avec le moustique">Extension 2</label><br/>
                     <input name="Mode" id="extension3" type="radio" value="extension3" disabled/>
@@ -66,22 +67,50 @@
         <div id="rejoindre">
             <h1>Rejoindre</h1>
             <hr/>
-            <p>Nom de la salle : <input type="text" id="nomSalleR"/></p>
-            <p>Code de la salle : <input type="password" id="codeSalleR"/></p>
-            <p>Pseudonyme : <input type="text" id="pseudoR"/></p>
+            <p class="left">Nom de la salle : <input type="text" id="nomSalleR"/></p>
+            <p class="left">Code de la salle : <input type="password" id="codeSalleR"/></p>
+            <p class="left">Pseudonyme : <input type="text" id="pseudoR"/></p>
             <hr/>
             <button class="bouton" onClick="retour()">Retour</button>
             <button class="bouton" onClick="validerRejoindre()">Valider</button>
         </div>
-        <div id="accueil">
-            <h1 class="hive">Hive</h1>
-            <button class="bouton" onClick="ouvrirRegles()">Règles</button>
-            <p style="color:red" id="message_erreur"></p>
-            <br/><br/>
+        <div id="rechercher">
+            <h1>Rechercher</h1>
+            <p class="timer" id="tempsDAttente"></p>
+            <hr/>
+            <p class="left">Pseudonyme : <input type="text" id="pseudoM"/></p>
+            <p class="left">Niveau :
+                <select name="matchmaking" id="niveau-match">
+                    <option value="debutant">Débutant</option>
+                    <option value="intermediaire">Intermédiaire</option>
+                    <option value="expert">Expert</option>
+                </select>
+            </p>
+            <hr/>
+            <button class="bouton" onClick="retourRecherche()">Retour</button>
+            <button class="bouton" id="boutonRecherche" onClick="lancerRecherche()">Jouer</button>
+        </div>
+        <div id="matchTrouve">
+            <h1>Match trouvé !</h1>
             <hr/>
             <br/>
-            <button class="bouton" onClick='creer()'>Créer</button>   
-            <button class="bouton" onClick='rejoindre()'>Rejoindre</button><br/>
+            <div id="tempsRestant" class="progress-bar"></div>
+            <script>
+                var progress = 100; // Initialiser la progression à 100%
+                var progressElement = document.getElementById('tempsRestant');
+            </script>
+            <br/>
+            <button class="bouton" id="accepterM" onClick="accepterMatch()">Accepter</button>
+        </div>
+        <div id="accueil">
+            <h1 class="hive">Hive</h1>
+            <button class="bouton" onClick="ouvrirRegles()" title="Comment jouer à Hive ?">Règles</button>
+            <p style="color:red" id="message_erreur"></p>
+            <br/><br/><hr/><br/>
+            <button class="bouton" onClick='creer()' title="Créer un salon.">Créer</button>   
+            <button class="bouton" onClick='rejoindre()' title="Rejoindre un salon.">Rejoindre</button>
+            <br/><br/>
+            <button class="bouton" onClick='rechercher()' title="Affronter un adversaire à votre taille !">Rechercher</button>
         </div>
     </div>
     <div id="jeu">
@@ -89,44 +118,36 @@
         <div id="menuPions">
             <div class="pn">
                 <svg class="pion" id="pionAbeille"></svg>
-                <span class="nombre">1</span>
+                <span class="nombre" id="nb_pionAbeille">1</span>
             </div>
             <div class="pn">
                 <svg class="pion" id="pionFourmi"></svg>
-                <span class="nombre">3</span>
+                <span class="nombre" id="nb_pionFourmi">3</span>
             </div>
             <div class="pn">
                 <svg class="pion" id="pionScarabee"></svg>
-                <span class="nombre">2</span>
+                <span class="nombre" id="nb_pionScarabee">2</span>
             </div>
             <div class="pn">
                 <svg class="pion" id="pionCoccinelle"></svg>
-                <span class="nombre">1</span>
+                <span class="nombre" id="nb_pionCoccinelle">1</span>
             </div>
             <div class="pn">
                 <svg class="pion" id="pionAraignee"></svg>
-                <span class="nombre">2</span>
+                <span class="nombre" id="nb_pionAraignee">2</span>
             </div>
             <div class="pn">
                 <svg class="pion" id="pionSauterelle"></svg>
-                <span class="nombre">3</span>
+                <span class="nombre" id="nb_pionSauterelle">3</span>
             </div>
             <div class="pn">
                 <svg class="pion" id="pionMoustique"></svg>
-                <span class="nombre">1</span>
+                <span class="nombre" id="nb_pionMoustique">1</span>
             </div>
         </div>
         
         <div id="actions" class="actions">
-            <ul id="actions_action">
-                <li>J1 a posé une abeille</li>
-                <li>J2 a posé un scarabée</li>
-                <li>J1 a posé une fourmi</li>
-                <li>J2 a posé un scarabée</li>
-                <li>J1 a déplacé une fourmi</li>
-                <li>J2 a posé une abeille</li>
-                <li>J1 a déplacé une abeille</li>
-                <li>J2 a posé une sauterelle</li>
+            <ul id="actions_action">   
             </ul>
         </div>
         <div id='chat' class='chat'>
