@@ -1,32 +1,36 @@
+/* Style du body */
 body{
     overflow: hidden;
 }
 
+/* Classe fond pour le body */
 .fond{
     margin:auto;
-    background-image:url("fond.jpg");
+    background-image:url("images/fond.jpg");
 }
 
+/* Classe principale pour la plupart des menus */
 .menu{
     position:absolute;
     top:40%;
     left:50%;
     transform:translate(-50%,-50%);
     background-color:aliceblue;
-    /* opacity: 0.9; */
     padding: 2em;
     text-align: center;
     width: 20vw;
     border-radius: 24px;
-    /* border: 2px solid black; */
     box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
+    transition: height 2s ease-in-out;
 }
 
+/* Titre */
 .hive{
     font-family: "Brush Script MT", cursive;
-    font-size: 75px
+    font-size: 75px;
 }
 
+/* Classe pour les différents boutons */
 .bouton {
     background-color: #fff000;
     border-radius: 12px;
@@ -57,41 +61,45 @@ body{
     cursor: not-allowed;
 }
 
-input[type=text] {
+/* CSS des input */
+input[type=text],input[type=password] {
     width: 100%;
     padding: 12px 20px;
     margin: 8px 0;
     box-sizing: border-box;
 }
 
+/* Bas de page */
 footer{
     position: absolute;
     bottom: 0;
-    width: 105vw;
+    width: 100vw;
     background-color: black;
     color: white;
     text-align:center;
     height:5vh;
 }
 
+/* Alignement à gauche */
 .left{
     text-align: left;
 }
 
+/* Séparateur flex */
 .barre-droit{
     border-right: 1px solid black;
 }
 
+/* CSS du plateau */
 #tablier{
-    /* background-color: burlywood; */
-    background-image: url("table.jpeg");
+    background-image: url("images/table.jpeg");
     background-size:100%;
     margin: 0;
     position: absolute;
-    top:2%;
-    left:2%;
-    width:75vw;
-    height:85vh;
+    top:1%;
+    left:1%;
+    width:98vw;
+    height:93vh;
     border-radius: 24px;
     box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
     overflow-y: hidden;
@@ -99,59 +107,135 @@ footer{
     cursor: grab;
 }
 
+/* ------------------------------- */
+/* CSS du menu contenant les pions */
 #menuPions{
-    /* background-color: burlywood; */
-    background-image: url("table.jpeg");
-    background-size: 150%;
-    /* border: 5px solid black; */
+    background-color: whitesmoke;
     border-radius: 24px;
-    box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
     margin: 0;
-    top:1%;
-    left:76%;
-    position:absolute;
-    width:23vw;
-    height:auto;
+    top: 3%;
+    left: 2%;
+    position: absolute;
+    width: 5.25vw;
+    height: 11.5vh;
+    transition: 0.5s;
+    padding-bottom: 0;
+    padding-top: 5px;
+    opacity:0.8;
 }
 
-#menuPions p{
-    width:25%;
-    box-sizing: border-box;
-    padding-right: 1em;
-    padding-left: 1em;
-    text-align: center;
+#menuPions:hover{
+    padding-bottom:35em;
+    opacity:1;
+    transition: 0.25s;
 }
+
+#menuPions svg{
+    text-align: center;
+    height:0%;
+    transform-origin: 50% 50%;
+    transition: 0.25s;
+}
+
+#menuPions svg image{
+    transform-origin: 50% 50%;
+}
+
+#menuPions:hover .pn{
+    height:100%;
+    opacity:1;
+}
+
+#menuPions:hover svg{
+    height:100%;
+    opacity:1;
+}
+
+#menuPions svg:hover image{
+    animation: shake 0.5s;
+}
+
+.pn {
+    display: flex;
+    align-items: center;
+    margin-right: 5px;
+    opacity: 0;
+}
+
+.nombre {
+    font-family: "Handlee", cursive;
+    margin-left: -10px;
+}
+
+@keyframes shake{
+    0%{
+        transform: rotate(0deg);
+    }
+    25%{
+        transform: rotate(-25deg);
+    }
+    50%{
+        transform: rotate(25deg);
+    }
+    75%{
+        transform: rotate(-10deg);
+    }
+    100%{
+        transform: rotate(0deg);
+    }
+}
+/* ------------------------------- */
 
 .pion{
     text-align: center;
 }
+
 .positionQP{
-    top:88%;
+    top:85%;
     left:35%;
     position:absolute;
 }
 
 /* position du tchat */
 .chat{
+    background-color:white;
+    opacity: 0.7;
+    border-radius: 24px;
+    padding:8px;
     position:absolute;
-    top:60%;
+    top:75%;
     left:80%;
     transform: translateY(-50%);
-  }
+    transition: 1s;
+    width: 16.5vw;
+}
+
+.chat:hover{
+    opacity:1;
+    top:60%;
+    left:80%;
+    transition: 1s;
+}
   
-  /* zone du tchat */
-  #messages{
-    height:40vh;
-    padding:1em;
+/* Zone d'affichage des messages */
+#messages{
+    height:10vh;
+    padding:0.5em;
     background-color:whitesmoke;
     overflow-y: scroll;
-  }
-  
-  /* liste des messages */
-  #messages li{
+    transition: 1s;
+}
+
+.chat:hover #messages{
+    height:40vh;
+    transition: 1s;
+}
+
+/* Liste des messages */
+#messages li{
     list-style: none;
     margin-bottom: 0.5em;
-  }
+}
 
 .hexagoneWhiteBorder {
     display: none;
@@ -161,29 +245,292 @@ footer{
     display: block;
 }
 
-@media (max-width: 1600px){
+/* Alterner les couleurs */
+@keyframes colorful {
+    0%{
+        background-color: red;
+    }
+    25%{
+        background-color: yellow;
+    }
+    50%{
+        background-color:royalblue;
+    }
+    75%{
+        background-color: seagreen;
+    }
+    100%{
+        background-color:red;
+    }
+}
+
+/* Fond message de victoire */
+.victoire{
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    height: 100%;
+    width: 100%;
+    background-image: url("images/table.jpeg");
+    text-align: center;
+    color: white;
+    font-size: 4em;
+}
+
+/* Texte de victoire */
+.textVictoire{
+    color: black;
+    margin-top: 20%;
+}
+
+/* Bouton nouvelle partie */
+.newGameButton{
+    color: white;
+    padding: 15px 32px;
+    background-color: black;
+}
+
+/* Classe pour les actions des joueurs */
+.actions{
+    background-color:white;
+    opacity: 0.8;
+    border-radius: 24px;
+    padding:8px;
+    position:absolute;
+    top:35%;
+    left:80%;
+    transform: translateY(-50%);
+    width: 16.5vw;
+    height: 35vh;
+    transition: 1s;
+}
+
+.actions:hover {
+    opacity: 1;
+    transition: 1s;
+}
+
+/* Zone d'affichage */
+#actions_action{
+    height:25vh;
+    padding:1em;
+    background-color:whitesmoke;
+    overflow-y: scroll;
+}
+
+/* Chaque action */
+#actions_action li{
+    list-style: none;
+    margin-bottom: 0.5em;
+}
+
+/* Classe pour l'action en cours */
+.action{
+    width: 75vw;
+    height: 7vh;
+    opacity: 0.8;
+    background-color: white;
+    top: 2%;
+    position: absolute;
+    left: 12.51%;
+    border-radius: 1em;
+}
+
+/* Texte de l'action en cours */
+.action p{
+    font-family: "Handlee", cursive;
+    color: black;
+    text-align: center;
+    font-size: 2em;
+    padding: 0;
+    margin: 0;
+    top: 1%;
+    margin-top: 0.2em;
+}
+
+/* --------------------------- */
+/* CSS pour la page des règles */
+/* --------------------------- */
+
+/* Classe pour les différentes div de la page des règles */
+.fondRegles{
+    position: absolute;
+    background-color:aliceblue;
+    transform: translate(-50%,-50%);
+    box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
+    border-radius: 24px;
+}
+
+/* Classe pour le titre de la page */
+.regles{
+    left: 20%;
+    top: 5%;
+    padding: 10px;
+    text-align: center;
+}
+
+/* Couleur rouge */
+.rouge{
+    color: red;
+}
+
+/* Police cursive */
+.cursiveR{
+    font-family: "Handlee", cursive;
+    font-size: 25px;
+}
+
+.ajustPos{
+    top: -5%;
+}
+
+/* Classe pour la description des règles */
+.reglesDesc{
+    left: 20%;
+    top: 50%;
+    width: 35vw;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Classe pour le bouton de retour à l'accueil */
+.posAccueil{
+    left: 20%;
+    top: 85%;
+    font-size: 36px;
+    position: absolute;
+    transform: translate(-50%,-50%);
+}
+
+/* Classe pour la description des insectes */
+.reglesPion{
+    left: 70%;
+    top: 47.5%;
+    width: 55vw;
+    padding: 1em;
+}
+
+/* Taille des images */
+.tailleRImg{
+    height: 50px;
+    width: 50px;
+}
+
+.timer{
+    font-size: 2em;
+    font-family: "Audiowide", sans-serif;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px; /* Hauteur de votre choix */
+    background-color: blue;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+/* --------------------------- */
+/*   Ajustement taille écran   */
+/* --------------------------- */
+
+/* Ecran inférieur à 1600px */
+@media screen and (min-width: 0px) and (max-width: 1440px){
+    .ajustement{
+        top:45%;
+        width:30%;
+    }
+}
+
+@media screen and (min-width: 0px) and (max-width: 1680px){
     .ajustement{
         top:45%;
     }
-    #tablier{
-        top:5%;
-        left:5%;
-        width:65vw;
-        height:80vh;
+}
+
+/* Ecran inférieur à 1024px */
+@media screen and (min-width: 0px) and (max-width: 1024px){
+    div.fondRegles p.cursiveR{
+        font-size:20px;
+    }
+    div.fondRegles div span.cursiveR{
+        font-size:20px;
+    }
+    h1.fondRegles.hive{
+        font-size:50px;
     }
     #menuPions{
-        font-size: 0.9;
-        left:73%;
-        width:25vw;
+        width:8vw;
     }
-    #menuPions p{
-        padding-right: 0.5em;
-        padding-left: 0.5em;
+}
+
+/* Ecran supérieur à 1025px et inférieur à 1280px */
+@media screen and (min-width: 1025px) and (max-width: 1280px){
+    div.fondRegles p.cursiveR{
+        font-size:23px;
     }
-    .chat{
-        top:65%;
+    div.fondRegles div span.cursiveR{
+        font-size:23px;
     }
-    #messages{
-        height:30vh;
+    h1.fondRegles.hive{
+        font-size:50px;
+    }
+    #menuPions{
+        width:6.2vw;
+    }
+}
+
+/* Ecran supérieur à 1281px et inférieur à 1440px */
+@media screen and (min-width: 1281px) and (max-width: 1440px){
+    #menuPions{
+        width:5.5vw;
+    }
+    #menuPions:hover{
+        padding-bottom:38em;
+    }
+}
+
+/* Ecran supérieur à 1441px et inférieur à 1540px */
+@media screen and (min-width: 1441px) and (max-width: 1540px){
+    #menuPions:hover{
+        padding-bottom:32em;
+    }
+}
+
+/* Ecran supérieur à 1441px et inférieur à 1680px */
+@media screen and (min-width: 1541px) and (max-width: 1680px){
+    div.fondRegles p.cursiveR{
+        font-size:28px;
+    }
+    div.fondRegles div span.cursiveR{
+        font-size:28px;
+    }
+    #menuPions{
+        width:4.8vw;
+    }
+    #menuPions:hover{
+        padding-bottom:45em;
+    }
+}
+
+/* Ecran supérieur à 1681px et inférieur à 1920px */
+@media screen and (min-width: 1681px) and (max-width: 1920px){
+    div.fondRegles p.cursiveR{
+        font-size:28px;
+    }
+    div.fondRegles div span.cursiveR{
+        font-size:28px;
+    }
+    h1.fondRegles.hive{
+        font-size:80px;
+    }
+    #menuPions{
+        width:4.15vw;
+    } 
+    #menuPions:hover svg{
+        height:90px;
+    }
+    #menuPions:hover{
+        padding-bottom:41em;
     }
 }
