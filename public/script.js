@@ -577,15 +577,29 @@ function toggleHexagone(data) {
     var couleurRemplissage = hexagone.attr("fill");
     console.log('Couleur de la case ' + data.position + ': ' + couleurRemplissage);
 
+    // Récupérer les indices des hexagones autour
+    var indicesAutour = data.indices;
+
     if (couleurRemplissage === "red") {
         console.log(data.position + " est rouge.");
         // Hexagone rouge, le désactive et désactive les hexagones autour
-        hexagone
-            .attr("fill", "none")
+        var autourRouge = false
+        for(indiceR of indicesAutour){
+            if(d3.select('#h' + indiceR).attr("fill")==="red") autourRouge = true;
+        }
+        if(autourRouge){
+            hexagone
+                .attr("fill", "none")
+        }
+        else{
+            hexagone
+                .classed("desactive", true)
+                .classed("hexagoneReactive", false)
+                .classed("hexagoneWhiteBorder", true)
+                .attr("fill", "none")
+                .style("pointer-events", "none");
+        }
         // passer a vide
-
-        // Récupérer les indices des hexagones autour
-        var indicesAutour = data.indices;
 
         // Désactiver les hexagones autour s'ils ne sont pas rouges ou n'ont pas un autre hexagone rouge autour d'eux
         for(indiceR of indicesAutour) {
@@ -806,6 +820,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .attr("class", function() {
                     return "hexagone" + (ligne * nbLignes + colonne);
                 })
+                .attr("jeton", "vide")
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function(d) {
 

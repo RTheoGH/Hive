@@ -476,3 +476,116 @@ function determinerIndicesAutour(position) {
 
     return indicesAutour;
 }
+
+function determinerIndicesADistance(position, distance) {
+    let indices = [];
+    const nbColonnes = 40; // Nombre de colonnes dans le damier
+    const nbLignes = 40; // Nombre de lignes dans le damier
+
+    // Convertir la position en coordonnées de ligne et de colonne
+    const ligne = Math.floor(position / nbColonnes);
+    const colonne = position % nbColonnes;
+
+    // Coordonnées des voisins relatifs jusqu'à la distance donnée
+    for (let i = -distance; i <= distance; i++) {
+        for (let j = -distance; j <= distance; j++) {
+            // Vérifier si les coordonnées sont dans les limites du damier
+            if (ligne + i >= 0 && ligne + i < nbLignes && colonne + j >= 0 && colonne + j < nbColonnes) {
+                // Calculer l'indice de la case et l'ajouter au tableau
+                const indice = (ligne + i) * nbColonnes + (colonne + j);
+                indices.push(indice);
+            }
+        }
+    }
+
+    return indices;
+}
+
+function determinerIndicesLigne(positionDepart, positionArrive) {
+    let indices = [];
+    const nbColonnes = 40; // Nombre de colonnes dans le damier
+    const nbLignes = 40; // Nombre de lignes dans le damier
+
+    // Convertir la position en coordonnées de ligne et de colonne
+    const ligne = Math.floor(position / nbColonnes);
+    const colonne = position % nbColonnes;
+
+    if(positionDepart == positionArrive) return indices;
+
+    // à finir
+
+    return indices;
+}
+
+
+// le serveur ne connaît pas l'état de la partie ?
+function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
+    const indicesAutour = determinerIndicesAutour(positionActuelle);
+    const indiceAutourCible = determinerIndicesAutour(positionCible);
+    for(position in positionCible){
+        if(position == positionActuelle){
+            indiceAutourCible.pop(positionActuelle);
+        }
+    }
+    switch (typeJeton){
+        case 'abeille' :
+            for(position in indicesAutour){
+                if(positionCible == position ){
+                    if(damier[positionCible].attr('jeton') == "vide"){
+                        indiceAutourCible.pop(positionActuelle);
+                        for(indice in indiceAutourCible){
+                            if(damier[indice].attr('jeton') != "vide"){
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false
+        
+        case 'Araignee' :
+            const indicesAutour3 = determinerIndicesADistance(positionActuelle,3)
+            for(position in indicesAutour3){
+                if(positionCible == position ){
+                    if(damier[positionCible].attr('jeton') == "vide"){
+                        for(indice in indiceAutourCible){
+                            if(damier[indice].attr('jeton') != "vide"){
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+
+        case 'Coccinelle' :
+        
+        case 'Fourmi' :
+            if(damier[positionCible].attr('jeton') == "vide"){
+                indiceAutourCible.pop(positionActuelle);
+                for(indice in indiceAutourCible){
+                    if(damier[indice].attr('jeton') != "vide"){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        
+        case 'Moustique' :
+
+        case 'Sauterelle' :
+            // fonction non fini
+
+        case 'Scarabee' :
+            for(indiceD in indicesAutour){
+                if(positionCible == indice){
+                    for(indiceC in indiceAutourCible){
+                        if(damier[indiceC].attr('jeton') != "vide"){
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+    }
+}
