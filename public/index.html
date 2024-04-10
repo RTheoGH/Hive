@@ -21,77 +21,64 @@
 </head>
 
 <body class="fond" style="overflow-x:hidden;">
+    <h1 class="hive">Hive</h1>
     <div class="menu ajustement">
         <div id="creer">
-            <h1>Création d'une salle</h1>
-            <hr/>
-            <p class="left">Nom de la salle : <input type="text" id="nomSalle" name="nomSalle"/></p>
-            <p class="left">Code de la salle : <input type="password" id="codeSalle" name="codeSalle"/></p>
-            <p class="left">Pseudonyme : <input type="text" id="pseudo" name="pseudo"/></p>
-            <hr/>
-            <p>Choisir les modes :</p>
-            <div style="display:flex;">
-                <div style="text-align:right; width: 50%;">
-                    <br/>
-                    <label for="duel">Duel</label>
-                    <input name="Type" id="duel" type="radio" value="duel" checked /><br/>
-                    <label for="ia">VS IA</label>
-                    <input name="Type" id="ia" type="radio" value="ia" disabled/>
-                </div>
-                <div style="border: 1px solid black;"></div>
-                <div class="left" style="width: 50%;">
-                    <input name="Mode" id="classique" type="radio" value="classique" disabled/>
-                    <label for="classique" title="(plus tard...)">Classique</label><br/>
-                    <input name="Mode" id="extension1" type="radio" value="extension1" disabled/>
-                    <label for="extension1" title="Extension avec la coccinelle (plus tard...)">Extension 1</label><br/>
-                    <input name="Mode" id="extension2" type="radio" value="extension2" checked />
-                    <label for="extension2" title="Extension avec le moustique">Extension 2</label><br/>
-                    <input name="Mode" id="extension3" type="radio" value="extension3" disabled/>
-                    <label for="extension3" title="Extension avec le cloporte (plus tard...)">Extension 3</label><br/>
-                </div>
-            </div>
-            <hr/>
+            <h1 class="policeR">Création d'une salle</h1>
+            <p class="left policeR">Nom de la salle : <input class="menuInput" type="text" id="nomSalle" name="nomSalle"/></p>
+            <p class="left policeR">Code de la salle : <input class="menuInput" type="password" id="codeSalle" name="codeSalle"/></p>
+            <p class="left policeR">Pseudonyme : <input class="menuInput" type="text" id="pseudo" name="pseudo"/></p>
+            <p class="left policeR">Type de la partie :
+                <select class="menuSelect" name="Type" id="Type">
+                    <option value="duel" selected>Duel</option>
+                    <option value="ia" disabled>VS IA</option>
+                </select>
+            </p>
+            <p class="left policeR">Mode de la partie :
+                <select class="menuSelect" name="Mode" id="Mode">
+                    <option value="classique" disabled>Classique</option>
+                    <option value="extension1" disabled>Extension 1</option>
+                    <option value="extension2" selected>Extension 2</option>*
+                    <option value="extension3" disabled>Extension 3</option>
+                </select>
+            </p>
             <button class="bouton" onClick="retour()">Retour</button>
             <button class="bouton" onClick="validerCreation()">Valider</button>
         </div>
         <div id="lobby">
-            <h1 id="nomCodeSalle"></h1>
-            <hr/>
-            <h1>Joueurs :</h1>
-            <p id="J1"></p>
-            <p id="J2"></p>
-            <hr/>
+            <h1 class="policeR" id="nomCodeSalle"></h1>
+            <h1 class="policeR">Joueurs :</h1>
+            <p class="policeR" id="J1"></p>
+            <p class="policeR" id="J2"></p>
             <button class="bouton" onClick="quitter()">Quitter</button>
             <button class="bouton" id="lancer" onClick="debutPartie()" disabled>Lancer</button>
         </div>
         <div id="rejoindre">
-            <h1>Rejoindre</h1>
-            <hr/>
-            <p class="left">Nom de la salle : <input type="text" id="nomSalleR"/></p>
-            <p class="left">Code de la salle : <input type="password" id="codeSalleR"/></p>
-            <p class="left">Pseudonyme : <input type="text" id="pseudoR"/></p>
-            <hr/>
+            <h1 class="policeR">Rejoindre</h1>
+            <p class="left policeR">Nom de la salle : <input class="menuInput" type="text" id="nomSalleR"/></p>
+            <p class="left policeR">Code de la salle : <input class="menuInput" type="password" id="codeSalleR"/></p>
+            <p class="left policeR">Pseudonyme : <input class="menuInput" type="text" id="pseudoR"/></p>
             <button class="bouton" onClick="retour()">Retour</button>
             <button class="bouton" onClick="validerRejoindre()">Valider</button>
         </div>
         <div id="rechercher">
-            <h1>Rechercher</h1>
+            <h1 class="policeR">Rechercher</h1>
             <p class="timer" id="tempsDAttente"></p>
-            <hr/>
-            <p class="left">Pseudonyme : <input type="text" id="pseudoM"/></p>
-            <p class="left">Niveau :
-                <select name="matchmaking" id="niveau-match">
+            <!-- <hr/> -->
+            <p class="left policeR">Pseudonyme : <input class="menuInput" type="text" id="pseudoM"/></p>
+            <p class="left policeR">Niveau :
+                <select class="menuSelect" name="matchmaking" id="niveau-match">
                     <option value="debutant">Débutant</option>
                     <option value="intermediaire">Intermédiaire</option>
                     <option value="expert">Expert</option>
                 </select>
             </p>
-            <hr/>
+            <!-- <hr/> -->
             <button class="bouton" onClick="retourRecherche()">Retour</button>
             <button class="bouton" id="boutonRecherche" onClick="lancerRecherche()">Jouer</button>
         </div>
         <div id="matchTrouve">
-            <h1>Match trouvé !</h1>
+            <h1 class="policeR">Match trouvé !</h1>
             <hr/>
             <br/>
             <div id="tempsRestant" class="progress-bar"></div>
@@ -103,14 +90,11 @@
             <button class="bouton" id="accepterM" onClick="accepterMatch()">Accepter</button>
         </div>
         <div id="accueil">
-            <h1 class="hive">Hive</h1>
-            <button class="bouton" onClick="ouvrirRegles()" title="Comment jouer à Hive ?">Règles</button>
-            <p style="color:red" id="message_erreur"></p>
-            <br/><br/><hr/><br/>
             <button class="bouton" onClick='creer()' title="Créer un salon.">Créer</button>   
-            <button class="bouton" onClick='rejoindre()' title="Rejoindre un salon.">Rejoindre</button>
-            <br/><br/>
+            <button class="bouton" style="margin-right:15em;" onClick='rejoindre()' title="Rejoindre un salon.">Rejoindre</button>
+            <button class="bouton" onClick="ouvrirRegles()" title="Comment jouer à Hive ?">Règles</button>
             <button class="bouton" onClick='rechercher()' title="Affronter un adversaire à votre taille !">Rechercher</button>
+            <p style="color:red" id="message_erreur"></p>
         </div>
     </div>
     <div id="jeu">
@@ -160,7 +144,12 @@
         <button class="bouton positionQP" onClick="quitterPartieEnCours()">Quitter la partie</button>
     </div>
     <footer>
-        <p>&copy; 2024 THEO REYNIER | ANTHONY HOMMAIS | CORENTIN FAY | KILLIAN VIGUIER</p>
+        <p>&copy; 2024<br/>
+            THEO REYNIER<br/>
+            CORENTIN FAY<br/>
+            KILLIAN VIGUIER<br/>
+            ANTHONY HOMMAIS
+        </p>
     </footer>
 </body>
 </html>

@@ -429,24 +429,27 @@ function validerCreation(){
     nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');     // Recup le nom du créateur de la salle (J1)
     salle.listeJoueurs.push([nomJoueur,null, null]);
 
-    const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
-    let typeChoix;
-    for (const type of typeListe) {
-        if (type.checked) {
-            typeChoix = type.value;
-            break;
-        }
-    }
-    salle.type=typeChoix;
-    const modeListe = document.querySelectorAll("input[name='Mode']");       // Recup si classique/ext1/ext2/ext3
-    let modeChoix;
-    for (const mode of modeListe) {
-        if (mode.checked) {
-            modeChoix = mode.value;
-            break;
-        }
-    }
-    salle.mode=modeChoix;
+    // const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
+    // let typeChoix;
+    // for (const type of typeListe) {
+    //     if (type.checked) {
+    //         typeChoix = type.value;
+    //         break;
+    //     }
+    // }
+    var typeSelect = document.getElementById("Type"); // Recup si Duel ou IA
+    salle.type = typeSelect.value;
+    // salle.type=typeChoix;
+    // const modeListe = document.querySelectorAll("input[name='Mode']");       // Recup si classique/ext1/ext2/ext3
+    // let modeChoix;
+    // for (const mode of modeListe) {
+    //     if (mode.checked) {
+    //         modeChoix = mode.value;
+    //         break;
+    //     }
+    // }
+    var modeSelect = document.getElementById("Mode"); // Recup si classique/ext1/ext2/ext3
+    salle.mode=modeSelect.value;
 
     document.getElementById('nomCodeSalle').innerHTML = salle.nom+' : '+salle.code; // Affichage du nom de la salle et du code pour rejoindre
     document.getElementById('J1').innerHTML = salle.listeJoueurs[0][0];

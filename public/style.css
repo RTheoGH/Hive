@@ -6,7 +6,8 @@ body{
 /* Classe fond pour le body */
 .fond{
     margin:auto;
-    background-image:url("images/fond.jpg");
+    background-size: cover;
+    background-image:url("images/hive-fond.png");
 }
 
 /* Classe principale pour la plupart des menus */
@@ -14,25 +15,43 @@ body{
     position:absolute;
     top:40%;
     left:50%;
-    transform:translate(-50%,-50%);
-    background-color:aliceblue;
+    transform:translate(-50%,-40%);
+    /* background-color:aliceblue; */
     padding: 2em;
     text-align: center;
     width: 20vw;
     border-radius: 24px;
-    box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
+    /* box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19); */
     transition: height 2s ease-in-out;
+}
+
+#creer{
+    margin-top: 5em;
+    font-size: .75em;
+}
+
+#accueil{
+    position:relative;
+    top: 0;
+    transform:translate(-39%,-530%);
+    /* background-color: red; */
+    width: 100vw;
 }
 
 /* Titre */
 .hive{
+    position: absolute;
+    top: -15%;
+    left:50%;
+    transform:translate(-50%,0%);
     font-family: "Brush Script MT", cursive;
-    font-size: 75px;
+    font-size: 10em;
+    /* margin-bottom: -1em; */
 }
 
 /* Classe pour les différents boutons */
 .bouton {
-    background-color: #fff000;
+    background-color: #ffb700;
     border-radius: 12px;
     color: #000;
     cursor: pointer;
@@ -42,7 +61,7 @@ body{
     transition: 200ms;
     box-sizing: border-box;
     border: 0;
-    font-size: 24px;
+    font-size: 20px;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
@@ -51,7 +70,7 @@ body{
 .bouton:not(:disabled):hover,
 .bouton:not(:disabled):focus {
     outline: 0;
-    background: #f4e603;
+    background: #ffb700cb;
     box-shadow: 0 0 0 2px rgba(0,0,0,.2), 0 3px 8px 0 rgba(0,0,0,.15);
 }
 
@@ -62,22 +81,75 @@ body{
 }
 
 /* CSS des input */
-input[type=text],input[type=password] {
+.menuInput{
     width: 100%;
+    border: none;
+    opacity: 50%;
+    border-radius: 12px;
     padding: 12px 20px;
     margin: 8px 0;
     box-sizing: border-box;
+    background-color: #ffb700cb;
+    font-family: "Handlee", cursive;
+    transition: .5s;
+}
+
+.menuInput:hover{
+    opacity: 100%;
+    background-color: white;
+    outline: 1px solid #ffb700cb;
+    transition: .5s;
+}
+
+.menuInput:focus{
+    opacity: 100%;
+    background-color: white;
+    outline: 1px solid #ffb700cb ;
+    transition: .5s;
+}
+
+.menuSelect{
+    width: 100%;
+    border: none;
+    opacity: 50%;
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin: 8px 0;
+    /* box-sizing: border-box; */
+    background-color: #ffb700cb;
+    font-family: "Handlee", cursive;
+    transition: .5s;
+}
+
+.menuSelect:hover{
+    opacity: 100%;
+    transition: .5s;
+}
+
+.menuSelect:focus{
+    opacity: 100%;
+    transition: .5s;
+}
+
+.menuSelect option:hover,
+.menuSelect option:focus,
+.menuSelect option:active,
+.menuSelect option:checked{
+    background-color: #ffb700;
+    transition: .5s;
 }
 
 /* Bas de page */
 footer{
     position: absolute;
     bottom: 0;
-    width: 100vw;
-    background-color: black;
-    color: white;
-    text-align:center;
-    height:5vh;
+    /* width: 15vw; */
+    margin: .5em;
+    /* background-color: black; */
+    color: black;
+    text-align:left;
+    height:16vh;
+    font-family: "Handlee", cursive;
 }
 
 /* Alignement à gauche */
@@ -379,6 +451,10 @@ footer{
 .cursiveR{
     font-family: "Handlee", cursive;
     font-size: 25px;
+}
+
+.policeR{
+    font-family: "Handlee", cursive;
 }
 
 .ajustPos{
