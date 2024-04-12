@@ -28,9 +28,9 @@ app.get('/',(req,res) => {
     res.sendFile('public/index.html',{root: __dirname})
 })
 
-app.get('/regles', (req, res) => {
-    res.sendFile('public/regles.html',{root: __dirname});
-});
+// app.get('/regles', (req, res) => {
+//     res.sendFile('public/regles.html',{root: __dirname});
+// });
 
 // chemin permettant d'utiliser les fichiers de public
 app.get('/public/:nomFichier', (req,res) => {

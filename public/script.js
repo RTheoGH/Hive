@@ -2,14 +2,27 @@
 // ----------------------------------------- Socket de démarrage ------------------------------------------
 // --------------------------------------------------------------------------------------------------------
 
-socket.on("Salut c'est le serveur ! :)", () => {
-    console.log("socket io connecté");
+document.addEventListener('DOMContentLoaded', function() {
     $("#creer").hide();
     $("#rejoindre").hide();
     $("#rechercher").hide();
     $("#matchTrouve").hide();
+    $("#regles").hide();
     $("#lobby").hide();
     $("#jeu").hide();
+
+    var imageDetail = document.querySelectorAll(".image");
+
+    imageDetail.forEach(e => {
+        const image = e.querySelector(".tailleRImg");
+        const detail = e.querySelector(".detail");
+        const text = image.getAttribute("data-text");
+        detail.innerText = text;
+    });
+});
+
+socket.on("Salut c'est le serveur ! :)", () => {
+    console.log("socket io connecté");
 });
 
 // --------------------------------------------------------------------------------------------------------
@@ -259,12 +272,19 @@ socket.on("clientJoin",(data) => {
 
 // Redirection vers la page des règles
 function ouvrirRegles() {
-    window.location.href = '/regles';
+    // window.location.href = '/regles';
+    $("#accueil").hide();
+    select.play();
+    $("#regles").fadeIn(300);
+
 }
 
 // Redirection vers l'accueil
 function fermerRegles() {
-    window.location.href = '/';
+    // window.location.href = '/';
+    $("#regles").hide();
+    select.play();
+    $("#accueil").fadeIn(300);
 }
 
 function initPartie(){
@@ -484,9 +504,9 @@ function retourAccueil(){
 // fonction qui permet de quitter la salle actuelle pour retourner à l'accueil
 function quitter(){
     select.play();
-    retourAccueil();
     console.log("Je quitte la salle");
     socket.emit('quittePartie');
+    retourAccueil();
     $("#lancer").prop("disabled",true);
 }
 
