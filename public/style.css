@@ -261,8 +261,8 @@ footer{
 }
 
 .positionQP{
-    top:85%;
-    left:35%;
+    top: 90%;
+    left: 65%;
     position:absolute;
 }
 
@@ -537,53 +537,125 @@ footer{
     overflow: hidden;
 }
 
+.decalMenu{
+    margin-right: 20em;
+}
+
 /* --------------------------- */
 /*   Ajustement taille écran   */
 /* --------------------------- */
 
 /* Ecran inférieur à 1600px */
 @media screen and (min-width: 0px) and (max-width: 1440px){
-    .ajustement{
+    /* .ajustement{
         top:45%;
         width:30%;
-    }
+    } */
 }
 
 @media screen and (min-width: 0px) and (max-width: 1680px){
-    .ajustement{
+    /* .ajustement{
         top:45%;
-    }
+    } */
 }
 
 /* Ecran inférieur à 1024px */
 @media screen and (min-width: 0px) and (max-width: 1024px){
-    div.fondRegles p.cursiveR{
-        font-size:20px;
+    .hive{
+        font-size: 6em;
     }
-    div.fondRegles div span.cursiveR{
-        font-size:20px;
+    #accueil{
+        transform: translate(-31%,-100%);
     }
-    h1.fondRegles.hive{
-        font-size:50px;
+    .decalMenu {
+        margin-right: 10em;
     }
     #menuPions{
         width:8vw;
+    }
+    .fond{
+        background-image: url("images/fond.jpg");
+    }
+    #creer,#rejoindre,#rechercher{
+        background-color: aliceblue;
+        padding:1em;
+        border-radius: 20px;
+        width: 20vw;
+    }
+    footer{
+        bottom: 15px;
+    }
+    .reglesPion{
+        top: 65%;
+        width: 53.7vw;
+    }
+    .reglesDesc{
+        top: 40%;
+        background-color: aliceblue;
+        border-radius: 20px;
+    }
+    .posAccueil{
+        top: 21%;
+    }
+    .hiveregles{
+        top: 5%;
+    }
+    .detail{
+        width: 45vw;
     }
 }
 
 /* Ecran supérieur à 1025px et inférieur à 1280px */
 @media screen and (min-width: 1025px) and (max-width: 1280px){
-    div.fondRegles p.cursiveR{
-        font-size:23px;
-    }
-    div.fondRegles div span.cursiveR{
-        font-size:23px;
-    }
-    h1.fondRegles.hive{
-        font-size:50px;
-    }
     #menuPions{
         width:6.2vw;
+    }
+    #accueil{
+        transform: translate(-29%,-75%);
+    }
+    .hive{
+        font-size: 8em;
+        top: -13%;
+    }
+    .decalMenu {
+        margin-right: 15em;
+    }
+    #rejoindre{
+        font-size: .75em;
+    }
+    #rechercher{
+        font-size: .75em;
+    }
+    #creer{
+        font-size: .65em;
+        margin-top: -4em;
+    }
+    .hiveregles{
+        top: 10%;
+        left: 45%;
+        font-size: 2em;
+    }
+    .reglesDesc{
+        top: 35%;
+        width: 50vw;
+    }
+    .cursiveR{
+        font-size: 18px;
+    }
+    .reglesPion{
+        top: 52%;
+    }
+    .tailleRImg {
+        height: 60px;
+        width: 60px;
+    }
+    .posAccueil {
+        left: 55%;
+        top: 16%;
+        font-size: 18px;
+    }
+    footer{
+        bottom: 10px;
     }
 }
 
@@ -594,6 +666,34 @@ footer{
     }
     #menuPions:hover{
         padding-bottom:38em;
+    }
+    #accueil{
+        transform: translate(-29%,0%);
+    }
+    #creer{
+        margin-top: 4em;
+        font-size: 0.7em;
+    }
+    .hiveregles{
+        left: 45%;
+    }
+    .posAccueil{
+        left: 55%;
+        top: 23%;
+    }
+    .reglesDesc{
+        top: 40%;
+        width: 50vw;
+    }
+    .cursiveR{
+        font-size: 19px;
+    }
+    .reglesPion{
+        top: 57%;
+    }
+    .tailleRImg {
+        height: 60px;
+        width: 60px;
     }
 }
 
@@ -606,17 +706,27 @@ footer{
 
 /* Ecran supérieur à 1441px et inférieur à 1680px */
 @media screen and (min-width: 1541px) and (max-width: 1680px){
-    div.fondRegles p.cursiveR{
-        font-size:28px;
-    }
-    div.fondRegles div span.cursiveR{
-        font-size:28px;
-    }
     #menuPions{
         width:4.8vw;
     }
     #menuPions:hover{
         padding-bottom:45em;
+    }
+    #accueil{
+        transform: translate(-25%,0%);
+    }
+    .hive{
+        top: -8%;
+    }
+    .reglesDesc{
+        width: 45vw;
+    }
+    .tailleRImg{
+        height: 60px;
+        width: 60px;
+    }
+    .action{
+        top: 3%;
     }
 }
 
