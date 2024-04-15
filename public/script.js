@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     $("#lobby").hide();
     $("#jeu").hide();
 
+    // Informations sur les pions sur la page des règles
     var imageDetail = document.querySelectorAll(".image");
 
     imageDetail.forEach(e => {
@@ -66,7 +67,8 @@ let matchID = "";
 socket.on('majSalle', (data) => {
     // $("#lobby").show();
     $("#lobby").fadeIn(300);
-    document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
+    document.getElementById('lobbyNom').innerHTML = 'Salle : ' + data.nom;
+    document.getElementById('lobbyCode').innerHTML = data.code;
     
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
     if(joueurActuel){
@@ -172,13 +174,7 @@ socket.on('codeFaux', () => {
     erreur.play();
 });
 
-// Socket de réception des messages
-socket.on('recoitMessage', (data) => {
-    let puce = ["○", "●"][data.idJ];
-    $("#messages").append("<li>"+puce+" <span style='font-weight:bold'>"+data.auteur+"</span>: "+data.message+"</li>");
-    notif.play();
-});
-
+// Message d'erreur si le nom de la salle est vide
 socket.on('nomVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
@@ -187,6 +183,7 @@ socket.on('nomVide', () => {
     erreur.play();
 });
 
+// Message d'erreur si le code de la salle est vide
 socket.on('codeVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
@@ -195,6 +192,7 @@ socket.on('codeVide', () => {
     erreur.play();
 });
 
+// Message d'erreur si le nom du joueur est vide
 socket.on('joueurVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
@@ -203,29 +201,28 @@ socket.on('joueurVide', () => {
     erreur.play();
 });
 
+// Socket de réception lorsqu'un match est trouvé via la fonction de recherche de partie
 socket.on('matchTrouve', (data) => {
     matchID = data.MatchID;
     $("#rechercher").hide();
     $("#accepterM").prop("disabled",false);
     $("#matchTrouve").fadeIn(300);
     recherche = false;
-
-    // Initialiser la barre de progression à 100%
-    progress = 100;
-    updateProgressBar();
+    progress = 100; // On initialise la barre de progression à 100%
+    updateProgressBar(); // On appelle la fonction une première fois
 
     let chrono = setInterval(() => {
         progress -= 0.769; // Réduire la progression
         updateProgressBar();
 
-        if(progress <= 0){
-            clearInterval(chrono);
+        if(progress <= 0){ // Si le chronometre arrive à 0
+            clearInterval(chrono); // On arrete le chronometre
             found.pause();
             found.currentTime = 0
             $("#matchTrouve").hide();
             $("#rechercher").fadeIn(300);
-            if(!accepter){
-                miss.play();
+            if(!accepter){ // Si le joueur n'a pas accepté, on affiche la page de recherche d'une partie
+                miss.play();   // sans le remettre dans la file
                 $("#pseudoM").prop("disabled",false);
                 $("#niveau-match").prop("disabled",false);
                 $("#boutonRecherche").prop("disabled",false);
@@ -246,10 +243,12 @@ socket.on('matchTrouve', (data) => {
     file.currentTime = 0;
 });
 
+// Met à jour la largeur de la barre de progression
 function updateProgressBar() {
-    progressElement.style.width = progress + '%'; // Mettre à jour la largeur de la barre de progression
+    progressElement.style.width = progress + '%'; 
 }
 
+// Socket de réception pour relancer la musique de la file
 socket.on("repriseSonFile", () => {
     console.log("reprise de la file");
     file.play();
@@ -260,10 +259,18 @@ socket.on("repriseSonFile", () => {
     });
 });
 
+// Socket de réception d'une tentative de connexion à une salle
 socket.on("clientJoin",(data) => {
     console.log(data);
     console.log("tentative de connexion à la salle",data.salle.nom);
     socket.emit("joinRoom",data);
+});
+
+// Socket de réception des messages
+socket.on('recoitMessage', (data) => {
+    let puce = ["○", "●"][data.idJ]; // La puce vide représente le joueur blanc et la puce pleine le joueur noir
+    $("#messages").append("<li>"+puce+" <span style='font-weight:bold'>"+data.auteur+"</span>: "+data.message+"</li>");
+    notif.play();
 });
 
 // --------------------------------------------------------------------------------------------------------
@@ -272,21 +279,31 @@ socket.on("clientJoin",(data) => {
 
 // Redirection vers la page des règles
 function ouvrirRegles() {
-    // window.location.href = '/regles';
     $("#accueil").hide();
     select.play();
-    $("#regles").fadeIn(300);
-
+    $("#regles").fadeIn(300); // Alternative à .show()
 }
 
 // Redirection vers l'accueil
 function fermerRegles() {
-    // window.location.href = '/';
     $("#regles").hide();
     select.play();
     $("#accueil").fadeIn(300);
 }
 
+// Fonction qui copie le code d'une salle via un bouton
+function copierCode(){
+    var copie = document.getElementById("lobbyCode").innerText;
+    navigator.clipboard.writeText(copie) // API clipboard
+    .then(() => {
+        console.log('Code copier');
+    })
+    .catch(e => {
+        console.error('Erreur lors de la copie dans le presse-papiers : ', e);
+    });
+}
+
+// Fonction qui initialise la partie ainsi que le damier
 function initPartie(){
     genereDamier(40,40,40);
     ambiant.currentTime = 0;
@@ -328,6 +345,7 @@ function rejoindre(){
     $("#rejoindre").fadeIn(300);
 }
 
+// Fonction d'affichage de la page rechercher
 function rechercher(){
     document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
@@ -338,7 +356,7 @@ function rechercher(){
     $("#rechercher").fadeIn(300);
 }
 
-// Fonction pour formater le temps au format mm:ss
+// Fonction pour formater le temps au format mm:ss, exemple : 01:45 -> 1 minute et 45 secondes
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -355,10 +373,11 @@ function updateTimer() {
     }
 }
 
+// Fonction principale de la recherche
 async function recherchePartie() {
     recherche = true;
     while(recherche){
-        socket.emit("recherchePartie");
+        socket.emit("recherchePartie"); // Envoie chaque seconde le message au serveur si le joueur recherche une partie
         await attente(1000);
     }
 }
@@ -367,11 +386,12 @@ function attente(temps){
     return new Promise(resolve => setTimeout(resolve,temps));
 }
 
+// Fonction pour lancer la recherche
 function lancerRecherche(){
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
     console.log("Je lance la file :",nomJoueur);
-    socket.emit("rejoindreFile",{"joueur":[niveau,nomJoueur,socket.id,null]});
+    socket.emit("rejoindreFile",{"joueur":[niveau,nomJoueur,socket.id,null]}); // Le joueur rejoint la file
     if (!timerElement) {
         timerElement = document.getElementById('tempsDAttente');
     }
@@ -387,9 +407,10 @@ function lancerRecherche(){
     $("#pseudoM").prop("disabled",true);
     $("#niveau-match").prop("disabled",true);
     $("#boutonRecherche").prop("disabled",true);
-    recherchePartie();
+    recherchePartie(); // On lance la fonction de recherche une première fois
 }
 
+// Fonction pour annuler la recherche
 function retourRecherche(){
     clearInterval(timerInterval);
     timerInterval = undefined;
@@ -408,9 +429,10 @@ function retourRecherche(){
     console.log(nomJoueur);
     let niveau = document.getElementById("niveau-match").value;
     console.log(niveau);
-    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
+    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]}); // On retire le joueur de la file de recherche
 }
 
+// Fonction pour accepter un match lors de la recherche d'une partie
 function accepterMatch(){
     accepter = true;
     console.log("Accepter :",accepter);
@@ -449,29 +471,13 @@ function validerCreation(){
     nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');     // Recup le nom du créateur de la salle (J1)
     salle.listeJoueurs.push([nomJoueur,null, null]);
 
-    // const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
-    // let typeChoix;
-    // for (const type of typeListe) {
-    //     if (type.checked) {
-    //         typeChoix = type.value;
-    //         break;
-    //     }
-    // }
     var typeSelect = document.getElementById("Type"); // Recup si Duel ou IA
     salle.type = typeSelect.value;
-    // salle.type=typeChoix;
-    // const modeListe = document.querySelectorAll("input[name='Mode']");       // Recup si classique/ext1/ext2/ext3
-    // let modeChoix;
-    // for (const mode of modeListe) {
-    //     if (mode.checked) {
-    //         modeChoix = mode.value;
-    //         break;
-    //     }
-    // }
     var modeSelect = document.getElementById("Mode"); // Recup si classique/ext1/ext2/ext3
     salle.mode=modeSelect.value;
 
-    document.getElementById('nomCodeSalle').innerHTML = salle.nom+' : '+salle.code; // Affichage du nom de la salle et du code pour rejoindre
+    document.getElementById('lobbyNom').innerHTML = 'Salle  : ' + salle.nom; // Affichage du nom de la salle 
+    document.getElementById('lobbyCode').innerHTML = salle.code;             // et du code pour rejoindre
     document.getElementById('J1').innerHTML = salle.listeJoueurs[0][0];
     console.log(salle);
 
@@ -522,16 +528,6 @@ function quitterPartieEnCours(){
     $("#lancer").prop("disabled",true);
 }
 
-function hideHex(position){
-    console.log('fonction hideHex sur : '+ position);
-    d3.select('#h'+position).attr("stroke", "black");
-}
-
-socket.on('hide', (data) => {
-    console.log('chemin hide client : '+ position);
-    hideHex(data.position);
-})
-
 // fonction pour envoyer un message dans le tchat
 function send(){
     let message = $('#message').val().trim().replace(/[^a-zA-Z0-9 'çàéèù?.!]/g,'');
@@ -541,6 +537,20 @@ function send(){
     }
     $('#message').val("");
 }
+
+// ------------------
+// Fin des fonctions principales pour les salles
+// ------------------
+
+function hideHex(position){
+    console.log('fonction hideHex sur : '+ position);
+    d3.select('#h'+position).attr("stroke", "black");
+}
+
+socket.on('hide', (data) => {
+    console.log('chemin hide client : '+ position);
+    hideHex(data.position);
+});
 
 // Fonction raccourci pour envoyer un message
 function fsend(event){
