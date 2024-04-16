@@ -5,7 +5,16 @@ const http = require('http');
 const server = http.createServer(app);
 const io = new require("socket.io")(server);
 
-const salles=[];
+var salles=[];
+var file=[];
+var matchmaking=[];
+const pions = {
+    'pionAbeille' : 1,'pionFourmi' : 3,
+    'pionScarabee' : 2,'pionCoccinelle' : 1,
+    'pionAraignee' : 2,'pionSauterelle' : 3,
+    'pionMoustique' : 1
+}
+var etatP = false;
 
 
 // collection => J1, J2, Winner,Screen_of_party 
@@ -105,15 +114,8 @@ io.on('connection', (socket) => {
             if(salleLibre){   // Si le nom de salle est disponible
                 console.log("La salle est disponible");
                 data.listeJoueurs[0][1] = socket.id;
-                data.listeJoueurs[0][2] = { //nombre de pions restants pour le joueur
-                  'pionAbeille' : 1,
-                  'pionFourmi' : 3,
-                  'pionScarabee' : 2,
-                  'pionCoccinelle' : 1,
-                  'pionAraignee' : 2,
-                  'pionSauterelle' : 3,
-                  'pionMoustique' : 1
-                }
+                const copiePions = JSON.parse(JSON.stringify(pions));
+                data.listeJoueurs[0][2] = copiePions;
                 salles.push(data);       // Ajout de la salle dans la liste des salles
                 console.log("Salle crée : ",data);
                 console.log("Liste des salles : ",salles);
@@ -161,15 +163,8 @@ io.on('connection', (socket) => {
                         }else{ // Si le joueur n'est pas dans la salle et que la salle n'est pas surchargée, on peut l'ajouter !
                             console.log("Salle trouvée : ",salles[i].nom);
                             data.joueur[1] = socket.id;
-                            data.joueur[2] = { //nombre de pions restants pour le joueur
-                                'pionAbeille' : 1,
-                                'pionFourmi' : 3,
-                                'pionScarabee' : 2,
-                                'pionCoccinelle' : 1,
-                                'pionAraignee' : 2,
-                                'pionSauterelle' : 3,
-                                'pionMoustique' : 1
-                            }
+                            const copiePions = JSON.parse(JSON.stringify(pions));
+                            data.joueur[2] = copiePions;
                             salles[i].listeJoueurs.push(data.joueur);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
@@ -240,14 +235,16 @@ io.on('connection', (socket) => {
 
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
-            const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
-            console.log("Joueur qui a lancé : ",indexJoueur)
+            var indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
             console.log('Salle :',salle);
             if(indexJoueur != -1){
                 salleActuelle = salle;
                 if(salleActuelle.listeJoueurs.length == 2){ // S'il y a bien deux joueurs dans la salle
                     console.log("J'envoie le maj de lancement à la salle");
                     console.log(salleActuelle.nom); // On affiche le jeu
+                    if (indexJoueur != 0){indexJoueur = 1-indexJoueur;}
+                    io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
+                    io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
                     break;
                 }
@@ -287,13 +284,145 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
+    socket.on("sortieDePartie", (data) => {
+        socket.leave(data.nom);
+    })
+
+    socket.on('rejoindreFile', (data) => {
+        console.log("Joueur en recherche :",data.joueur[1]);
+        console.log("Niveau :",data.joueur[0]);
+        file.push(data.joueur);
+        console.log(file);
+    });
+
+    socket.on('quitterFile', (data) => {
+        let joueurQuittant = data.joueur;
+        console.log("Joueur qui souhaite quitter la recherche :",joueurQuittant[1]);
+        let index = file.findIndex(joueur => joueur[0] === joueurQuittant[0] && joueur[1] === joueurQuittant[1]);
+        if(index !== -1){
+            file.splice(index,1);
+            console.log("Le joueur quitte");
+        }
+        console.log(file);
+    });
+
+    socket.on("recherchePartie", () => {
+        // console.log("recherche...");
+        // console.log(file);
+        if(file.length >= 2){
+            // console.log("L>2");
+            for(i=0;i<file.length;i++){
+                for(j=0;j<file.length;j++){
+                    if(file[i][0] == file[j][0] && file[i][1] != file[j][1]){
+                        console.log(file[i][1],"VS",file[j][1],"?");
+                        let matchID = generateRandomText();
+                        console.log("Match :",matchID);
+                        let match = {"J1":file[i],"J2":file[j],"MatchID":matchID,"accept":[false,false]};
+                        matchmaking.push(match);
+                        io.to(file[i]).emit("matchTrouve",match);
+                        io.to(file[j]).emit("matchTrouve",match);
+                        file.pop(file[i]);
+                        file.pop(file[j]);
+
+                        setTimeout(() => {
+                            let leMatch = matchmaking.find(m => m.MatchID == match.MatchID);
+                            if(leMatch != undefined){
+                                console.log("Temps écoulé pour le match ",leMatch.MatchID);
+                                matchmaking.pop(leMatch);
+                                if(leMatch.accept[0]){
+                                    console.log("J1 a accepté");
+                                    file.push(leMatch.J1);
+                                    io.to(leMatch.J1).emit("repriseSonFile");
+                                    // console.log(file);
+                                }
+                                if(leMatch.accept[1]){
+                                    console.log("J2 a accepté");
+                                    file.push(leMatch.J2);
+                                    io.to(leMatch.J2).emit("repriseSonFile");
+                                }
+                            }
+                        }, 13000);
+                    }
+                }
+            }
+        }
+    });
+
+    socket.on('accepterMatch', (data) => {
+        console.log(data.joueur[1],"accepte");
+        matchmaking = matchmaking.map(match => {
+            // Vérifier si l'id correspond à celui que nous voulons mettre à jour
+            if (match.MatchID === data.matchID) {
+                // Si la condition est remplie, mettre à jour la propriété accept
+                if(data.joueur[2] == match.J1[2]){
+                    match.accept[0] = true;
+                }else{
+                    match.accept[1] = true;
+                }
+            }
+            // Retourner l'objet, modifié ou non
+            return match;
+        });
+        console.log(matchmaking);
+        let matchPop = matchmaking.find(match => match.MatchID == data.matchID);
+        if(matchPop.accept[0] == true && matchPop.accept[1] == true){
+            console.log(matchPop);
+            const copiePions = JSON.parse(JSON.stringify(pions));
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2"}
+            salles.push(nouvelle_salle);
+            let cpt = 0;
+            // console.log("1-compteur à ",cpt);
+            io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt});
+            cpt++;
+            // console.log("2-compteur à ",cpt);
+            io.to(matchPop.J2).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt});
+            matchmaking.pop(matchPop);
+            // console.log(matchmaking);
+            console.log(salles);
+        }
+    });
+
+    socket.on("joinRoom", (data) => {
+        console.log("connexion à la salle",data);
+        console.log("cpt :",data.cpt);
+        socket.join(data.salle.nom);
+        // let etatP = false;
+        if(data.cpt == 0) {
+            if(!etatP){
+                io.to(data.salle.nom).emit('lancementR');
+                etatP = true;
+                console.log("cpt:0, etatP:false");
+            }else{
+                io.to(data.salle).emit('affichagePartie');
+                etatP = false;
+                console.log("cpt:0, etatP:true");
+            }
+        }
+        if(data.cpt == 1){
+            if(!etatP){
+                io.to(data.salle.nom).emit('lancementR');
+                etatP = true;
+                console.log("cpt:1, etatP:false");
+            }else{
+                io.to(data.salle).emit('affichagePartie');
+                etatP = false;
+                console.log("cpt:1, etatP:true");
+            }
+        }
+    });
+
     socket.on('discover', (data) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
         let indicesAutour = determinerIndicesAutour(data.position);
-
-        // Envoyer les instructions pour activer les hexagones autour
-        socket.emit('instructionsActivation', { 'indices': indicesAutour });
+        parcoursDesSalles:
+        for(salle of salles){
+            for(joueur of salle.listeJoueurs){
+                if(joueur.includes(socket.id)){
+                    // Envoyer les instructions pour activer les hexagones autour
+                    io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
+                    break parcoursDesSalles;
+        }}}
     });
 
     socket.on('ClickHexRed', (data) => {
@@ -310,11 +439,15 @@ io.on('connection', (socket) => {
         parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
-                if(joueur.includes(socket.id) && joueur[2][data["pion"]] > 0){
+                if(joueur[1] == socket.id && joueur[2][data["pion"]] > 0){
                     joueur[2][data["pion"]] --;
                     console.log(joueur[2]);
-                    socket.emit('envoiNombrePionsRestants', joueur[2]);
-                    io.to(salle.code).emit("ReceptPoserPionPlateau", data);
+                    io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    data.couleur = ["white", "black"][indexJoueur];
+                    console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
+                    data.joueur = indexJoueur + 1;
+                    io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                     break parcoursDesSalles;
                 }
             }
@@ -333,6 +466,16 @@ io.on('connection', (socket) => {
         }
     });
 });
+
+function generateRandomText() {
+    let text = "";
+    const possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    for (let i = 0; i < 10; i++) {
+        const randomIndex = Math.floor(Math.random() * possibleChars.length);
+        text += possibleChars.charAt(randomIndex);
+    }
+    return text;
+}
 
 function determinerIndicesAutour(position) {
     let indicesAutour = [];
@@ -361,4 +504,117 @@ function determinerIndicesAutour(position) {
     }
 
     return indicesAutour;
+}
+
+function determinerIndicesADistance(position, distance) {
+    let indices = [];
+    const nbColonnes = 40; // Nombre de colonnes dans le damier
+    const nbLignes = 40; // Nombre de lignes dans le damier
+
+    // Convertir la position en coordonnées de ligne et de colonne
+    const ligne = Math.floor(position / nbColonnes);
+    const colonne = position % nbColonnes;
+
+    // Coordonnées des voisins relatifs jusqu'à la distance donnée
+    for (let i = -distance; i <= distance; i++) {
+        for (let j = -distance; j <= distance; j++) {
+            // Vérifier si les coordonnées sont dans les limites du damier
+            if (ligne + i >= 0 && ligne + i < nbLignes && colonne + j >= 0 && colonne + j < nbColonnes) {
+                // Calculer l'indice de la case et l'ajouter au tableau
+                const indice = (ligne + i) * nbColonnes + (colonne + j);
+                indices.push(indice);
+            }
+        }
+    }
+
+    return indices;
+}
+
+function determinerIndicesLigne(positionDepart, positionArrive) {
+    let indices = [];
+    const nbColonnes = 40; // Nombre de colonnes dans le damier
+    const nbLignes = 40; // Nombre de lignes dans le damier
+
+    // Convertir la position en coordonnées de ligne et de colonne
+    const ligne = Math.floor(position / nbColonnes);
+    const colonne = position % nbColonnes;
+
+    if(positionDepart == positionArrive) return indices;
+
+    // à finir
+
+    return indices;
+}
+
+
+// le serveur ne connaît pas l'état de la partie ?
+function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
+    const indicesAutour = determinerIndicesAutour(positionActuelle);
+    const indiceAutourCible = determinerIndicesAutour(positionCible);
+    for(position in positionCible){
+        if(position == positionActuelle){
+            indiceAutourCible.pop(positionActuelle);
+        }
+    }
+    switch (typeJeton){
+        case 'abeille' :
+            for(position in indicesAutour){
+                if(positionCible == position ){
+                    if(damier[positionCible].attr('jeton') == "vide"){
+                        indiceAutourCible.pop(positionActuelle);
+                        for(indice in indiceAutourCible){
+                            if(damier[indice].attr('jeton') != "vide"){
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false
+        
+        case 'Araignee' :
+            const indicesAutour3 = determinerIndicesADistance(positionActuelle,3)
+            for(position in indicesAutour3){
+                if(positionCible == position ){
+                    if(damier[positionCible].attr('jeton') == "vide"){
+                        for(indice in indiceAutourCible){
+                            if(damier[indice].attr('jeton') != "vide"){
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+
+        case 'Coccinelle' :
+        
+        case 'Fourmi' :
+            if(damier[positionCible].attr('jeton') == "vide"){
+                indiceAutourCible.pop(positionActuelle);
+                for(indice in indiceAutourCible){
+                    if(damier[indice].attr('jeton') != "vide"){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        
+        case 'Moustique' :
+
+        case 'Sauterelle' :
+            // fonction non fini
+
+        case 'Scarabee' :
+            for(indiceD in indicesAutour){
+                if(positionCible == indice){
+                    for(indiceC in indiceAutourCible){
+                        if(damier[indiceC].attr('jeton') != "vide"){
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+    }
 }
