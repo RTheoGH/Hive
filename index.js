@@ -16,6 +16,10 @@ const pions = {
 }
 var etatP = false;
 
+function randInt(max) { //renvoie un entier random entre 0 et < max
+    return Math.floor(Math.random() * max);
+}
+
 // ==================================
 // ========= Partie Express ========= 
 // ==================================
@@ -137,6 +141,9 @@ io.on('connection', (socket) => {
                             const copiePions = JSON.parse(JSON.stringify(pions));
                             data.joueur[2] = copiePions;
                             salles[i].listeJoueurs.push(data.joueur);
+                            salles[i]["compteurTour"] = 1;
+                            salles[i]["tour"] = randInt(2);
+                            console.log("C'est au tour du joueur : ",salles[i].tour);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
                             socket.join(data.nom);  // Actualisation uniquement pour cette salle
@@ -203,6 +210,7 @@ io.on('connection', (socket) => {
     socket.on('lancementPartie', () => {
         console.log("Lancement de Partie reçu");
         let salleActuelle = null;
+        
 
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
@@ -217,6 +225,9 @@ io.on('connection', (socket) => {
                     io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
                     io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
+                    console.log("liste des joueurs : ", salle.listeJoueurs);
+                    console.log("tour : ", salle.tour);
+                    io.to(salleActuelle.nom).emit("infosTour", {"tour" : salles[i].tour, "compteurTour" : Math.floor(salles[i].compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                     break;
                 }
             }
@@ -389,10 +400,13 @@ io.on('connection', (socket) => {
         parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
+                const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
                 if(joueur.includes(socket.id)){
+                    if(indexJoueur == salle.tour){
                     // Envoyer les instructions pour activer les hexagones autour
-                    io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
-                    break parcoursDesSalles;
+                        io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
+                        break parcoursDesSalles;
+                    }
         }}}
     });
 
@@ -407,20 +421,34 @@ io.on('connection', (socket) => {
     });
 
     socket.on("EnvoiPoserPionPlateau", (data) => {
+        console.log(data);
         parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
                 if(joueur[1] == socket.id && joueur[2][data["pion"]] > 0){
-                    joueur[2][data["pion"]] --;
-                    console.log(joueur[2]);
-                    io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
-                    data.couleur = ["white", "black"][indexJoueur];
-                    console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
-                    data.joueur = indexJoueur + 1;
-                    io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                    if(salle.tour == indexJoueur){
+
+                        joueur[2][data["pion"]] --;
+                        //console.log(joueur[2]);
+                        io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
+                        data.couleur = ["white", "black"][indexJoueur];
+                        //console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
+                        data.joueur = indexJoueur + 1;
+                        io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                        
+                        salle.tour = 1-indexJoueur;
+                        console.log("C'est au tour du joueur "+salle.tour);
+                        salle.compteurTour += 0.5;
+                        io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                    }
+                    else if(salle.tour != indexJoueur){
+                        io.to(socket.id).emit("pasTonTour");
+                    }
                     break parcoursDesSalles;
                 }
+                
+                
             }
         }
     });

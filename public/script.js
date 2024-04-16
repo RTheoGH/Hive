@@ -898,7 +898,15 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         selectionPion = null;
     });
     
-    
+    socket.on("pasTonTour", () => {
+        console.log("C'est le tour du joueur adverse");
+    });
+
+    socket.on("infosTour", (data) => { 
+        console.log("C'est au tour du joueur", data.tour, " de jouer");
+        console.log("Tour n°"+data.compteurTour);
+        $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
+    })
 
     //Pour mettre les images sur les pions du menu :
     
