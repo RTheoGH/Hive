@@ -7,6 +7,35 @@ const io = new require("socket.io")(server);
 
 const salles=[];
 
+
+// collection => J1, J2, Winner,Screen_of_party 
+//=============MongoDB et Mongoose===========
+
+// les appeller de mongoose et des différent schema (table bdd)
+const mongoose = require("mongoose"); 
+const Winner = require("./schema/winner.js")
+
+/* exemple de fonction pour create
+
+(async () => {
+try {
+    await mongoose.connect("mongodb://localhost:27017");
+    console.log("Connexion réussi avec MongoDB");
+    const resultat = await Winner.create({
+        Joueur_1 : ,
+        Joueur_2 : ,
+        Winner : ,
+    });
+    console.log(resultat);
+}catch(error){
+    console.log("erreur soit dans la connexion soit dans le create");
+}
+
+})();
+*/
+//==============================================
+
+
 // ==================================
 // ========= Partie Express ========= 
 // ==================================
