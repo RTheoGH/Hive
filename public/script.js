@@ -838,11 +838,11 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         if (d3.select(this).attr("fill") === "red") {
                             socket.emit('ClickHexRed', {'position': position});
                         }
-                        else {
-                            if (selectionPion != null){
-                                socket.emit('discover', {'position': position});
-                            }
-                        }
+                        // else {
+                        //     if (selectionPion != null){
+                        //         socket.emit('discover', {'position': position});
+                        //     }
+                        // }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
                         //console.log("typePion : "+typePion)
