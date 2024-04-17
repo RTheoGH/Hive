@@ -15,17 +15,15 @@ const pions = {
     'pionMoustique' : 1
 }
 var etatP = false;
-
-
+function randInt(max) { //renvoie un entier random entre 0 et < max
+    return Math.floor(Math.random() * max);
+}
 // collection => J1, J2, Winner,Screen_of_party 
 //=============MongoDB et Mongoose===========
 
 // les appeller de mongoose et des différent schema (table bdd)
 const mongoose = require("mongoose"); 
 const Winner = require("./schema/winner.js")
-
-
-
 /* exemple de fonction pour create
 
 (async () => {
@@ -45,8 +43,6 @@ try {
 })();
 */
 //==============================================
-
-
 // ==================================
 // ========= Partie Express ========= 
 // ==================================
@@ -168,6 +164,10 @@ io.on('connection', (socket) => {
                             const copiePions = JSON.parse(JSON.stringify(pions));
                             data.joueur[2] = copiePions;
                             salles[i].listeJoueurs.push(data.joueur);
+                            salles[i]["etatPlateau"] = []  //liste de dicos, représente les pièces par leur position, le pion et la couleur
+                            salles[i]["compteurTour"] = 1;
+                            salles[i]["tour"] = randInt(2);
+                            console.log("C'est au tour du joueur : ",salles[i].tour);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
         
                             socket.join(data.nom);  // Actualisation uniquement pour cette salle
@@ -236,6 +236,7 @@ io.on('connection', (socket) => {
     socket.on('lancementPartie', () => {
         console.log("Lancement de Partie reçu");
         let salleActuelle = null;
+        
 
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
@@ -250,6 +251,9 @@ io.on('connection', (socket) => {
                     io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
                     io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
+                    console.log("liste des joueurs : ", salle.listeJoueurs);
+                    console.log("tour : ", salle.tour);
+                    io.to(salleActuelle.nom).emit("infosTour", {"tour" : salles[i].tour, "compteurTour" : Math.floor(salles[i].compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                     break;
                 }
             }
@@ -435,19 +439,22 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('discover', (data) => {
-        const position = data.position;
-        console.log('Position reçue du client :', position);
-        let indicesAutour = determinerIndicesAutour(data.position);
-        parcoursDesSalles:
-        for(salle of salles){
-            for(joueur of salle.listeJoueurs){
-                if(joueur.includes(socket.id)){
-                    // Envoyer les instructions pour activer les hexagones autour
-                    io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
-                    break parcoursDesSalles;
-        }}}
-    });
+    // socket.on('discover', (data) => {
+    //     const position = data.position;
+    //     console.log('Position reçue du client :', position);
+    //     let indicesAutour = determinerIndicesAutour(data.position);
+    //     parcoursDesSalles:
+    //     for(salle of salles){
+    //         for(joueur of salle.listeJoueurs){
+    //             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+    //             if(joueur.includes(socket.id)){
+    //                 if(indexJoueur == salle.tour){
+    //                 // Envoyer les instructions pour activer les hexagones autour
+    //                     io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
+    //                     break parcoursDesSalles;
+    //                 }
+    //     }}}
+    // });
 
     socket.on('ClickHexRed', (data) => {
         const position = data.position;
@@ -460,20 +467,59 @@ io.on('connection', (socket) => {
     });
 
     socket.on("EnvoiPoserPionPlateau", (data) => {
+        //console.log(data);
         parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
                 if(joueur[1] == socket.id && joueur[2][data["pion"]] > 0){
-                    joueur[2][data["pion"]] --;
-                    console.log(joueur[2]);
-                    io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
-                    data.couleur = ["white", "black"][indexJoueur];
-                    console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
-                    data.joueur = indexJoueur + 1;
-                    io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                    //check si c'est le tour du joueur
+                    if(salle.tour == indexJoueur){
+                        let peutPlacer = true;
+                        //check si le pion est joué autour d'un pion de sa couleur
+                        if(salle.compteurTour >= 2){
+                            peutPlacer = false;
+                            let indice = data.case.replace("h", "");
+                            let voisins = determinerIndicesAutour(indice);
+                            checkCouleurAutour:
+                            for(v of voisins){
+                                for(p of salle.etatPlateau){
+                                    if(p.position == "h"+v && ["white", "black"][indexJoueur] == p.couleur){
+                                        peutPlacer = true;
+                                        break checkCouleurAutour;
+                                    }
+                                }
+                            }
+                        }
+                        if(peutPlacer){
+                            //gestion pions restants
+                            joueur[2][data["pion"]] --;
+                            io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
+                            //gestion pour révéler le plateau
+                            io.to(salle.nom).emit('instructionsActivation', { 'indices': determinerIndicesAutour(data.case.replace("h", ""))});
+                            //gestion pour poser pion
+                            data.couleur = ["white", "black"][indexJoueur];
+                            data.joueur = indexJoueur + 1;
+                            stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur};
+                            salle.etatPlateau.push(stockePion);
+                            //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
+                            io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                            //gestion tour
+                            salle.tour = 1-indexJoueur;
+                            salle.compteurTour += 0.5;
+                            io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                        }
+                        else{
+                            console.log("le pion n'a pas pu être placé");
+                        }
+                    }
+                    else if(salle.tour != indexJoueur){
+                        io.to(socket.id).emit("pasTonTour");
+                    }
                     break parcoursDesSalles;
                 }
+                
+                
             }
         }
     });

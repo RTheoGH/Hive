@@ -838,11 +838,11 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         if (d3.select(this).attr("fill") === "red") {
                             socket.emit('ClickHexRed', {'position': position});
                         }
-                        else {
-                            if (selectionPion != null){
-                                socket.emit('discover', {'position': position});
-                            }
-                        }
+                        // else {
+                        //     if (selectionPion != null){
+                        //         socket.emit('discover', {'position': position});
+                        //     }
+                        // }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
                         //console.log("typePion : "+typePion)
@@ -898,7 +898,15 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         selectionPion = null;
     });
     
-    
+    socket.on("pasTonTour", () => {
+        console.log("C'est le tour du joueur adverse");
+    });
+
+    socket.on("infosTour", (data) => { 
+        console.log("C'est au tour du joueur", data.tour, " de jouer");
+        console.log("Tour n°"+data.compteurTour);
+        $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
+    })
 
     //Pour mettre les images sur les pions du menu :
     
