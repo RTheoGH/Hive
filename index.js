@@ -24,6 +24,8 @@ var etatP = false;
 const mongoose = require("mongoose"); 
 const Winner = require("./schema/winner.js")
 
+
+
 /* exemple de fonction pour create
 
 (async () => {
@@ -203,6 +205,8 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
+                
+
                 salleAQuitter = salle;
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
@@ -263,6 +267,26 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
+                //met a jour le Schema winner 
+                
+                (async () => {
+                    try {
+                        await mongoose.connect("mongodb://localhost:27017/test");
+
+                        console.log("Connexion réussi avec MongoDB");
+                        const WinByFF = new Winner({
+                            Joueur_1 : joueurQuittant,
+                            Joueur_2 : joueurQuittant,
+                            Winner : joueurQuittant
+                        });
+                        console.log("winbyff créer avec succés");
+                        const resultat = await WinByFF.save()
+                        console.log(resultat);
+                    }catch(error){
+                        console.log("erreur soit dans la connexion");
+                    }
+                    })();
+                    //Fin de maj Schema 
                 salleAQuitter = salle;
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);

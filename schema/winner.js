@@ -6,4 +6,6 @@ const WinnerSchema = mongoose.Schema({
     Winner : String
 });
 //permet de pouvoir importer la table dans le projet / index.js
-const model = mongoose.model("Winner", winner)
+const model = mongoose.model("Winner", WinnerSchema);
+
+module.exports = model;
