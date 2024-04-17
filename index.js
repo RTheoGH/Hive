@@ -15,12 +15,34 @@ const pions = {
     'pionMoustique' : 1
 }
 var etatP = false;
-
 function randInt(max) { //renvoie un entier random entre 0 et < max
     return Math.floor(Math.random() * max);
 }
+// collection => J1, J2, Winner,Screen_of_party 
+//=============MongoDB et Mongoose===========
 
+// les appeller de mongoose et des différent schema (table bdd)
+const mongoose = require("mongoose"); 
+const Winner = require("./schema/winner.js")
+/* exemple de fonction pour create
 
+(async () => {
+try {
+    await mongoose.connect("mongodb://localhost:27017");
+    console.log("Connexion réussi avec MongoDB");
+    const resultat = await Winner.create({
+        Joueur_1 : ,
+        Joueur_2 : ,
+        Winner : ,
+    });
+    console.log(resultat);
+}catch(error){
+    console.log("erreur soit dans la connexion soit dans le create");
+}
+
+})();
+*/
+//==============================================
 // ==================================
 // ========= Partie Express ========= 
 // ==================================
@@ -183,6 +205,8 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
+                
+
                 salleAQuitter = salle;
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
@@ -247,6 +271,26 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
+                //met a jour le Schema winner 
+                
+                (async () => {
+                    try {
+                        await mongoose.connect("mongodb://localhost:27017/test");
+
+                        console.log("Connexion réussi avec MongoDB");
+                        const WinByFF = new Winner({
+                            Joueur_1 : joueurQuittant,
+                            Joueur_2 : joueurQuittant,
+                            Winner : joueurQuittant
+                        });
+                        console.log("winbyff créer avec succés");
+                        const resultat = await WinByFF.save()
+                        console.log(resultat);
+                    }catch(error){
+                        console.log("erreur soit dans la connexion");
+                    }
+                    })();
+                    //Fin de maj Schema 
                 salleAQuitter = salle;
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
