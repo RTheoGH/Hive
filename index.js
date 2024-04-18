@@ -253,7 +253,7 @@ io.on('connection', (socket) => {
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
                     console.log("liste des joueurs : ", salle.listeJoueurs);
                     console.log("tour : ", salle.tour);
-                    io.to(salleActuelle.nom).emit("infosTour", {"tour" : salles[i].tour, "compteurTour" : Math.floor(salles[i].compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                    io.to(salleActuelle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                     break;
                 }
             }
@@ -396,7 +396,7 @@ io.on('connection', (socket) => {
         if(matchPop.accept[0] == true && matchPop.accept[1] == true){
             console.log(matchPop);
             const copiePions = JSON.parse(JSON.stringify(pions));
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2"}
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2", "etatPlateau":[], "tour":randInt(2), "compteurTour":1};
             salles.push(nouvelle_salle);
             let cpt = 0;
             // console.log("1-compteur à ",cpt);
@@ -675,7 +675,7 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
         }
     }
     switch (typeJeton){
-        case 'abeille' :
+        case 'Abeille' :
             for(position in indicesAutour){
                 if(positionCible == position ){
                     if(damier[positionCible].attr('jeton') == "vide"){
