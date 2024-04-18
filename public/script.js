@@ -895,6 +895,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
+        d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
         posePionSurCase(path, data.pion, data.couleur, data.joueur);
         selectionPion = null;
     });

@@ -675,7 +675,7 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
         }
     }
     switch (typeJeton){
-        case 'abeille' :
+        case 'Abeille' :
             for(position in indicesAutour){
                 if(positionCible == position ){
                     if(damier[positionCible].attr('jeton') == "vide"){
