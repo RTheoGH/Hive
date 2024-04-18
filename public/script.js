@@ -44,6 +44,7 @@ let timerInterval;
 let recherche = false;
 let accepter = false;
 let matchID = "";
+let casesHighlight = []
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -960,6 +961,27 @@ socket.on("genereCouleurJoueur", (couleurGeneree) =>{
 var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
-    if($("#nb_"+this.id).text() != 0)
+    if($("#nb_"+this.id).text() != 0){
         selectionPion = this.id;
+        socket.emit("afficheCasesJouables");
+    }
+});
+
+socket.on("HighlightCasesJouables", (casesVides) => {
+    for(c of casesVides){
+        d3.select("#h"+c)
+            .attr("fill", "blue")
+            .attr("opacity", 0.3)
+            .attr("stroke", "blue");
+    }
+    casesHighlight = casesVides;
+});
+
+socket.on("UnhighlightCases", () => {
+    for(c of casesHighlight){
+        d3.select("#h"+c)
+            .attr("fill", "none")
+            .attr("opacity", 1)
+            .attr("stroke", "black");
+    }
 });

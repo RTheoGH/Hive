@@ -478,18 +478,8 @@ io.on('connection', (socket) => {
                         let peutPlacer = true;
                         //check si le pion est joué autour d'un pion de sa couleur
                         if(salle.compteurTour >= 2){
-                            peutPlacer = false;
                             let indice = data.case.replace("h", "");
-                            let voisins = determinerIndicesAutour(indice);
-                            checkCouleurAutour:
-                            for(v of voisins){
-                                for(p of salle.etatPlateau){
-                                    if(p.position == "h"+v && ["white", "black"][indexJoueur] == p.couleur){
-                                        peutPlacer = true;
-                                        break checkCouleurAutour;
-                                    }
-                                }
-                            }
+                            peutPlacer = checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
                         }
                         if(peutPlacer){
                             //gestion pions restants
@@ -503,6 +493,7 @@ io.on('connection', (socket) => {
                             stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur};
                             salle.etatPlateau.push(stockePion);
                             //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
+                            io.to(socket.id).emit("UnhighlightCases");
                             io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                             //gestion tour
                             salle.tour = 1-indexJoueur;
@@ -522,6 +513,46 @@ io.on('connection', (socket) => {
                 
             }
         }
+    });
+
+    socket.on("afficheCasesJouables", () => {
+        parcoursDesSalles:
+        for(let salle of salles){
+            for(let joueur of salle.listeJoueurs){
+                if(joueur[1] == socket.id){
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    if(indexJoueur == salle.tour){
+                        let listeCasesVides = [];
+                        if(salle.compteurTour != 1){
+                            for(let p of salle.etatPlateau){
+                                let indice = p.position.replace("h", "");
+                                let voisins = determinerIndicesAutour(indice);
+                                for(let v of voisins){
+                                    let estUnPionPlace = false;
+                                    for(c of salle.etatPlateau){
+                                        if(c.position == "h"+v){
+                                            estUnPionPlace = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!estUnPionPlace){
+                                        peutPlacer = checkPeutPlacer(v, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                                        if(!listeCasesVides.includes(v) && peutPlacer){
+                                            listeCasesVides.push(v);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else{listeCasesVides = [820];}
+                        // console.log("liste des cases jouables :", listeCasesVides);
+                        io.to(socket.id).emit("HighlightCasesJouables", listeCasesVides);
+                        break parcoursDesSalles;
+                    }
+                }
+                
+        }}
+
     });
 
     socket.on('envoieMessage',(data) => {
@@ -598,6 +629,23 @@ function determinerIndicesADistance(position, distance) {
     }
 
     return indices;
+}
+
+function checkPeutPlacer(casePossible, pionsPlateau, indexJoueur, tour){
+    let peutPlacer = false;
+    const c = JSON.parse(JSON.stringify(casePossible));
+    let casesVoisines = determinerIndicesAutour(c);
+    checkCouleurAutour:
+    for(let vi of casesVoisines){
+        for(let p of pionsPlateau){
+            if(p.position == "h"+vi && ["white", "black"][indexJoueur] == p.couleur && tour >= 2){
+                peutPlacer = true;
+                break checkCouleurAutour;
+            }
+            else if(tour < 2) peutPlacer = true;
+        }
+    }
+    return peutPlacer;
 }
 
 function determinerIndicesLigne(positionDepart, positionArrive) {
