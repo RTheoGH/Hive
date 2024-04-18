@@ -717,6 +717,289 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
     }
 }
 
+function indiceFourmiRec(damier, liste){
+    let indicesAutour = [];
+    let ListeIndiceRec = liste;
+    /*  Version récursive si la boucle for extensive pose problème
+    for(indiceListe in liste){
+        indicesAutour = determinerIndicesAutour(indiceListe);
+        for(indice in indicesAutour){
+            if(damier[indice].attr('jeton') != "vide" // si la case est vide
+            && !damier[indice].classed("desactive") // et qu'elle est active
+            && !indiceRetourDoublons.includes(indice)) // et que je l'ai pas déjà
+            ListeIndiceRec.push(indice);
+        }
+    }
+    if(ListeIndiceRec == liste)
+        return ListeIndiceRec;
+    else{ indiceFourmiRec(damier, liste) }
+    */
+    for(indiceListe in ListeIndiceRec){
+        indicesAutour = determinerIndicesAutour(indiceListe);
+        for(indice in indicesAutour){
+            if(damier[indice].attr('jeton') != "vide" // si la case est vide
+            && !damier[indice].classed("desactive") // et qu'elle est active
+            && !indiceRetourDoublons.includes(indice)) // et que je l'ai pas déjà
+            ListeIndiceRec.push(indice);
+        }
+    }
+    return ListeIndiceRec;
+}
+
+function determinerIndicesLigne(position) { 
+    // rend une liste de liste contenant les position des cases sur la ligne et diagonales (HG, HD, BG, BD)
+    let indices = [];
+
+    // pour détérminer les cases de la ligne 
+    let indiLigne = [];
+    if(position%40==0){
+        for(i in range(39))
+        indiLigne.push(position+i);
+    }
+    else{
+        let posTemp = position;
+        let i = 1;
+        while(posTemp%40!=0){
+            indiLigne.push(posTemp-i);
+            i+=1;
+        }
+        indiLigne.push(posTemp-i);
+    }
+    indices.push(indiLigne);
+
+    // pour détérminer les cases des colonnes
+    let posTempCol = position;
+    while(posTempCol%40!=0){
+        posTempCol-=1;
+    }
+    if(posTempCol%80==0){lignePairBase = true}
+    else{lignePairBase = false}
+
+    // case en haut a gauche
+    let indiHG = [];
+    let lignePair = lignePairBase;
+    let addHG;
+    if(lignePair) addHG = position - 41;
+    else addHG = position - 40;
+    while(addHG >= 0){
+        if(lignePair){
+            indiHG.push(addHG);
+            addHG - 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indiHG.push(addHG);
+            addHG - 41;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHG);
+
+    // case en haut a droite
+    let indiHD = [];
+    lignePair = lignePairBase;
+    let addHD;
+    if(lignePair) addHD = position - 40;
+    else addHD = position - 39;
+    while(addHD >= 0){
+        if(lignePair){
+            indices.push(addHD);
+            addHD - 39;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addHD);
+            addHD - 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHD);
+
+    // case en bas a gauche
+    let indiBG = [];
+    lignePair = lignePairBase;
+    let addBG;
+    if(lignePair) addBG = position + 39;
+    else addBG = position + 40;
+    while(addBG >= 0){
+        if(lignePair){
+            indices.push(addBG);
+            addBG + 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBG);
+            addBG + 39;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBG);
+
+    // case en bas a droite
+    let indiBD = [];
+    lignePair = lignePairBase;
+    let addBD;
+    if(lignePair) addBD = position + 40;
+    else addBD = position + 41;
+    while(addBD >= 0){
+        if(lignePair){
+            indices.push(addBD);
+            addBD + 41;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBD);
+            addBD + 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBD);
+
+    return indices;
+}
+
+function determinerIndicesAutour(position) {
+    // rend toutes les cases autour de la position
+    let indicesAutour = [];
+    nbLignes = 40;
+    nbColonnes = 40;
+
+    // Convertir la position en coordonnées de ligne et colonne
+    let ligne = Math.floor(position / nbColonnes);
+    let colonne = position % nbColonnes;
+
+    // Coordonnées des voisins relatifs
+    let voisinsRelatifs = [
+        [0, -1], [0, 1], // gauche, droite
+        [-1, (ligne % 2 === 0) ? 1 : 0], [-1, (ligne % 2 === 0) ? 0 : -1], // hautG, hautD
+        [1, (ligne % 2 === 0) ? 1 : 0], [1, (ligne % 2 === 0) ? 0 : -1]  // basG, basD
+    ];
+
+    // Parcourir les voisins et calculer les indices
+    for (let voisin of voisinsRelatifs) {
+        let voisinLigne = ligne + voisin[0];
+        let voisinColonne = colonne + voisin[1];
+
+        // Calculer l'indice et l'ajouter au tableau
+        let voisinIndice = voisinLigne * nbColonnes + voisinColonne;
+        indicesAutour.push(voisinIndice);
+    }
+
+    return indicesAutour;
+}
+
+function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
+    let indicesAutour = determinerIndicesAutour(positionActuelle);
+    let indiceRetour = [];
+    switch (typeJeton){
+        case 'abeille' :
+            for(position in indicesAutour){
+                if(damier[position].attr('jeton') == "vide")
+                indiceRetour.push(position);
+            }
+            break;
+    
+        case 'Araignee' :
+            let casesAutourAraignee1 = [];
+            let casesAutourAraignee2 = [];
+
+            for(indice1 in indicesAutour){
+                if(damier[indice1].attr('jeton') == "vide"){
+                    casesAutourAraignee1.push(indice1);
+                }
+            }
+
+            for(indice2 in casesAutourAraignee1){
+                let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                for(indiceTemp2 in casesAutourTemp2){
+                    if(damier[indiceTemp2].attr('jeton') == "vide"){
+                        indiceRetour.push(indiceTemp2);
+                    }
+                }
+            }
+
+            for(indicef in casesAutourAraignee2){
+                let casesAutourTempf = determinerIndicesAutour(indicef);
+                for(indiceTempf in casesAutourTempf){
+                    if(damier[indiceTempf].attr('jeton') == "vide"){
+                        casesAutourAraigneeFinal.push(indiceTempf);
+                    }
+                }
+            }
+        break;
+
+        case 'Coccinelle' :
+            let casesAutourCocinelle1 = [];
+            let casesAutourCocinelle2 = [];
+
+            for(indice1 in indicesAutour){
+                if(damier[indice1].attr('jeton') =! "vide"){
+                    casesAutourCocinelle1.push(indice1);
+                }
+            }
+
+            for(indice2 in casesAutourCocinelle1){
+                let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                for(indiceTemp2 in casesAutourTemp2){
+                    if(damier[indiceTemp2].attr('jeton') =! "vide"){
+                        casesAutourCocinelle2.push(indiceTemp2);
+                    }
+                }
+            }
+
+            for(indicef in casesAutourCocinelle2){
+                let casesAutourTempf = determinerIndicesAutour(indicef);
+                for(indiceTempf in casesAutourTempf){
+                    if(damier[indiceTempf].attr('jeton') == "vide"){
+                        indiceRetour.push(indiceTempf);
+                    }
+                }
+            }
+        break;
+
+        case 'Fourmi' :
+            let indiceRetourDoublons = indiceFourmiRec(damier, [positionActuelle])
+            indiceRetourDoublons.pop(positionActuelle)
+            indiceRetour = [...new Set(indiceRetourDoublons)]; // devrait enlever des doublons (même si il ne devrait pas y en avoir avec cette version)
+            if(indiceRetour.includes(positionActuelle))
+                indiceRetour.pop(positionActuelle);
+        break;
+        
+        case 'Moustique' :
+            let listeMoustique = [];
+            let listeAddMoustique = []
+            for(indice in indicesAutour){
+                if(damier[indice].attr('jeton') != "vide" && !listeMoustique.includes(damier[indice].attr('jeton')))
+                listeMoustique.push(damier[indice].attr('jeton'));
+            }
+            for(pionMoustique in listeMoustique){
+                listeAddMoustique = CasesDeplacementJeton(damier, positionActuelle, pionMoustique)
+                for(indiceMoustique in listeAddMoustique){
+                    if(!indiceRetour.includes(indiceMoustique))
+                        indiceRetour.push(indiceMoustique);
+                }
+            }
+            break;
+
+        case 'Sauterelle' :
+            if(positionActuelle in indiceAutourCible) indiceAutourCible.pop(positionActuelle);
+            let indicesSauterelle = determinerIndicesLigne(positionActuelle);
+            for(ligne in indicesSauterelle){
+                if(damier[ligne[0]].attr('jeton') != "vide"){
+                for(indiceCheck in ligne){
+                    if(damier[indiceCheck].attr('jeton') == "vide")
+                        indiceRetour.push(indiceCheck);
+                    break;
+                    }
+                }
+            }
+            break;
+
+        case 'Scarabee' :
+            return determinerIndicesAutour(positionActuelle);
+    }
+}
+
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
         rayon=rayon+5;

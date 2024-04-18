@@ -661,6 +661,16 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
                         }
                     }
                 }
+
+                for(indicef in casesAutourAraignee2){
+                    let casesAutourTempf = determinerIndicesAutour(indicef);
+                    for(indiceTempf in casesAutourTempf){
+                        if(damier[indiceTempf].attr('jeton') == "vide"){
+                            casesAutourAraigneeFinal.push(indiceTempf);
+                        }
+                    }
+                }
+
                 for(indiceFinal in casesAutourAraigneeFinal){
                     if(indiceFinal == positionCible) return true;
                 }
@@ -685,6 +695,16 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
                         }
                     }
                 }
+
+                for(indicef in casesAutourCocinelle2){
+                    let casesAutourTempf = determinerIndicesAutour(indicef);
+                    for(indiceTempf in casesAutourTempf){
+                        if(damier[indiceTempf].attr('jeton') == "vide"){
+                            casesAutourCocinelleFinal.push(indiceTempf);
+                        }
+                    }
+                }
+
                 for(indiceFinal in casesAutourCocinelleFinal){
                     if(indiceFinal == positionCible) return true;
                 }
