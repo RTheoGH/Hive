@@ -23,17 +23,18 @@ function randInt(max) { //renvoie un entier random entre 0 et < max
 
 // les appeller de mongoose et des différent schema (table bdd)
 const mongoose = require("mongoose"); 
-const Winner = require("./schema/winner.js")
+const Historique = require("./schema/historique.js")
 /* exemple de fonction pour create
 
 (async () => {
 try {
     await mongoose.connect("mongodb://localhost:27017");
     console.log("Connexion réussi avec MongoDB");
-    const resultat = await Winner.create({
+    const resultat = await Historique.create({
         Joueur_1 : ,
         Joueur_2 : ,
         Winner : ,
+        Plateau
     });
     console.log(resultat);
 }catch(error){
@@ -277,15 +278,17 @@ io.on('connection', (socket) => {
                 J2 = salle.listeJoueurs[1][0];
                 gagnant = [].concat(salle.listeJoueurs);
                 gagnant.splice(indexJoueur,1);
+                console.log("etat du plateau",salle.etatPlateau);
                 (async () => {
                     try {
                         await mongoose.connect("mongodb://localhost:27017/test");
 
                         console.log("Connexion réussi avec MongoDB");
-                        const WinByFF = new Winner({
+                        const WinByFF = new Historique({
                             Joueur_1 : J1,
                             Joueur_2 : J2,
-                            Winner : gagnant[0][0]
+                            Winner : gagnant[0][0],
+                            Plateau : salle.etatPlateau
                         });
                         console.log("winbyff créer avec succés");
                         const resultat = await WinByFF.save()
