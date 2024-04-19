@@ -23,17 +23,18 @@ function randInt(max) { //renvoie un entier random entre 0 et < max
 
 // les appeller de mongoose et des différent schema (table bdd)
 const mongoose = require("mongoose"); 
-const Winner = require("./schema/winner.js")
+const Historique = require("./schema/historique.js")
 /* exemple de fonction pour create
 
 (async () => {
 try {
     await mongoose.connect("mongodb://localhost:27017");
     console.log("Connexion réussi avec MongoDB");
-    const resultat = await Winner.create({
+    const resultat = await Historique.create({
         Joueur_1 : ,
         Joueur_2 : ,
         Winner : ,
+        Plateau
     });
     console.log(resultat);
 }catch(error){
@@ -271,20 +272,25 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
-                //met a jour le Schema winner 
-                
+                console.log("joueur qui quitte est : ", joueurQuittant);
+                //met a jour le Schema winner
+                J1 = salle.listeJoueurs[0][0];//copie des joueurs pour eviter un bug de synchro
+                J2 = salle.listeJoueurs[1][0];
+                gagnant = [].concat(salle.listeJoueurs); // copie des listes joueur pour eviter un bug de synchro
+                gagnant.splice(indexJoueur,1);// enleve le joueur perdant
                 (async () => {
                     try {
-                        await mongoose.connect("mongodb://localhost:27017/test");
+                        await mongoose.connect("mongodb://localhost:27017/test"); //connection
 
                         console.log("Connexion réussi avec MongoDB");
-                        const WinByFF = new Winner({
-                            Joueur_1 : joueurQuittant,
-                            Joueur_2 : joueurQuittant,
-                            Winner : joueurQuittant
+                        const WinByFF = new Historique({ // nouveau tuple
+                            Joueur_1 : J1,
+                            Joueur_2 : J2,
+                            Winner : gagnant[0][0],
+                            Plateau : salle.etatPlateau
                         });
                         console.log("winbyff créer avec succés");
-                        const resultat = await WinByFF.save()
+                        const resultat = await WinByFF.save() // insert
                         console.log(resultat);
                     }catch(error){
                         console.log("erreur soit dans la connexion");
