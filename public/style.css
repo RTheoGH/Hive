@@ -122,6 +122,11 @@ body{
     transition: .5s;
 }
 
+.erreur{
+    font-family: "Handlee", cursive;
+    font-size: 2em;
+}
+
 .menuSelect option:hover,
 .menuSelect option:focus,
 .menuSelect option:active,
@@ -327,12 +332,14 @@ footer{
 /* Fond message de victoire */
 .victoire{
     position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%,-50%);
+    /* top: 45%; */
+    /* left: 50%; */
+    /* transform: translate(-50%,-50%); */
     height: 100%;
     width: 100%;
-    background-image: url("images/table.jpeg");
+    background-size: cover;
+    background-image:url("images/fonds/fond.png");
+    background-repeat: no-repeat;
     text-align: center;
     color: white;
     font-size: 4em;
@@ -340,6 +347,7 @@ footer{
 
 /* Texte de victoire */
 .textVictoire{
+    font-family: "Handlee", cursive;
     color: black;
     margin-top: 20%;
 }
@@ -604,6 +612,10 @@ footer{
         left: 84%;
         font-size: 15px;
     }
+    .victoire{
+        background-image:url("images/fonds/fond-1024-768.png");
+        font-size: 3em;
+    }
 }
 
 /* Ecran petit, supérieur à 1025px et inférieur à 1280px */
@@ -664,6 +676,10 @@ footer{
     .positionQP {
         left: 83.5%;
     }
+    .victoire{
+        background-image:url("images/fonds/fond-1280-800.png");
+        font-size: 3em;
+    }
 }
 
 /* Ecran moyen, supérieur à 1281px et inférieur à 1440px */
@@ -708,6 +724,10 @@ footer{
     .positionQP {
         left: 84.5%;
     }
+    .victoire{
+        background-image:url("images/fonds/fond-1440-900.png");
+        font-size: 3em;
+    }
 }
 
 /* Ecran grand, supérieur à 1441px et inférieur à 1540px */
@@ -716,6 +736,9 @@ footer{
         padding-bottom:32em;
     }
     .fond{
+        background-image:url("images/fonds/fond-1680-1050.png");
+    }
+    .victoire{
         background-image:url("images/fonds/fond-1680-1050.png");
     }
 }
@@ -745,6 +768,9 @@ footer{
         top: 3%;
     }
     .fond{
+        background-image:url("images/fonds/fond-1680-1050.png");
+    }
+    .victoire{
         background-image:url("images/fonds/fond-1680-1050.png");
     }
 }

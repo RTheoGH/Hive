@@ -30,14 +30,15 @@ socket.on("Salut c'est le serveur ! :)", () => {
 // ----------------------------------------- Variables ----------------------------------------------------
 // --------------------------------------------------------------------------------------------------------
 
+// Sons -------------
 const select = new Audio('public/sons/select.mp3');
 const win = new Audio('public/sons/win.mp3');
 const erreur = new Audio('public/sons/erreur.mp3');
 const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
-const file = new Audio('public/sons/file.mp3');
 const found = new Audio('public/sons/found.mp3');
 const miss = new Audio('public/sons/miss.mp3');
+// -------------------
 
 var color = ['white','black'];
 var nomJoueur="";
@@ -124,7 +125,7 @@ socket.on('majPartie', (data) => {
     if(joueurActuel){
         // Annonce de la victoire si on est le joueur qui reste encore dans la partie
         var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
-            <br/><button class='newGameButton'\
+            <br/><button class='bouton'\
             onClick='window.location.reload()'>Nouvelle Partie</button></div></div>";
         $("body").append(victoire);
         ambiant.pause();
@@ -137,7 +138,7 @@ socket.on('majPartie', (data) => {
 // Message d'erreur si le nom de la salle est déja pris
 socket.on('sallePrise', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Ce nom de salle est déja pris.";
     $("#accueil").show();
     erreur.play();
 });
@@ -145,7 +146,7 @@ socket.on('sallePrise', () => {
 // Message d'erreur si la salle est pleine
 socket.on('sallePleine', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Cette salle est pleine.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Cette salle est pleine.";
     $("#accueil").show();
     erreur.play();
 });
@@ -153,7 +154,7 @@ socket.on('sallePleine', () => {
 // Message d'erreur si le pseudonyme choisi est déjà pris par quelqu'un dans la salle
 socket.on('pseudoPris', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Ce nom de joueur est déjà pris.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Ce nom de joueur est déjà pris.";
     $("#accueil").show();
     erreur.play();
 });
@@ -161,7 +162,7 @@ socket.on('pseudoPris', () => {
 // Message d'erreur si la salle n'est pas trouvé
 socket.on('salleIntrouvable', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Cette salle n'existe pas.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Cette salle n'existe pas.";
     $("#accueil").show();
     erreur.play();
 });
@@ -169,7 +170,7 @@ socket.on('salleIntrouvable', () => {
 // Message d'erreur si le code entré par le joueur n'est pas celui de la salle
 socket.on('codeFaux', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Code faux pour cette salle.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Code faux pour cette salle.";
     $("#accueil").show();
     erreur.play();
 });
@@ -178,7 +179,7 @@ socket.on('codeFaux', () => {
 socket.on('nomVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Nom de salle vide.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Nom de salle vide.";
     $("#accueil").show();
     erreur.play();
 });
@@ -187,7 +188,7 @@ socket.on('nomVide', () => {
 socket.on('codeVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Code de salle vide.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Code de salle vide.";
     $("#accueil").show();
     erreur.play();
 });
@@ -196,7 +197,7 @@ socket.on('codeVide', () => {
 socket.on('joueurVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Nom de joueur vide.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Nom de joueur vide.";
     $("#accueil").show();
     erreur.play();
 });
@@ -239,8 +240,8 @@ socket.on('matchTrouve', (data) => {
         }
     },100);
     found.play();
-    file.pause();
-    file.currentTime = 0;
+    ambiant.pause();
+    ambiant.currentTime = 0;
 });
 
 // Met à jour la largeur de la barre de progression
@@ -251,9 +252,9 @@ function updateProgressBar() {
 // Socket de réception pour relancer la musique de la file
 socket.on("repriseSonFile", () => {
     console.log("reprise de la file");
-    file.play();
-    file.addEventListener('timeupdate', function(){
-        if(this.currentTime >= 72){
+    ambiant.play();
+    ambiant.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 59){
             this.currentTime = 0;
         }
     });
@@ -306,13 +307,6 @@ function copierCode(){
 // Fonction qui initialise la partie ainsi que le damier
 function initPartie(){
     genereDamier(40,40,40);
-    ambiant.currentTime = 0;
-    ambiant.play();
-    ambiant.addEventListener('timeupdate', function(){
-        if(this.currentTime >= 59){
-            this.currentTime = 0;
-        }
-    });
 }
 
 // fonction de début de partie
@@ -398,9 +392,10 @@ function lancerRecherche(){
     if (!timerInterval) {
         timerInterval = setInterval(updateTimer, 1000); // Appelle updateTimer() toutes les 1000 ms (1 seconde)
     }
-    file.play();
-    file.addEventListener('timeupdate', function(){
-        if(this.currentTime >= 72){
+    select.play();
+    ambiant.play();
+    ambiant.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 59){
             this.currentTime = 0;
         }
     });
@@ -421,8 +416,8 @@ function retourRecherche(){
     }
     document.getElementById("message_erreur").innerHTML = "";
     $("#rechercher").hide();
-    file.pause();
-    file.currentTime = 0;
+    ambiant.pause();
+    ambiant.currentTime = 0;
     select.play();
     $("#accueil").fadeIn(300);
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
@@ -439,6 +434,7 @@ function accepterMatch(){
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
     $("#accepterM").prop("disabled",true);
+    select.play();
     socket.emit("accepterMatch",{"joueur":[niveau,nomJoueur,socket.id,null],"matchID":matchID});
 }
 
@@ -523,8 +519,6 @@ function quitterPartieEnCours(){
     socket.emit('quittePartieEnCours');
     $("#jeu").hide();
     retourAccueil();
-    ambiant.pause();
-    ambiant.currentTime = 0;
     $("#lancer").prop("disabled",true);
 }
 
