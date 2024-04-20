@@ -1307,9 +1307,9 @@ $(document).on('click', '.pion', function(){
 socket.on("HighlightCasesJouables", (casesVides) => {
     for(c of casesVides){
         d3.select("#h"+c)
-            .attr("fill", "blue")
+            .attr("fill", "green")
             .attr("opacity", 0.3)
-            .attr("stroke", "blue");
+            .attr("stroke", "green");
     }
     casesHighlight = casesVides;
 });
