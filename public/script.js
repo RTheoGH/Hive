@@ -749,7 +749,8 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             .attr('x', x-26)
             .attr('y', y+14)
             .attr('width', rayonGlobal * 1.3)
-            .attr('height', rayonGlobal * 1.3);
+            .attr('height', rayonGlobal * 1.3)
+            .style('pointer-events', 'none');
         const dicoPionHistorique = {
             'pionAbeille' : 'une abeille',
             'pionFourmi' : 'une fourmi',
