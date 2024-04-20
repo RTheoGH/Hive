@@ -1,4 +1,10 @@
-const { range } = require('d3');
+// const { range } = require('d3');
+import('d3').then((d3) => {
+    const { range } = d3;
+    // Utilisez range ici
+}).catch((error) => {
+    console.error('Une erreur s\'est produite lors du chargement du module D3:', error);
+});
 const express = require('express')
 const app = express()
 const port = 3000
@@ -512,7 +518,7 @@ function determinerIndicesLigne(position) {
     // pour détérminer les cases de la ligne 
     let indiLigne = [];
     if(position%40==0){
-        for(i in range(39))
+        for(i of range(39))
         indiLigne.push(position+i);
     }
     else{
@@ -622,18 +628,18 @@ function determinerIndicesLigne(position) {
 function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceAutourCible = determinerIndicesAutour(positionCible);
-    for(position in positionCible){
+    for(position of positionCible){
         if(position == positionActuelle){
             indiceAutourCible.pop(positionActuelle);
         }
     }
     switch (typeJeton){
         case 'abeille' :
-            for(position in indicesAutour){
+            for(position of indicesAutour){
                 if(positionCible == position ){
                     if(damier[positionCible].attr('jeton') == "vide"){
                         indiceAutourCible.pop(positionActuelle);
-                        for(indice in indiceAutourCible){
+                        for(indice of indiceAutourCible){
                             if(damier[indice].attr('jeton') != "vide"){
                                 return true;
                             }
@@ -648,30 +654,30 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             let casesAutourAraignee2 = [];
             let casesAutourAraigneeFinal = [];
             if(damier[positionCible].attr('jeton') == "vide"){
-                for(indice1 in indicesAutour){
+                for(indice1 of indicesAutour){
                     if(damier[indice1].attr('jeton') == "vide"){
                         casesAutourAraignee1.push(indice1);
                     }
                 }
-                for(indice2 in casesAutourAraignee1){
+                for(indice2 of casesAutourAraignee1){
                     let casesAutourTemp2 = determinerIndicesAutour(indice2);
-                    for(indiceTemp2 in casesAutourTemp2){
+                    for(indiceTemp2 of casesAutourTemp2){
                         if(damier[indiceTemp2].attr('jeton') == "vide"){
                             casesAutourAraignee2.push(indiceTemp2);
                         }
                     }
                 }
 
-                for(indicef in casesAutourAraignee2){
+                for(indicef of casesAutourAraignee2){
                     let casesAutourTempf = determinerIndicesAutour(indicef);
-                    for(indiceTempf in casesAutourTempf){
+                    for(indiceTempf of casesAutourTempf){
                         if(damier[indiceTempf].attr('jeton') == "vide"){
                             casesAutourAraigneeFinal.push(indiceTempf);
                         }
                     }
                 }
 
-                for(indiceFinal in casesAutourAraigneeFinal){
+                for(indiceFinal of casesAutourAraigneeFinal){
                     if(indiceFinal == positionCible) return true;
                 }
             }
@@ -682,30 +688,30 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             let casesAutourCocinelle2 = [];
             let casesAutourCocinelleFinal = [];
             if(damier[positionCible].attr('jeton') == "vide"){
-                for(indice1 in indicesAutour){
+                for(indice1 of indicesAutour){
                     if(damier[indice1].attr('jeton') =! "vide"){
                         casesAutourCocinelle1.push(indice1);
                     }
                 }
-                for(indice2 in casesAutourCocinelle1){
+                for(indice2 of casesAutourCocinelle1){
                     let casesAutourTemp2 = determinerIndicesAutour(indice2);
-                    for(indiceTemp2 in casesAutourTemp2){
+                    for(indiceTemp2 of casesAutourTemp2){
                         if(damier[indiceTemp2].attr('jeton') =! "vide"){
                             casesAutourCocinelle2.push(indiceTemp2);
                         }
                     }
                 }
 
-                for(indicef in casesAutourCocinelle2){
+                for(indicef of casesAutourCocinelle2){
                     let casesAutourTempf = determinerIndicesAutour(indicef);
-                    for(indiceTempf in casesAutourTempf){
+                    for(indiceTempf of casesAutourTempf){
                         if(damier[indiceTempf].attr('jeton') == "vide"){
                             casesAutourCocinelleFinal.push(indiceTempf);
                         }
                     }
                 }
 
-                for(indiceFinal in casesAutourCocinelleFinal){
+                for(indiceFinal of casesAutourCocinelleFinal){
                     if(indiceFinal == positionCible) return true;
                 }
             }
@@ -713,8 +719,8 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
 
         case 'Fourmi' :
             if(damier[positionCible].attr('jeton') == "vide"){
-                if(positionActuelle in indiceAutourCible) indiceAutourCible.pop(positionActuelle);
-                for(indice in indiceAutourCible){
+                if(indiceAutourCible.includes(positionActuelle)) indiceAutourCible.pop(positionActuelle);
+                for(indice of indiceAutourCible){
                     if(damier[indice].attr('jeton') != "vide"){
                         return true;
                     }
@@ -724,11 +730,11 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
         
         case 'Moustique' :
             let listeMoustique = [];
-            for(indice in indicesAutour){
+            for(indice of indicesAutour){
                 if(damier[indice].attr('jeton') != "vide" && !listeMoustique.includes(damier[indice].attr('jeton')))
                 listeMoustique.push(damier[indice].attr('jeton'));
             }
-            for(pionMoustique in listeMoustique){
+            for(pionMoustique of listeMoustique){
                 if(validerDeplacementJeton(damier, positionActuelle, positionCible, pionMoustique))
                 return true;
             }
@@ -736,12 +742,12 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
 
         case 'Sauterelle' :
             if(damier[positionCible].attr('jeton') == "vide"){
-                if(positionActuelle in indiceAutourCible) indiceAutourCible.pop(positionActuelle);
+                if(indiceAutourCible.includes(positionActuelle)) indiceAutourCible.pop(positionActuelle);
 
                 let indicesSauterelle = determinerIndicesLigne(positionActuelle);
-                for(ligne in indicesSauterelle){
+                for(ligne of indicesSauterelle){
                     if(damier[ligne[0]].attr('jeton') != "vide"){
-                    for(indiceCheck in ligne){
+                    for(indiceCheck of ligne){
                         if(damier[indiceCheck].attr('jeton') == "vide" && indiceCheck == positionCible )
                             return true;
                         }
@@ -751,9 +757,9 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             return false;
 
         case 'Scarabee' :
-            for(indiceD in indicesAutour){
+            for(indiceD of indicesAutour){
                 if(positionCible == indice){
-                    for(indiceC in indiceAutourCible){
+                    for(indiceC of indiceAutourCible){
                         if(damier[indiceC].attr('jeton') != "vide"){
                             return true;
                         }
@@ -762,4 +768,5 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             }
             return false;
     }
+    return false;
 }

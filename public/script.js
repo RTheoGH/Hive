@@ -580,6 +580,51 @@ function toggleHexagone(data) {
     // Récupérer les indices des hexagones autour
     var indicesAutour = data.indices;
 
+    // A changer
+
+    var PionPose = hexagone.attr('jeton') == "vide";
+    if(!PionPose){
+        console.log(data.position + " n'est pas vide")
+        var autourNonVide = false;
+        for(indiceR of indicesAutour){
+            if(d3.select('#h' + indiceR).attr('jeton') == "vide") autourNonVide = true;
+        }
+        if(autourNonVide){
+            hexagone
+                .attr("fill", "transparent");
+        }
+        else{
+            hexagone
+                .classed("desactive", true)
+                .classed("hexagoneReactive", false)
+                .classed("hexagoneWhiteBorder", true)
+                .attr("fill", "transparent")
+                .style("pointer-events", "none");
+        }
+        for(indiceR of indicesAutour){
+            var hexVoisin = d3.select('#h' + indiceR);
+            var indicesVoisinAutour = determinerIndicesAutour(indiceR);
+            let nonVide = false;
+            if(d3.select('#h' + indiceR).attr('jeton') == "vide") nonVide = true;
+            for(indiceRed of indicesVoisinAutour){
+                if(d3.select('#h' + indiceRed).attr('jeton') == "vide") nonVide = true;
+            }
+            if (!nonVide) {
+                hexVoisin
+                    .classed("desactive", true)
+                    .classed("hexagoneReactive", false)
+                    .classed("hexagoneWhiteBorder", true)
+                    .attr("fill", "none")
+                    .style("pointer-events", "none");
+            }
+        }
+    } else {
+        // Hexagone non rouge, l'active
+        console.log(data.position + " est vide");
+    }
+}
+
+/*
     if (couleurRemplissage === "red") {
         console.log(data.position + " est rouge.");
         // Hexagone rouge, le désactive et désactive les hexagones autour
@@ -604,23 +649,22 @@ function toggleHexagone(data) {
         // Désactiver les hexagones autour s'ils ne sont pas rouges ou n'ont pas un autre hexagone rouge autour d'eux
         for(indiceR of indicesAutour) {
             console.log(indiceR + " est rouge ou border ?");
-            /*
-            var hexVoisin = d3.select('#h' + indice);
-            var couleurVoisin = hexVoisin.attr("fill");
+            //var hexVoisin = d3.select('#h' + indice);
+            //var couleurVoisin = hexVoisin.attr("fill");
 
             // Vérifier si l'hexagone voisin est rouge ou a un hexagone rouge autour de lui
-            var indicesVoisinAutour = determinerIndicesAutour(indice);
-            let rouge = false;
-            for(indiceRed of indicesVoisinAutour){
-                if(d3.select('#h' + indiceRed).attr("fill")==="red"){
-                    rouge = true;
-                }
-            }
-            var voisinAHexRouge = indicesVoisinAutour.some(function (voisinIndice) {
-                var voisinHex = d3.select('#h' + voisinIndice);
-                return voisinHex.attr("fill") === "red";
-            });
-            */
+            //var indicesVoisinAutour = determinerIndicesAutour(indice);
+            //let rouge = false;
+            //for(indiceRed of indicesVoisinAutour){
+            //    if(d3.select('#h' + indiceRed).attr("fill")==="red"){
+            //        rouge = true;
+            //    }
+            //}
+            //var voisinAHexRouge = indicesVoisinAutour.some(function (voisinIndice) {
+            //    var voisinHex = d3.select('#h' + voisinIndice);
+            //    return voisinHex.attr("fill") === "red";
+            //});
+            
             var hexVoisin = d3.select('#h' + indiceR);
             var indicesVoisinAutour = determinerIndicesAutour(indiceR);
             let rouge = false;
@@ -643,6 +687,7 @@ function toggleHexagone(data) {
         console.log(data.position + " n'est pas rouge");
     }
 }
+*/
 
 function determinerIndicesAutour(position) {
     let indicesAutour = [];
@@ -1124,6 +1169,16 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         else {
                             if (selectionPion != null){
                                 socket.emit('discover', {'position': position});
+                            }
+                        }
+                        if (d3.select(this).attr("jeton") != "vide"){
+                            for(let caseI = 0; caseI < (nbLignes*nbColonnes)-1 ;caseI++ ){
+                                if(d3.select(this).attr("fill") === "blue")
+                                    d3.select(this).attr("fill") = "transparent";
+                            }
+                            let caseDisponible = CasesDeplacementJeton(d3.select("#tablier"),position,d3.select(this).attr("jeton"));
+                            for(let caseD of caseDisponible){
+                                d3.select(caseD).attr("fill") = "blue";
                             }
                         }
                         //let position=d3.select(this).attr('id').substring(1);
