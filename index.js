@@ -642,14 +642,14 @@ function determinerIndicesADistance(position, distance) {
 }
 
 function checkPeutPlacer(casePossible, pionsPlateau, indexJoueur, tour){
-    let peutPlacer = false;
+    let peutPlacer = true;
     const c = JSON.parse(JSON.stringify(casePossible));
     let casesVoisines = determinerIndicesAutour(c);
     checkCouleurAutour:
     for(let vi of casesVoisines){
         for(let p of pionsPlateau){
-            if(p.position == "h"+vi && ["white", "black"][indexJoueur] == p.couleur && tour >= 2){
-                peutPlacer = true;
+            if(p.position == "h"+vi && ["white", "black"][1-indexJoueur] == p.couleur && tour >= 2){
+                peutPlacer = false;
                 break checkCouleurAutour;
             }
             else if(tour < 2) peutPlacer = true;

@@ -749,7 +749,8 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             .attr('x', x-26)
             .attr('y', y+14)
             .attr('width', rayonGlobal * 1.3)
-            .attr('height', rayonGlobal * 1.3);
+            .attr('height', rayonGlobal * 1.3)
+            .style('pointer-events', 'none');
         const dicoPionHistorique = {
             'pionAbeille' : 'une abeille',
             'pionFourmi' : 'une fourmi',
@@ -1307,9 +1308,9 @@ $(document).on('click', '.pion', function(){
 socket.on("HighlightCasesJouables", (casesVides) => {
     for(c of casesVides){
         d3.select("#h"+c)
-            .attr("fill", "blue")
+            .attr("fill", "green")
             .attr("opacity", 0.3)
-            .attr("stroke", "blue");
+            .attr("stroke", "green");
     }
     casesHighlight = casesVides;
 });
