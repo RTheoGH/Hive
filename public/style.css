@@ -735,11 +735,49 @@ footer{
     #menuPions:hover{
         padding-bottom:32em;
     }
+    #accueil{
+        transform: translate(-25%,0%);
+    }
+    #creer{
+        margin-top: 10em;
+    }
+    .decalMenu {
+        margin-right: 17em;
+    }
+    .hive{
+        top: -10%;
+        font-size: 8em;
+    }
+    .reglesDesc{
+        width: 45vw;
+    }
+    .tailleRImg{
+        height: 60px;
+        width: 60px;
+    }
+    .action{
+        top: 3%;
+    }
     .fond{
-        background-image:url("images/fonds/fond-1680-1050.png");
+        background-image:url("images/fonds/fond-1540-870.png");
     }
     .victoire{
-        background-image:url("images/fonds/fond-1680-1050.png");
+        background-image:url("images/fonds/fond-1540-870.png");
+    }
+    footer{
+        height: 16vh;
+    }
+    .posAccueil{
+        top: 32%;
+    }
+    .reglesDesc{
+        top: 50%;
+    }
+    .reglesPion{
+        top: 70%;
+    }
+    #actions_action{
+        height: 22vh;
     }
 }
 
