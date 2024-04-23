@@ -1,3 +1,10 @@
+// const { range } = require('d3');
+import('d3').then((d3) => {
+    const { range } = d3;
+    // Utilisez range ici
+}).catch((error) => {
+    console.error('Une erreur s\'est produite lors du chargement du module D3:', error);
+});
 const express = require('express')
 const app = express()
 const port = 3000
@@ -16,6 +23,35 @@ const pions = {
 }
 var etatP = false; // etat pour la recherche de partie
 
+function randInt(max) { //renvoie un entier random entre 0 et < max
+    return Math.floor(Math.random() * max);
+}
+// collection => J1, J2, Winner,Screen_of_party 
+//=============MongoDB et Mongoose===========
+
+// les appeller de mongoose et des différent schema (table bdd)
+const mongoose = require("mongoose"); 
+const Historique = require("./schema/historique.js")
+/* exemple de fonction pour create
+
+(async () => {
+try {
+    await mongoose.connect("mongodb://localhost:27017");
+    console.log("Connexion réussi avec MongoDB");
+    const resultat = await Historique.create({
+        Joueur_1 : ,
+        Joueur_2 : ,
+        Winner : ,
+        Plateau
+    });
+    console.log(resultat);
+}catch(error){
+    console.log("erreur soit dans la connexion soit dans le create");
+}
+
+})();
+*/
+//==============================================
 // ==================================
 // ========= Partie Express ========= 
 // ==================================
@@ -138,6 +174,10 @@ io.on('connection', (socket) => {
                             const copiePions = JSON.parse(JSON.stringify(pions));
                             data.joueur[2] = copiePions;
                             salles[i].listeJoueurs.push(data.joueur);
+                            salles[i]["etatPlateau"] = []  //liste de dicos, représente les pièces par leur position, le pion et la couleur
+                            salles[i]["compteurTour"] = 1;
+                            salles[i]["tour"] = randInt(2);
+                            console.log("C'est au tour du joueur : ",salles[i].tour);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
                             
                             socket.join(data.nom);  // Actualisation uniquement pour cette salle
@@ -175,6 +215,8 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
+                
+
                 salleAQuitter = salle;
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
@@ -200,7 +242,6 @@ io.on('connection', (socket) => {
     socket.on('lancementPartie', () => {
         console.log("Lancement de Partie reçu");
         let salleActuelle = null;
-        
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
             var indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
@@ -214,6 +255,9 @@ io.on('connection', (socket) => {
                     io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
                     io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
                     io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
+                    console.log("liste des joueurs : ", salle.listeJoueurs);
+                    console.log("tour : ", salle.tour);
+                    io.to(salleActuelle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                     break;
                 }
             }
@@ -231,6 +275,31 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){  // Si le joueur est trouvé dans la salle
                 joueurQuittant = salle.listeJoueurs[indexJoueur][0]; // Récupére le nom du joueur
+                console.log("joueur qui quitte est : ", joueurQuittant);
+                //met a jour le Schema winner
+                J1 = salle.listeJoueurs[0][0];//copie des joueurs pour eviter un bug de synchro
+                J2 = salle.listeJoueurs[1][0];
+                gagnant = [].concat(salle.listeJoueurs); // copie des listes joueur pour eviter un bug de synchro
+                gagnant.splice(indexJoueur,1);// enleve le joueur perdant
+                (async () => {
+                    try {
+                        await mongoose.connect("mongodb://127.0.0.1:27017/local"); //connection
+                        // await mongoose.connect("mongodb://localhost:27017/local"); // ancienne version problématique
+                        console.log("Connexion réussi avec MongoDB");
+                        const WinByFF = new Historique({ // nouveau tuple
+                            Joueur_1 : J1,
+                            Joueur_2 : J2,
+                            Winner : gagnant[0][0],
+                            Plateau : salle.etatPlateau
+                        });
+                        console.log("winbyff créer avec succés");
+                        const resultat = await WinByFF.save() // insert
+                        console.log(resultat);
+                    }catch(error){
+                        console.log(error);
+                    }
+                    })();
+                    //Fin de maj Schema 
                 salleAQuitter = salle;
                 console.log(joueurQuittant);
                 console.log(salleAQuitter);
@@ -336,7 +405,7 @@ io.on('connection', (socket) => {
         if(matchPop.accept[0] == true && matchPop.accept[1] == true){ // SI les deux ont acceptés ([true,true])
             console.log(matchPop);
             const copiePions = JSON.parse(JSON.stringify(pions));
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2"}
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2", "etatPlateau":[], "tour":randInt(2), "compteurTour":1};
             salles.push(nouvelle_salle); // On crée et ajoute la nouvelle salle dans les salles
             let cpt = 0; // compteur pour éviter de lancer deux fois la partie (voir socket suivante)
             io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt}); // On fait rejoindre le joueur 1
@@ -377,19 +446,22 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('discover', (data) => {
-        const position = data.position;
-        console.log('Position reçue du client :', position);
-        let indicesAutour = determinerIndicesAutour(data.position);
-        parcoursDesSalles:
-        for(salle of salles){
-            for(joueur of salle.listeJoueurs){
-                if(joueur.includes(socket.id)){
-                    // Envoyer les instructions pour activer les hexagones autour
-                    io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
-                    break parcoursDesSalles;
-        }}}
-    });
+    // socket.on('discover', (data) => {
+    //     const position = data.position;
+    //     console.log('Position reçue du client :', position);
+    //     let indicesAutour = determinerIndicesAutour(data.position);
+    //     parcoursDesSalles:
+    //     for(salle of salles){
+    //         for(joueur of salle.listeJoueurs){
+    //             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+    //             if(joueur.includes(socket.id)){
+    //                 if(indexJoueur == salle.tour){
+    //                 // Envoyer les instructions pour activer les hexagones autour
+    //                     io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
+    //                     break parcoursDesSalles;
+    //                 }
+    //     }}}
+    // });
 
     socket.on('ClickHexRed', (data) => {
         const position = data.position;
@@ -402,22 +474,92 @@ io.on('connection', (socket) => {
     });
 
     socket.on("EnvoiPoserPionPlateau", (data) => {
+        //console.log(data);
         parcoursDesSalles:
         for(salle of salles){
             for(joueur of salle.listeJoueurs){
                 if(joueur[1] == socket.id && joueur[2][data["pion"]] > 0){
-                    joueur[2][data["pion"]] --;
-                    console.log(joueur[2]);
-                    io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
-                    data.couleur = ["white", "black"][indexJoueur];
-                    console.log("Pour le joueur", indexJoueur, ", la couleur est", data.couleur);
-                    data.joueur = indexJoueur + 1;
-                    io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                    //check si c'est le tour du joueur
+                    if(salle.tour == indexJoueur){
+                        let peutPlacer = true;
+                        //check si le pion est joué autour d'un pion de sa couleur
+                        if(salle.compteurTour >= 2){
+                            let indice = data.case.replace("h", "");
+                            peutPlacer = checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                        }
+                        if(peutPlacer){
+                            //gestion pions restants
+                            joueur[2][data["pion"]] --;
+                            io.to(joueur[1]).emit('envoiNombrePionsRestants', joueur[2]);
+                            //gestion pour révéler le plateau
+                            io.to(salle.nom).emit('instructionsActivation', { 'indices': determinerIndicesAutour(data.case.replace("h", ""))});
+                            //gestion pour poser pion
+                            data.couleur = ["white", "black"][indexJoueur];
+                            data.joueur = indexJoueur + 1;
+                            stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur};
+                            salle.etatPlateau.push(stockePion);
+                            //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
+                            io.to(socket.id).emit("UnhighlightCases");
+                            io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                            //gestion tour
+                            salle.tour = 1-indexJoueur;
+                            salle.compteurTour += 0.5;
+                            io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                        }
+                        else{
+                            console.log("le pion n'a pas pu être placé");
+                        }
+                    }
+                    else if(salle.tour != indexJoueur){
+                        io.to(socket.id).emit("pasTonTour");
+                    }
                     break parcoursDesSalles;
                 }
+                
+                
             }
         }
+    });
+
+    socket.on("afficheCasesJouables", () => {
+        parcoursDesSalles:
+        for(let salle of salles){
+            for(let joueur of salle.listeJoueurs){
+                if(joueur[1] == socket.id){
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    if(indexJoueur == salle.tour){
+                        let listeCasesVides = [];
+                        if(salle.compteurTour != 1){
+                            for(let p of salle.etatPlateau){
+                                let indice = p.position.replace("h", "");
+                                let voisins = determinerIndicesAutour(indice);
+                                for(let v of voisins){
+                                    let estUnPionPlace = false;
+                                    for(c of salle.etatPlateau){
+                                        if(c.position == "h"+v){
+                                            estUnPionPlace = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!estUnPionPlace){
+                                        peutPlacer = checkPeutPlacer(v, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                                        if(!listeCasesVides.includes(v) && peutPlacer){
+                                            listeCasesVides.push(v);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else{listeCasesVides = [820];}
+                        // console.log("liste des cases jouables :", listeCasesVides);
+                        io.to(socket.id).emit("HighlightCasesJouables", listeCasesVides);
+                        break parcoursDesSalles;
+                    }
+                }
+                
+        }}
+
     });
 
     socket.on('envoieMessage',(data) => {
@@ -445,6 +587,7 @@ function generateRandomText() {
 }
 
 function determinerIndicesAutour(position) {
+    // rend toutes les cases autour de la position
     let indicesAutour = [];
     nbLignes = 40;
     nbColonnes = 40;
@@ -473,7 +616,9 @@ function determinerIndicesAutour(position) {
     return indicesAutour;
 }
 
-function determinerIndicesADistance(position, distance) {
+function determinerIndicesADistance(position, distance) { 
+    // rend toutes les cases exterieur du rayon distance
+    // n'est normalement plus utilisé mais peux servir
     let indices = [];
     const nbColonnes = 40; // Nombre de colonnes dans le damier
     const nbLignes = 40; // Nombre de lignes dans le damier
@@ -497,18 +642,131 @@ function determinerIndicesADistance(position, distance) {
     return indices;
 }
 
+function checkPeutPlacer(casePossible, pionsPlateau, indexJoueur, tour){
+    let peutPlacer = true;
+    const c = JSON.parse(JSON.stringify(casePossible));
+    let casesVoisines = determinerIndicesAutour(c);
+    checkCouleurAutour:
+    for(let vi of casesVoisines){
+        for(let p of pionsPlateau){
+            if(p.position == "h"+vi && ["white", "black"][1-indexJoueur] == p.couleur && tour >= 2){
+                peutPlacer = false;
+                break checkCouleurAutour;
+            }
+            else if(tour < 2) peutPlacer = true;
+        }
+    }
+    return peutPlacer;
+}
+
 function determinerIndicesLigne(positionDepart, positionArrive) {
+    // rend une liste de liste contenant les position des cases sur la ligne et diagonales (HG, HD, BG, BD)
     let indices = [];
-    const nbColonnes = 40; // Nombre de colonnes dans le damier
-    const nbLignes = 40; // Nombre de lignes dans le damier
 
-    // Convertir la position en coordonnées de ligne et de colonne
-    const ligne = Math.floor(position / nbColonnes);
-    const colonne = position % nbColonnes;
+    // pour détérminer les cases de la ligne 
+    let indiLigne = [];
+    if(position%40==0){
+        for(i of range(39))
+        indiLigne.push(position+i);
+    }
+    else{
+        let posTemp = position;
+        let i = 1;
+        while(posTemp%40!=0){
+            indiLigne.push(posTemp-i);
+            i+=1;
+        }
+        indiLigne.push(posTemp-i);
+    }
+    indices.push(indiLigne);
 
-    if(positionDepart == positionArrive) return indices;
+    // pour détérminer les cases des colonnes
+    let posTempCol = position;
+    while(posTempCol%40!=0){
+        posTempCol-=1;
+    }
+    if(posTempCol%80==0){lignePairBase = true}
+    else{lignePairBase = false}
 
-    // à finir
+    // case en haut a gauche
+    let indiHG = [];
+    let lignePair = lignePairBase;
+    let addHG;
+    if(lignePair) addHG = position - 41;
+    else addHG = position - 40;
+    while(addHG >= 0){
+        if(lignePair){
+            indiHG.push(addHG);
+            addHG - 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indiHG.push(addHG);
+            addHG - 41;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHG);
+
+    // case en haut a droite
+    let indiHD = [];
+    lignePair = lignePairBase;
+    let addHD;
+    if(lignePair) addHD = position - 40;
+    else addHD = position - 39;
+    while(addHD >= 0){
+        if(lignePair){
+            indices.push(addHD);
+            addHD - 39;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addHD);
+            addHD - 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHD);
+
+    // case en bas a gauche
+    let indiBG = [];
+    lignePair = lignePairBase;
+    let addBG;
+    if(lignePair) addBG = position + 39;
+    else addBG = position + 40;
+    while(addBG >= 0){
+        if(lignePair){
+            indices.push(addBG);
+            addBG + 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBG);
+            addBG + 39;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBG);
+
+    // case en bas a droite
+    let indiBD = [];
+    lignePair = lignePairBase;
+    let addBD;
+    if(lignePair) addBD = position + 40;
+    else addBD = position + 41;
+    while(addBD >= 0){
+        if(lignePair){
+            indices.push(addBD);
+            addBD + 41;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBD);
+            addBD + 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBD);
 
     return indices;
 }
@@ -516,20 +774,20 @@ function determinerIndicesLigne(positionDepart, positionArrive) {
 
 // le serveur ne connaît pas l'état de la partie ?
 function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
-    const indicesAutour = determinerIndicesAutour(positionActuelle);
-    const indiceAutourCible = determinerIndicesAutour(positionCible);
-    for(position in positionCible){
+    let indicesAutour = determinerIndicesAutour(positionActuelle);
+    let indiceAutourCible = determinerIndicesAutour(positionCible);
+    for(position of positionCible){
         if(position == positionActuelle){
             indiceAutourCible.pop(positionActuelle);
         }
     }
     switch (typeJeton){
-        case 'abeille' :
+        case 'Abeille' :
             for(position in indicesAutour){
                 if(positionCible == position ){
                     if(damier[positionCible].attr('jeton') == "vide"){
                         indiceAutourCible.pop(positionActuelle);
-                        for(indice in indiceAutourCible){
+                        for(indice of indiceAutourCible){
                             if(damier[indice].attr('jeton') != "vide"){
                                 return true;
                             }
@@ -540,26 +798,77 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             return false
         
         case 'Araignee' :
-            const indicesAutour3 = determinerIndicesADistance(positionActuelle,3)
-            for(position in indicesAutour3){
-                if(positionCible == position ){
-                    if(damier[positionCible].attr('jeton') == "vide"){
-                        for(indice in indiceAutourCible){
-                            if(damier[indice].attr('jeton') != "vide"){
-                                return true;
-                            }
+            let casesAutourAraignee1 = [];
+            let casesAutourAraignee2 = [];
+            let casesAutourAraigneeFinal = [];
+            if(damier[positionCible].attr('jeton') == "vide"){
+                for(indice1 of indicesAutour){
+                    if(damier[indice1].attr('jeton') == "vide"){
+                        casesAutourAraignee1.push(indice1);
+                    }
+                }
+                for(indice2 of casesAutourAraignee1){
+                    let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                    for(indiceTemp2 of casesAutourTemp2){
+                        if(damier[indiceTemp2].attr('jeton') == "vide"){
+                            casesAutourAraignee2.push(indiceTemp2);
                         }
                     }
+                }
+
+                for(indicef of casesAutourAraignee2){
+                    let casesAutourTempf = determinerIndicesAutour(indicef);
+                    for(indiceTempf of casesAutourTempf){
+                        if(damier[indiceTempf].attr('jeton') == "vide"){
+                            casesAutourAraigneeFinal.push(indiceTempf);
+                        }
+                    }
+                }
+
+                for(indiceFinal of casesAutourAraigneeFinal){
+                    if(indiceFinal == positionCible) return true;
                 }
             }
             return false;
 
         case 'Coccinelle' :
-        
+            let casesAutourCocinelle1 = [];
+            let casesAutourCocinelle2 = [];
+            let casesAutourCocinelleFinal = [];
+            if(damier[positionCible].attr('jeton') == "vide"){
+                for(indice1 of indicesAutour){
+                    if(damier[indice1].attr('jeton') =! "vide"){
+                        casesAutourCocinelle1.push(indice1);
+                    }
+                }
+                for(indice2 of casesAutourCocinelle1){
+                    let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                    for(indiceTemp2 of casesAutourTemp2){
+                        if(damier[indiceTemp2].attr('jeton') =! "vide"){
+                            casesAutourCocinelle2.push(indiceTemp2);
+                        }
+                    }
+                }
+
+                for(indicef of casesAutourCocinelle2){
+                    let casesAutourTempf = determinerIndicesAutour(indicef);
+                    for(indiceTempf of casesAutourTempf){
+                        if(damier[indiceTempf].attr('jeton') == "vide"){
+                            casesAutourCocinelleFinal.push(indiceTempf);
+                        }
+                    }
+                }
+
+                for(indiceFinal of casesAutourCocinelleFinal){
+                    if(indiceFinal == positionCible) return true;
+                }
+            }
+            return false;
+
         case 'Fourmi' :
             if(damier[positionCible].attr('jeton') == "vide"){
-                indiceAutourCible.pop(positionActuelle);
-                for(indice in indiceAutourCible){
+                if(indiceAutourCible.includes(positionActuelle)) indiceAutourCible.pop(positionActuelle);
+                for(indice of indiceAutourCible){
                     if(damier[indice].attr('jeton') != "vide"){
                         return true;
                     }
@@ -568,14 +877,37 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             return false;
         
         case 'Moustique' :
+            let listeMoustique = [];
+            for(indice of indicesAutour){
+                if(damier[indice].attr('jeton') != "vide" && !listeMoustique.includes(damier[indice].attr('jeton')))
+                listeMoustique.push(damier[indice].attr('jeton'));
+            }
+            for(pionMoustique of listeMoustique){
+                if(validerDeplacementJeton(damier, positionActuelle, positionCible, pionMoustique))
+                return true;
+            }
+            return false;
 
         case 'Sauterelle' :
-            // fonction non fini
+            if(damier[positionCible].attr('jeton') == "vide"){
+                if(indiceAutourCible.includes(positionActuelle)) indiceAutourCible.pop(positionActuelle);
+
+                let indicesSauterelle = determinerIndicesLigne(positionActuelle);
+                for(ligne of indicesSauterelle){
+                    if(damier[ligne[0]].attr('jeton') != "vide"){
+                    for(indiceCheck of ligne){
+                        if(damier[indiceCheck].attr('jeton') == "vide" && indiceCheck == positionCible )
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
 
         case 'Scarabee' :
-            for(indiceD in indicesAutour){
+            for(indiceD of indicesAutour){
                 if(positionCible == indice){
-                    for(indiceC in indiceAutourCible){
+                    for(indiceC of indiceAutourCible){
                         if(damier[indiceC].attr('jeton') != "vide"){
                             return true;
                         }
@@ -584,4 +916,5 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             }
             return false;
     }
+    return false;
 }

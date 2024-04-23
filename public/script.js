@@ -59,6 +59,7 @@ let timerInterval;
 let recherche = false;
 let accepter = false;
 let matchID = "";
+let casesHighlight = []
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -607,6 +608,51 @@ function toggleHexagone(data) {
     // Récupérer les indices des hexagones autour
     var indicesAutour = data.indices;
 
+    // A changer
+
+    var PionPose = hexagone.attr('jeton') == "vide";
+    if(!PionPose){
+        console.log(data.position + " n'est pas vide")
+        var autourNonVide = false;
+        for(indiceR of indicesAutour){
+            if(d3.select('#h' + indiceR).attr('jeton') == "vide") autourNonVide = true;
+        }
+        if(autourNonVide){
+            hexagone
+                .attr("fill", "transparent");
+        }
+        else{
+            hexagone
+                .classed("desactive", true)
+                .classed("hexagoneReactive", false)
+                .classed("hexagoneWhiteBorder", true)
+                .attr("fill", "transparent")
+                .style("pointer-events", "none");
+        }
+        for(indiceR of indicesAutour){
+            var hexVoisin = d3.select('#h' + indiceR);
+            var indicesVoisinAutour = determinerIndicesAutour(indiceR);
+            let nonVide = false;
+            if(d3.select('#h' + indiceR).attr('jeton') == "vide") nonVide = true;
+            for(indiceRed of indicesVoisinAutour){
+                if(d3.select('#h' + indiceRed).attr('jeton') == "vide") nonVide = true;
+            }
+            if (!nonVide) {
+                hexVoisin
+                    .classed("desactive", true)
+                    .classed("hexagoneReactive", false)
+                    .classed("hexagoneWhiteBorder", true)
+                    .attr("fill", "none")
+                    .style("pointer-events", "none");
+            }
+        }
+    } else {
+        // Hexagone non rouge, l'active
+        console.log(data.position + " est vide");
+    }
+}
+
+/*
     if (couleurRemplissage === "red") {
         console.log(data.position + " est rouge.");
         // Hexagone rouge, le désactive et désactive les hexagones autour
@@ -631,23 +677,22 @@ function toggleHexagone(data) {
         // Désactiver les hexagones autour s'ils ne sont pas rouges ou n'ont pas un autre hexagone rouge autour d'eux
         for(indiceR of indicesAutour) {
             console.log(indiceR + " est rouge ou border ?");
-            /*
-            var hexVoisin = d3.select('#h' + indice);
-            var couleurVoisin = hexVoisin.attr("fill");
+            //var hexVoisin = d3.select('#h' + indice);
+            //var couleurVoisin = hexVoisin.attr("fill");
 
             // Vérifier si l'hexagone voisin est rouge ou a un hexagone rouge autour de lui
-            var indicesVoisinAutour = determinerIndicesAutour(indice);
-            let rouge = false;
-            for(indiceRed of indicesVoisinAutour){
-                if(d3.select('#h' + indiceRed).attr("fill")==="red"){
-                    rouge = true;
-                }
-            }
-            var voisinAHexRouge = indicesVoisinAutour.some(function (voisinIndice) {
-                var voisinHex = d3.select('#h' + voisinIndice);
-                return voisinHex.attr("fill") === "red";
-            });
-            */
+            //var indicesVoisinAutour = determinerIndicesAutour(indice);
+            //let rouge = false;
+            //for(indiceRed of indicesVoisinAutour){
+            //    if(d3.select('#h' + indiceRed).attr("fill")==="red"){
+            //        rouge = true;
+            //    }
+            //}
+            //var voisinAHexRouge = indicesVoisinAutour.some(function (voisinIndice) {
+            //    var voisinHex = d3.select('#h' + voisinIndice);
+            //    return voisinHex.attr("fill") === "red";
+            //});
+            
             var hexVoisin = d3.select('#h' + indiceR);
             var indicesVoisinAutour = determinerIndicesAutour(indiceR);
             let rouge = false;
@@ -670,6 +715,7 @@ function toggleHexagone(data) {
         console.log(data.position + " n'est pas rouge");
     }
 }
+*/
 
 function determinerIndicesAutour(position) {
     let indicesAutour = [];
@@ -730,7 +776,8 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             .attr('x', x-26)
             .attr('y', y+14)
             .attr('width', rayonGlobal * 1.3)
-            .attr('height', rayonGlobal * 1.3);
+            .attr('height', rayonGlobal * 1.3)
+            .style('pointer-events', 'none');
         const dicoPionHistorique = {
             'pionAbeille' : 'une abeille',
             'pionFourmi' : 'une fourmi',
@@ -741,6 +788,289 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             'pionMoustique' : 'un moustique'
         };
         $("#actions_action").append("<li>J"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+    }
+}
+
+function indiceFourmiRec(damier, liste){
+    let indicesAutour = [];
+    let ListeIndiceRec = liste;
+    /*  Version récursive si la boucle for extensive pose problème
+    for(indiceListe in liste){
+        indicesAutour = determinerIndicesAutour(indiceListe);
+        for(indice in indicesAutour){
+            if(damier[indice].attr('jeton') != "vide" // si la case est vide
+            && !damier[indice].classed("desactive") // et qu'elle est active
+            && !indiceRetourDoublons.includes(indice)) // et que je l'ai pas déjà
+            ListeIndiceRec.push(indice);
+        }
+    }
+    if(ListeIndiceRec == liste)
+        return ListeIndiceRec;
+    else{ indiceFourmiRec(damier, liste) }
+    */
+    for(indiceListe in ListeIndiceRec){
+        indicesAutour = determinerIndicesAutour(indiceListe);
+        for(indice in indicesAutour){
+            if(damier[indice].attr('jeton') != "vide" // si la case est vide
+            && !damier[indice].classed("desactive") // et qu'elle est active
+            && !indiceRetourDoublons.includes(indice)) // et que je l'ai pas déjà
+            ListeIndiceRec.push(indice);
+        }
+    }
+    return ListeIndiceRec;
+}
+
+function determinerIndicesLigne(position) { 
+    // rend une liste de liste contenant les position des cases sur la ligne et diagonales (HG, HD, BG, BD)
+    let indices = [];
+
+    // pour détérminer les cases de la ligne 
+    let indiLigne = [];
+    if(position%40==0){
+        for(i in range(39))
+        indiLigne.push(position+i);
+    }
+    else{
+        let posTemp = position;
+        let i = 1;
+        while(posTemp%40!=0){
+            indiLigne.push(posTemp-i);
+            i+=1;
+        }
+        indiLigne.push(posTemp-i);
+    }
+    indices.push(indiLigne);
+
+    // pour détérminer les cases des colonnes
+    let posTempCol = position;
+    while(posTempCol%40!=0){
+        posTempCol-=1;
+    }
+    if(posTempCol%80==0){lignePairBase = true}
+    else{lignePairBase = false}
+
+    // case en haut a gauche
+    let indiHG = [];
+    let lignePair = lignePairBase;
+    let addHG;
+    if(lignePair) addHG = position - 41;
+    else addHG = position - 40;
+    while(addHG >= 0){
+        if(lignePair){
+            indiHG.push(addHG);
+            addHG - 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indiHG.push(addHG);
+            addHG - 41;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHG);
+
+    // case en haut a droite
+    let indiHD = [];
+    lignePair = lignePairBase;
+    let addHD;
+    if(lignePair) addHD = position - 40;
+    else addHD = position - 39;
+    while(addHD >= 0){
+        if(lignePair){
+            indices.push(addHD);
+            addHD - 39;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addHD);
+            addHD - 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHD);
+
+    // case en bas a gauche
+    let indiBG = [];
+    lignePair = lignePairBase;
+    let addBG;
+    if(lignePair) addBG = position + 39;
+    else addBG = position + 40;
+    while(addBG >= 0){
+        if(lignePair){
+            indices.push(addBG);
+            addBG + 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBG);
+            addBG + 39;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBG);
+
+    // case en bas a droite
+    let indiBD = [];
+    lignePair = lignePairBase;
+    let addBD;
+    if(lignePair) addBD = position + 40;
+    else addBD = position + 41;
+    while(addBD >= 0){
+        if(lignePair){
+            indices.push(addBD);
+            addBD + 41;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBD);
+            addBD + 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBD);
+
+    return indices;
+}
+
+function determinerIndicesAutour(position) {
+    // rend toutes les cases autour de la position
+    let indicesAutour = [];
+    nbLignes = 40;
+    nbColonnes = 40;
+
+    // Convertir la position en coordonnées de ligne et colonne
+    let ligne = Math.floor(position / nbColonnes);
+    let colonne = position % nbColonnes;
+
+    // Coordonnées des voisins relatifs
+    let voisinsRelatifs = [
+        [0, -1], [0, 1], // gauche, droite
+        [-1, (ligne % 2 === 0) ? 1 : 0], [-1, (ligne % 2 === 0) ? 0 : -1], // hautG, hautD
+        [1, (ligne % 2 === 0) ? 1 : 0], [1, (ligne % 2 === 0) ? 0 : -1]  // basG, basD
+    ];
+
+    // Parcourir les voisins et calculer les indices
+    for (let voisin of voisinsRelatifs) {
+        let voisinLigne = ligne + voisin[0];
+        let voisinColonne = colonne + voisin[1];
+
+        // Calculer l'indice et l'ajouter au tableau
+        let voisinIndice = voisinLigne * nbColonnes + voisinColonne;
+        indicesAutour.push(voisinIndice);
+    }
+
+    return indicesAutour;
+}
+
+function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
+    let indicesAutour = determinerIndicesAutour(positionActuelle);
+    let indiceRetour = [];
+    switch (typeJeton){
+        case 'abeille' :
+            for(position in indicesAutour){
+                if(damier[position].attr('jeton') == "vide")
+                indiceRetour.push(position);
+            }
+            break;
+    
+        case 'Araignee' :
+            let casesAutourAraignee1 = [];
+            let casesAutourAraignee2 = [];
+
+            for(indice1 in indicesAutour){
+                if(damier[indice1].attr('jeton') == "vide"){
+                    casesAutourAraignee1.push(indice1);
+                }
+            }
+
+            for(indice2 in casesAutourAraignee1){
+                let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                for(indiceTemp2 in casesAutourTemp2){
+                    if(damier[indiceTemp2].attr('jeton') == "vide"){
+                        indiceRetour.push(indiceTemp2);
+                    }
+                }
+            }
+
+            for(indicef in casesAutourAraignee2){
+                let casesAutourTempf = determinerIndicesAutour(indicef);
+                for(indiceTempf in casesAutourTempf){
+                    if(damier[indiceTempf].attr('jeton') == "vide"){
+                        casesAutourAraigneeFinal.push(indiceTempf);
+                    }
+                }
+            }
+        break;
+
+        case 'Coccinelle' :
+            let casesAutourCocinelle1 = [];
+            let casesAutourCocinelle2 = [];
+
+            for(indice1 in indicesAutour){
+                if(damier[indice1].attr('jeton') =! "vide"){
+                    casesAutourCocinelle1.push(indice1);
+                }
+            }
+
+            for(indice2 in casesAutourCocinelle1){
+                let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                for(indiceTemp2 in casesAutourTemp2){
+                    if(damier[indiceTemp2].attr('jeton') =! "vide"){
+                        casesAutourCocinelle2.push(indiceTemp2);
+                    }
+                }
+            }
+
+            for(indicef in casesAutourCocinelle2){
+                let casesAutourTempf = determinerIndicesAutour(indicef);
+                for(indiceTempf in casesAutourTempf){
+                    if(damier[indiceTempf].attr('jeton') == "vide"){
+                        indiceRetour.push(indiceTempf);
+                    }
+                }
+            }
+        break;
+
+        case 'Fourmi' :
+            let indiceRetourDoublons = indiceFourmiRec(damier, [positionActuelle])
+            indiceRetourDoublons.pop(positionActuelle)
+            indiceRetour = [...new Set(indiceRetourDoublons)]; // devrait enlever des doublons (même si il ne devrait pas y en avoir avec cette version)
+            if(indiceRetour.includes(positionActuelle))
+                indiceRetour.pop(positionActuelle);
+        break;
+        
+        case 'Moustique' :
+            let listeMoustique = [];
+            let listeAddMoustique = []
+            for(indice in indicesAutour){
+                if(damier[indice].attr('jeton') != "vide" && !listeMoustique.includes(damier[indice].attr('jeton')))
+                listeMoustique.push(damier[indice].attr('jeton'));
+            }
+            for(pionMoustique in listeMoustique){
+                listeAddMoustique = CasesDeplacementJeton(damier, positionActuelle, pionMoustique)
+                for(indiceMoustique in listeAddMoustique){
+                    if(!indiceRetour.includes(indiceMoustique))
+                        indiceRetour.push(indiceMoustique);
+                }
+            }
+            break;
+
+        case 'Sauterelle' :
+            if(positionActuelle in indiceAutourCible) indiceAutourCible.pop(positionActuelle);
+            let indicesSauterelle = determinerIndicesLigne(positionActuelle);
+            for(ligne in indicesSauterelle){
+                if(damier[ligne[0]].attr('jeton') != "vide"){
+                for(indiceCheck in ligne){
+                    if(damier[indiceCheck].attr('jeton') == "vide")
+                        indiceRetour.push(indiceCheck);
+                    break;
+                    }
+                }
+            }
+            break;
+
+        case 'Scarabee' :
+            return determinerIndicesAutour(positionActuelle);
     }
 }
 
@@ -864,10 +1194,19 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         console.log('position' + position);
                         if (d3.select(this).attr("fill") === "red") {
                             socket.emit('ClickHexRed', {'position': position});
-                        }
-                        else {
+                        }else {
                             if (selectionPion != null){
                                 socket.emit('discover', {'position': position});
+                            }
+                        }
+                        if (d3.select(this).attr("jeton") != "vide"){
+                            for(let caseI = 0; caseI < (nbLignes*nbColonnes)-1 ;caseI++ ){
+                                if(d3.select(this).attr("fill") === "blue")
+                                    d3.select(this).attr("fill") = "transparent";
+                            }
+                            let caseDisponible = CasesDeplacementJeton(d3.select("#tablier"),position,d3.select(this).attr("jeton"));
+                            for(let caseD of caseDisponible){
+                                d3.select(caseD).attr("fill") = "blue";
                             }
                         }
                         //let position=d3.select(this).attr('id').substring(1);
@@ -921,11 +1260,20 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
+        d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
         posePionSurCase(path, data.pion, data.couleur, data.joueur);
         selectionPion = null;
     });
     
-    
+    socket.on("pasTonTour", () => {
+        console.log("C'est le tour du joueur adverse");
+    });
+
+    socket.on("infosTour", (data) => { 
+        console.log("C'est au tour du joueur", data.tour, " de jouer");
+        console.log("Tour n°"+data.compteurTour);
+        $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
+    })
 
     //Pour mettre les images sur les pions du menu :
     
@@ -979,6 +1327,27 @@ socket.on("genereCouleurJoueur", (couleurGeneree) =>{
 var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
-    if($("#nb_"+this.id).text() != 0)
+    if($("#nb_"+this.id).text() != 0){
         selectionPion = this.id;
+        socket.emit("afficheCasesJouables");
+    }
+});
+
+socket.on("HighlightCasesJouables", (casesVides) => {
+    for(c of casesVides){
+        d3.select("#h"+c)
+            .attr("fill", "green")
+            .attr("opacity", 0.3)
+            .attr("stroke", "green");
+    }
+    casesHighlight = casesVides;
+});
+
+socket.on("UnhighlightCases", () => {
+    for(c of casesHighlight){
+        d3.select("#h"+c)
+            .attr("fill", "none")
+            .attr("opacity", 1)
+            .attr("stroke", "black");
+    }
 });
