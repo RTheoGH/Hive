@@ -21,77 +21,66 @@
 </head>
 
 <body class="fond" style="overflow-x:hidden;">
+    <h1 class="hive">Hive</h1>
     <div class="menu ajustement">
+        <p class="erreur" id="message_erreur"></p>
         <div id="creer">
-            <h1>Création d'une salle</h1>
-            <hr/>
-            <p class="left">Nom de la salle : <input type="text" id="nomSalle" name="nomSalle"/></p>
-            <p class="left">Code de la salle : <input type="password" id="codeSalle" name="codeSalle"/></p>
-            <p class="left">Pseudonyme : <input type="text" id="pseudo" name="pseudo"/></p>
-            <hr/>
-            <p>Choisir les modes :</p>
-            <div style="display:flex;">
-                <div style="text-align:right; width: 50%;">
-                    <br/>
-                    <label for="duel">Duel</label>
-                    <input name="Type" id="duel" type="radio" value="duel" checked /><br/>
-                    <label for="ia">VS IA</label>
-                    <input name="Type" id="ia" type="radio" value="ia" disabled/>
-                </div>
-                <div style="border: 1px solid black;"></div>
-                <div class="left" style="width: 50%;">
-                    <input name="Mode" id="classique" type="radio" value="classique" disabled/>
-                    <label for="classique" title="(plus tard...)">Classique</label><br/>
-                    <input name="Mode" id="extension1" type="radio" value="extension1" disabled/>
-                    <label for="extension1" title="Extension avec la coccinelle (plus tard...)">Extension 1</label><br/>
-                    <input name="Mode" id="extension2" type="radio" value="extension2" checked />
-                    <label for="extension2" title="Extension avec le moustique">Extension 2</label><br/>
-                    <input name="Mode" id="extension3" type="radio" value="extension3" disabled/>
-                    <label for="extension3" title="Extension avec le cloporte (plus tard...)">Extension 3</label><br/>
-                </div>
-            </div>
-            <hr/>
+            <h1 class="policeR">Création d'une salle</h1>
+            <p class="left policeR">Nom de la salle : <input class="menuInput" type="text" id="nomSalle" name="nomSalle"/></p>
+            <p class="left policeR">Code de la salle : <input class="menuInput" type="password" id="codeSalle" name="codeSalle"/></p>
+            <p class="left policeR">Pseudonyme : <input class="menuInput" type="text" id="pseudo" name="pseudo"/></p>
+            <p class="left policeR">Type de la partie :
+                <select class="menuSelect" name="Type" id="Type">
+                    <option value="duel" selected>Duel</option>
+                    <option value="ia" disabled>VS IA</option>
+                </select>
+            </p>
+            <p class="left policeR">Mode de la partie :
+                <select class="menuSelect" name="Mode" id="Mode">
+                    <option value="classique" disabled>Classique</option>
+                    <option value="extension1" disabled>Extension 1</option>
+                    <option value="extension2" selected>Extension 2</option>*
+                    <option value="extension3" disabled>Extension 3</option>
+                </select>
+            </p>
             <button class="bouton" onClick="retour()">Retour</button>
             <button class="bouton" onClick="validerCreation()">Valider</button>
         </div>
         <div id="lobby">
-            <h1 id="nomCodeSalle"></h1>
-            <hr/>
-            <h1>Joueurs :</h1>
-            <p id="J1"></p>
-            <p id="J2"></p>
-            <hr/>
+            <h1 class="policeR" id="lobbyNom"></h1>
+            <h2 class="policeR" >Code : <span id="lobbyCode"></span><button class="copie" id="copier" onClick="copierCode()"></button></h2>
+            <h1 class="policeR">Joueurs :</h1>
+            <p class="policeR" id="J1"></p>
+            <p class="policeR" id="J2"></p>
             <button class="bouton" onClick="quitter()">Quitter</button>
             <button class="bouton" id="lancer" onClick="debutPartie()" disabled>Lancer</button>
         </div>
         <div id="rejoindre">
-            <h1>Rejoindre</h1>
-            <hr/>
-            <p class="left">Nom de la salle : <input type="text" id="nomSalleR"/></p>
-            <p class="left">Code de la salle : <input type="password" id="codeSalleR"/></p>
-            <p class="left">Pseudonyme : <input type="text" id="pseudoR"/></p>
-            <hr/>
+            <h1 class="policeR">Rejoindre</h1>
+            <p class="left policeR">Nom de la salle : <input class="menuInput" type="text" id="nomSalleR"/></p>
+            <p class="left policeR">Code de la salle : <input class="menuInput" type="password" id="codeSalleR"/></p>
+            <p class="left policeR">Pseudonyme : <input class="menuInput" type="text" id="pseudoR"/></p>
             <button class="bouton" onClick="retour()">Retour</button>
             <button class="bouton" onClick="validerRejoindre()">Valider</button>
         </div>
         <div id="rechercher">
-            <h1>Rechercher</h1>
+            <h1 class="policeR">Rechercher</h1>
             <p class="timer" id="tempsDAttente"></p>
-            <hr/>
-            <p class="left">Pseudonyme : <input type="text" id="pseudoM"/></p>
-            <p class="left">Niveau :
-                <select name="matchmaking" id="niveau-match">
+            <!-- <hr/> -->
+            <p class="left policeR">Pseudonyme : <input class="menuInput" type="text" id="pseudoM"/></p>
+            <p class="left policeR">Niveau :
+                <select class="menuSelect" name="matchmaking" id="niveau-match">
                     <option value="debutant">Débutant</option>
                     <option value="intermediaire">Intermédiaire</option>
                     <option value="expert">Expert</option>
                 </select>
             </p>
-            <hr/>
+            <!-- <hr/> -->
             <button class="bouton" onClick="retourRecherche()">Retour</button>
             <button class="bouton" id="boutonRecherche" onClick="lancerRecherche()">Jouer</button>
         </div>
         <div id="matchTrouve">
-            <h1>Match trouvé !</h1>
+            <h1 class="policeR">Match trouvé !</h1>
             <hr/>
             <br/>
             <div id="tempsRestant" class="progress-bar"></div>
@@ -102,16 +91,51 @@
             <br/>
             <button class="bouton" id="accepterM" onClick="accepterMatch()">Accepter</button>
         </div>
-        <div id="accueil">
-            <h1 class="hive">Hive</h1>
-            <button class="bouton" onClick="ouvrirRegles()" title="Comment jouer à Hive ?">Règles</button>
-            <p style="color:red" id="message_erreur"></p>
-            <br/><br/><hr/><br/>
-            <button class="bouton" onClick='creer()' title="Créer un salon.">Créer</button>   
-            <button class="bouton" onClick='rejoindre()' title="Rejoindre un salon.">Rejoindre</button>
-            <br/><br/>
-            <button class="bouton" onClick='rechercher()' title="Affronter un adversaire à votre taille !">Rechercher</button>
+    </div>
+    <div id="accueil">
+        <button class="bouton" onClick='creer()' title="Créer un salon.">Créer</button>   
+        <button class="bouton decalMenu" onClick='rejoindre()' title="Rejoindre un salon.">Rejoindre</button>
+        <button class="bouton" onClick="ouvrirRegles()" title="Comment jouer à Hive ?">Règles</button>
+        <button class="bouton" onClick='rechercher()' title="Affronter un adversaire à votre taille !">Rechercher</button>
+    </div>
+    <div id="regles">
+        <h2 class="hiveregles">Règles</h2>
+        <div class="fondRegles reglesDesc">
+            <p class="cursiveR"><span class="rouge">But du jeu :</span> Cerner (encercler) la Reine Abeille de l'adversaire.</p>
+            <p class="cursiveR"><span class="rouge">Déroulement :</span> Les joueurs jouent à tour de rôle en posant une pièce à côté d'une ou plusieurs pièces déjà en jeu.</p>
+            <p class="cursiveR"><span class="rouge">Placement :</span> Une pièce doit être placée à côté d'une pièce amie et ne peut en aucun cas être placée à côté de celle de son adversaire.<br/>(Sauf au premier tour)</p>
         </div>
+        <div class="fondRegles reglesPion">
+            <div class="image">
+                <img class="tailleRImg" src="public/insectes/abeille.png" data-text="Abeille : Se déplace d'un espace à la fois. Doit être placée avant 3 tours.">
+                <div class="detail"></div>
+            </div>
+            <div class="image">
+                <img class="tailleRImg" src="public/insectes/fourmi.png" data-text="Fourmi : Peut se déplacer d'autant d'espaces que le joueur le désire.">
+                <div class="detail"></div>
+            </div>
+            <div class="image">
+                <img class="tailleRImg" src="public/insectes/sauterelle.png" data-text="Sauterelle : Se déplace en sautant en ligne droite par-dessus une ou plusieurs autres pièces, jusqu'au premier espace libre.">
+                <div class="detail"></div>
+            </div>
+            <div class="image">
+                <img class="tailleRImg" src="public/insectes/scarabee.png" data-text="Scarabée : Se déplace d'un espace à la fois, a la capacité de grimper sur les autres pièces.">
+                <div class="detail"></div>
+            </div>
+            <div class="image">
+                <img class="tailleRImg" src="public/insectes/araignee.png" data-text="Araignée : Se déplace de trois espaces.">
+                <div class="detail"></div>
+            </div>
+            <div class="image">
+                <img class="tailleRImg" src="public/insectes/coccinelle.png" data-text="Coccinelle : Se déplace de trois espaces à chaque tour, mais doit obligatoirement effectuer ses deux premiers déplacements en montant au-dessus des autres pièces puis redescendre au sol lors de son troisième déplacement.">
+                <div class="detail"></div>
+            </div>
+            <div class="image">
+                <img class="tailleRImg" src="public/insectes/moustique.png" data-text="Moustique : Prend le mode de déplacement de la ou des pièces adjacentes.">
+                <div class="detail"></div>
+            </div>
+        </div>
+        <button class="bouton posAccueil" onClick="fermerRegles()">Accueil</button>
     </div>
     <div id="jeu">
         <div id = "tablier"></div>
@@ -152,15 +176,20 @@
         </div>
         <div id='chat' class='chat'>
             <ul id='messages'></ul>
-            <input id='message' type='text' onkeypress='fsend(event)'><button onClick='send()'>Envoyer</button>
+            <input style="width: 75%;margin-right: 5px;" id='message' type='text' onkeypress='fsend(event)'><button onClick='send()'>Envoyer</button>
         </div>
         <div id="action" class="action">
-            <p>(Joueur 1) doit poser ou déplacer une pièce</p>
+            <p id="tourJoueur">(Joueur 1) doit poser ou déplacer une pièce</p>
         </div>
         <button class="bouton positionQP" onClick="quitterPartieEnCours()">Quitter la partie</button>
     </div>
     <footer>
-        <p>&copy; 2024 THEO REYNIER | ANTHONY HOMMAIS | CORENTIN FAY | KILLIAN VIGUIER</p>
+        <p>&copy; 2024<br/>
+            THEO REYNIER<br/>
+            CORENTIN FAY<br/>
+            KILLIAN VIGUIER<br/>
+            ANTHONY HOMMAIS
+        </p>
     </footer>
 </body>
 </html>

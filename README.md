@@ -66,12 +66,17 @@ Une pièce doit être placée à côté d’une pièce amie et ne peut en aucun 
 
 ## Liste des fonctionnalités implémentés
 
-- Page d'accueil, des règles, de création d'une partie, pour rejoindre une partie, du jeu
-- Gestion des erreurs au niveau des salles
-- Système de communication via une messagerie (tchat)
+- Page d'accueil
+- Page des règles
+- Page créer une partie privée
+- Page rejoindre une partie privée
+- Page de recherche d'une partie (Matchmaking)
+- Page du jeu
+- Gestion des erreurs au niveau des salles privées
+- Système de communication via une messagerie en jeu (tchat)
 - Système audio sur les pages
 - Affichage selon les tailles d'écran
--
+- Pose des pions sur le plateau
 -
 
 ## Installer les packages
