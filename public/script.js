@@ -966,7 +966,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceRetour = [];
     switch (typeJeton){
-        case 'abeille' :
+        case 'Abeille' :
             for(position in indicesAutour){
                 if(damier[position].attr('jeton') == "vide")
                 indiceRetour.push(position);
