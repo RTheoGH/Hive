@@ -280,8 +280,8 @@ io.on('connection', (socket) => {
                 gagnant.splice(indexJoueur,1);// enleve le joueur perdant
                 (async () => {
                     try {
-                        await mongoose.connect("mongodb://localhost:27017/test"); //connection
-
+                        await mongoose.connect("mongodb://127.0.0.1:27017/local"); //connection
+                        // await mongoose.connect("mongodb://localhost:27017/local"); // ancienne version problématique
                         console.log("Connexion réussi avec MongoDB");
                         const WinByFF = new Historique({ // nouveau tuple
                             Joueur_1 : J1,
@@ -293,7 +293,7 @@ io.on('connection', (socket) => {
                         const resultat = await WinByFF.save() // insert
                         console.log(resultat);
                     }catch(error){
-                        console.log("erreur soit dans la connexion");
+                        console.log(error);
                     }
                     })();
                     //Fin de maj Schema 
