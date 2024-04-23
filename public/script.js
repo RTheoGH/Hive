@@ -471,7 +471,7 @@ function validerCreation(){
     var typeSelect = document.getElementById("Type"); // Recup si Duel ou IA
     salle.type = typeSelect.value;
     var modeSelect = document.getElementById("Mode"); // Recup si classique/ext1/ext2/ext3
-    salle.mode=modeSelect.value;
+    salle.mode = modeSelect.value;
 
     document.getElementById('lobbyNom').innerHTML = 'Salle  : ' + salle.nom; // Affichage du nom de la salle 
     document.getElementById('lobbyCode').innerHTML = salle.code;             // et du code pour rejoindre

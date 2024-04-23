@@ -1,7 +1,6 @@
 // const { range } = require('d3');
 import('d3').then((d3) => {
     const { range } = d3;
-    // Utilisez range ici
 }).catch((error) => {
     console.error('Une erreur s\'est produite lors du chargement du module D3:', error);
 });
@@ -26,32 +25,11 @@ var etatP = false; // etat pour la recherche de partie
 function randInt(max) { //renvoie un entier random entre 0 et < max
     return Math.floor(Math.random() * max);
 }
-// collection => J1, J2, Winner,Screen_of_party 
-//=============MongoDB et Mongoose===========
 
-// les appeller de mongoose et des différent schema (table bdd)
+// MongoDB
 const mongoose = require("mongoose"); 
 const Historique = require("./schema/historique.js")
-/* exemple de fonction pour create
 
-(async () => {
-try {
-    await mongoose.connect("mongodb://localhost:27017");
-    console.log("Connexion réussi avec MongoDB");
-    const resultat = await Historique.create({
-        Joueur_1 : ,
-        Joueur_2 : ,
-        Winner : ,
-        Plateau
-    });
-    console.log(resultat);
-}catch(error){
-    console.log("erreur soit dans la connexion soit dans le create");
-}
-
-})();
-*/
-//==============================================
 // ==================================
 // ========= Partie Express ========= 
 // ==================================

@@ -77,11 +77,25 @@ Une pièce doit être placée à côté d’une pièce amie et ne peut en aucun 
 - Système audio sur les pages
 - Affichage selon les tailles d'écran
 - Pose des pions sur le plateau
--
+- Vérification des positions possibles
+- Tour par tour
+- Base de donnée mongoDB (mongoose)
+- Déplacement des pions (non terminé / a tester)
+- Détection de la victoire (non terminé)
 
 ## Installer les packages
 ```bash
 npm install
+```
+
+## Installer mongoDB
+- Installer le serveur mongoDB sur sa machine :
+https://www.mongodb.com/try/download/community
+- Installer mongoDB compass, l'interface de mongoDB :
+https://www.mongodb.com/try/download/compass
+```bash
+npm i mongodb
+npm i mongoose
 ```
 
 ## Pour lancer le jeu 
@@ -92,3 +106,4 @@ node index.js
 ## Références
 
 - Page du jeu : https://www.regledujeu.fr/hive/
+- MongoDB : https://www.mongodb.com/
