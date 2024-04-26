@@ -382,8 +382,9 @@ io.on('connection', (socket) => {
         let matchPop = matchmaking.find(match => match.MatchID == data.matchID);
         if(matchPop.accept[0] == true && matchPop.accept[1] == true){ // SI les deux ont acceptés ([true,true])
             console.log(matchPop);
-            const copiePions = JSON.parse(JSON.stringify(pions));
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2", "etatPlateau":[], "tour":randInt(2), "compteurTour":1};
+            const copiePionsJ1 = JSON.parse(JSON.stringify(pions));
+            const copiePionsJ2 = JSON.parse(JSON.stringify(pions));
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "tour":randInt(2), "compteurTour":1};
             salles.push(nouvelle_salle); // On crée et ajoute la nouvelle salle dans les salles
             let cpt = 0; // compteur pour éviter de lancer deux fois la partie (voir socket suivante)
             io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt}); // On fait rejoindre le joueur 1
