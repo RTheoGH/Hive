@@ -787,7 +787,7 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             'pionSauterelle' : 'une sauterelle',
             'pionMoustique' : 'un moustique'
         };
-        $("#actions_action").append("<li>J"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
     }
 }
 
@@ -1286,10 +1286,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             .attr('height', rayon*1.3);
         });
     
-
-    
-
-
     for(i of milieu) {
         console.log(milieu.includes(i),i);
         d3.select('#h'+i).attr("stroke", "black");
@@ -1321,7 +1317,17 @@ socket.on('envoiNombrePionsRestants', (data) => {
 
 //Affichage de la couleur du joueur pour les pions du menu
 socket.on("genereCouleurJoueur", (couleurGeneree) =>{
+    let couleurInverse = '';
     d3.selectAll('.pion').attr("fill", couleurGeneree);
+    $(".nombre").each(function() {
+        var couleurPion = $(this);
+        // Vérifier si l'élément a un attribut "id"
+        if (couleurPion.attr("id")) {
+            if(couleurGeneree == 'white') couleurInverse = 'black';
+            if(couleurGeneree == 'black') couleurInverse = 'white';
+            couleurPion.css("color",couleurInverse);
+        }
+    });
 });
 
 var selectionPion = null;
