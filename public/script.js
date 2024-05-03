@@ -38,6 +38,9 @@ const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
 const found = new Audio('public/sons/found.mp3');
 const miss = new Audio('public/sons/miss.mp3');
+const pose = new Audio('public/sons/pose.mp3');
+const deplacement = new Audio('public/sons/deplacement.mp3');
+const defaite = new Audio('public/sons/defaite.mp3');
 // -------------------
 
 var color = ['white','black'];
@@ -1263,6 +1266,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
         posePionSurCase(path, data.pion, data.couleur, data.joueur);
         selectionPion = null;
+        pose.play();
     });
     
     socket.on("pasTonTour", () => {
