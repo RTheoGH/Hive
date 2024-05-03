@@ -161,7 +161,7 @@ io.on('connection', (socket) => {
                             socket.join(data.nom);  // Actualisation uniquement pour cette salle
                             io.to(data.nom).emit('majSalle',salles[i]);
                             if(salles[i].listeJoueurs.length == 2){ // Si deux joueurs sont présente dans la salle, le bouton lancer
-                                io.to(data.nom).emit('lancerDispo');  // devient disponible
+                                io.to(salles[i].listeJoueurs[0][1]).emit('lancerDispo');  // devient disponible
                             }
                             break;
                         }
@@ -217,7 +217,7 @@ io.on('connection', (socket) => {
     });
 
     // Socket de lancement de partie
-    socket.on('lancementPartie', () => {
+    socket.on('lancementPartie', (extension) => {
         console.log("Lancement de Partie reçu");
         let salleActuelle = null;
         console.log("Je cherche la salle actuelle en cherchant le joueur");
@@ -232,7 +232,7 @@ io.on('connection', (socket) => {
                     if (indexJoueur != 0){indexJoueur = 1-indexJoueur;}
                     io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
                     io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
-                    io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
+                    io.to(salleActuelle.nom).emit('affichagePartie',{"salle" : salleActuelle, "extension" : extension});
                     console.log("liste des joueurs : ", salle.listeJoueurs);
                     console.log("tour : ", salle.tour);
                     io.to(salleActuelle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});

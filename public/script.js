@@ -102,9 +102,23 @@ socket.on('lancerPlusDispo', () => {
 
 // Affichage de la partie lorqu'un joueur la lance
 socket.on('affichagePartie', (data) => {
-    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    const joueurActuel = data.salle.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
     console.log("je suis le joueur ",socket.id);
+    switch(data.extension){
+        case 'classique' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").hide();
+            break;
+        case 'extension1' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").show();
+            break;
+        case 'extension2' :
+            $("#divMoustique").show();
+            $("#divCoccinelle").show();
+            break;
+    }
     if(joueurActuel){
         console.log("Ok je rafraichie la page pour afficher le jeu");
         clear();
@@ -315,7 +329,10 @@ function debutPartie(){
     document.getElementById("message_erreur").innerHTML = "";
     clear();
     console.log('Je lance la partie');
-    socket.emit('lancementPartie');
+    let selectElement = document.getElementById("Mode");
+    let selectedOptionValue = selectElement.value;
+    console.log("value :", selectedOptionValue);
+    socket.emit('lancementPartie', selectedOptionValue);
 }
 
 // fonction qui affiche le jeu
