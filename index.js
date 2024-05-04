@@ -479,7 +479,7 @@ io.on('connection', (socket) => {
                             //gestion pour poser pion
                             data.couleur = ["white", "black"][indexJoueur];
                             data.joueur = joueur[0];
-                            stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur};
+                            stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur, "jeton" : data.jeton};
                             salle.etatPlateau.push(stockePion);
                             //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
                             io.to(socket.id).emit("UnhighlightCases");
