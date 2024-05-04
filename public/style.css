@@ -7,7 +7,7 @@ body{
 .fond{
     margin:auto;
     background-size: cover;
-    background-image:url("images/fonds/fond.png");
+    background-image:url("images/fonds/hive-1920-1080.png");
     background-repeat: no-repeat;
 }
 
@@ -338,7 +338,7 @@ footer{
     height: 100%;
     width: 100%;
     background-size: cover;
-    background-image:url("images/fonds/fond.png");
+    background-image:url("images/fonds/hive-1920-1080.png");
     background-repeat: no-repeat;
     text-align: center;
     color: white;
@@ -663,13 +663,13 @@ footer{
         bottom: 10px;
     }
     .fond{
-        background-image:url("images/fonds/fond-1280-800.png");
+        background-image:url("images/fonds/hive-1280-800.png");
     }
     .positionQP {
         left: 83.5%;
     }
     .victoire{
-        background-image:url("images/fonds/fond-1280-800.png");
+        background-image:url("images/fonds/hive-1280-800.png");
         font-size: 3em;
     }
 }
@@ -711,13 +711,13 @@ footer{
         width: 60px;
     }
     .fond{
-        background-image:url("images/fonds/fond-1440-900.png");
+        background-image:url("images/fonds/hive-1440-900.png");
     }
     .positionQP {
         left: 84.5%;
     }
     .victoire{
-        background-image:url("images/fonds/fond-1440-900.png");
+        background-image:url("images/fonds/hive-1440-900.png");
         font-size: 3em;
     }
 }
@@ -803,10 +803,10 @@ footer{
         top: 3%;
     }
     .fond{
-        background-image:url("images/fonds/fond-1680-1050.png");
+        background-image:url("images/fonds/hive-1680-1050.png");
     }
     .victoire{
-        background-image:url("images/fonds/fond-1680-1050.png");
+        background-image:url("images/fonds/hive-1680-1050.png");
     }
 }
 
