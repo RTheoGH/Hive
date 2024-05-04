@@ -585,6 +585,26 @@ function generateRandomText() {
     return text;
 }
 
+function victoire(damier){
+    let victoireWhite = true;
+    let victoireBlack = true;
+    for(hexagone of damier){
+        if(hexagone.attr("jeton")=="Abeille"){
+            let color = ""; // définir l'appartenance de l'abeille
+            let CaseAutourAbeille = determinerIndicesAutour(hexagone.attr("id").substring(1)); // d3.select(this) a la place de hexagone ?
+            for(hexaAbeille of CaseAutourAbeille){
+                if (hexaAbeille.attr("jeton")=="vide") {
+                    ;// mettre false a victoire de color
+                }
+            }
+        }
+    }
+    if(victoireBlack && victoireWhite); // Envoyer égalité
+    if(victoireBlack); // Envoyer victoire black
+    if(victoireWhite); // envoyer victoire white
+    return false;
+}
+
 function determinerIndicesAutour(position) {
     // rend toutes les cases autour de la position
     let indicesAutour = [];
