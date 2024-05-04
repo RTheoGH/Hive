@@ -38,6 +38,9 @@ const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
 const found = new Audio('public/sons/found.mp3');
 const miss = new Audio('public/sons/miss.mp3');
+const pose = new Audio('public/sons/pose.mp3');
+const deplacement = new Audio('public/sons/deplacement.mp3');
+const defaite = new Audio('public/sons/defaite.mp3');
 // -------------------
 
 var color = ['white','black'];
@@ -60,6 +63,7 @@ let recherche = false;
 let accepter = false;
 let matchID = "";
 let casesHighlight = []
+let modeChoisi = "";
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -102,9 +106,23 @@ socket.on('lancerPlusDispo', () => {
 
 // Affichage de la partie lorqu'un joueur la lance
 socket.on('affichagePartie', (data) => {
-    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    const joueurActuel = data.salle.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
     console.log("je suis le joueur ",socket.id);
+    switch(data.extension){
+        case 'classique' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").hide();
+            break;
+        case 'extension1' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").show();
+            break;
+        case 'extension2' :
+            $("#divMoustique").show();
+            $("#divCoccinelle").show();
+            break;
+    }
     if(joueurActuel){
         console.log("Ok je rafraichie la page pour afficher le jeu");
         clear();
@@ -275,6 +293,11 @@ socket.on('recoitMessage', (data) => {
     notif.play();
 });
 
+socket.on("recupMode",(data) => {
+    modeChoisi = data;
+    console.log("Ok le mode pour la partie est : ",modeChoisi);
+})
+
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
 // --------------------------------------------------------------------------------------------------------
@@ -311,11 +334,17 @@ function initPartie(){
 }
 
 // fonction de début de partie
-function debutPartie(){
+function debutPartie(m){
+    m = modeChoisi;
+    console.log(m);
     document.getElementById("message_erreur").innerHTML = "";
     clear();
     console.log('Je lance la partie');
-    socket.emit('lancementPartie');
+    let mDefaut = "extension2";
+    console.log(mDefaut);
+    if(m != "" && mDefaut != m) mDefaut = m;
+    console.log("value :", mDefaut);
+    socket.emit('lancementPartie', mDefaut);
 }
 
 // fonction qui affiche le jeu
@@ -787,7 +816,7 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             'pionSauterelle' : 'une sauterelle',
             'pionMoustique' : 'un moustique'
         };
-        $("#actions_action").append("<li>J"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
     }
 }
 
@@ -966,7 +995,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceRetour = [];
     switch (typeJeton){
-        case 'abeille' :
+        case 'Abeille' :
             for(position in indicesAutour){
                 if(damier[position].attr('jeton') == "vide")
                 indiceRetour.push(position);
@@ -1263,6 +1292,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
         posePionSurCase(path, data.pion, data.couleur, data.joueur);
         selectionPion = null;
+        pose.play();
     });
     
     socket.on("pasTonTour", () => {
@@ -1286,10 +1316,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             .attr('height', rayon*1.3);
         });
     
-
-    
-
-
     for(i of milieu) {
         console.log(milieu.includes(i),i);
         d3.select('#h'+i).attr("stroke", "black");
@@ -1321,7 +1347,17 @@ socket.on('envoiNombrePionsRestants', (data) => {
 
 //Affichage de la couleur du joueur pour les pions du menu
 socket.on("genereCouleurJoueur", (couleurGeneree) =>{
+    let couleurInverse = '';
     d3.selectAll('.pion').attr("fill", couleurGeneree);
+    $(".nombre").each(function() {
+        var couleurPion = $(this);
+        // Vérifier si l'élément a un attribut "id"
+        if (couleurPion.attr("id")) {
+            if(couleurGeneree == 'white') couleurInverse = 'black';
+            if(couleurGeneree == 'black') couleurInverse = 'white';
+            couleurPion.css("color",couleurInverse);
+        }
+    });
 });
 
 var selectionPion = null;
