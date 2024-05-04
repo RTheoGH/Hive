@@ -60,6 +60,7 @@ let recherche = false;
 let accepter = false;
 let matchID = "";
 let casesHighlight = []
+let modeChoisi = "";
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -289,6 +290,11 @@ socket.on('recoitMessage', (data) => {
     notif.play();
 });
 
+socket.on("recupMode",(data) => {
+    modeChoisi = data;
+    console.log("Ok le mode pour la partie est : ",modeChoisi);
+})
+
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
 // --------------------------------------------------------------------------------------------------------
@@ -325,14 +331,17 @@ function initPartie(){
 }
 
 // fonction de début de partie
-function debutPartie(){
+function debutPartie(m){
+    m = modeChoisi;
+    console.log(m);
     document.getElementById("message_erreur").innerHTML = "";
     clear();
     console.log('Je lance la partie');
-    let selectElement = document.getElementById("Mode");
-    let selectedOptionValue = selectElement.value;
-    console.log("value :", selectedOptionValue);
-    socket.emit('lancementPartie', selectedOptionValue);
+    let mDefaut = "extension2";
+    console.log(mDefaut);
+    if(m != "" && mDefaut != m) mDefaut = m;
+    console.log("value :", mDefaut);
+    socket.emit('lancementPartie', mDefaut);
 }
 
 // fonction qui affiche le jeu

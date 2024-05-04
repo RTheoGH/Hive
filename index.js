@@ -159,9 +159,12 @@ io.on('connection', (socket) => {
                             console.log("Joueurs : ",salles[i].listeJoueurs);
                             
                             socket.join(data.nom);  // Actualisation uniquement pour cette salle
+                            let recupMode = salles[i].mode;
+                            console.log("Le mode est ",recupMode);
+                            io.to(data.nom).emit("recupMode",recupMode);
                             io.to(data.nom).emit('majSalle',salles[i]);
                             if(salles[i].listeJoueurs.length == 2){ // Si deux joueurs sont présente dans la salle, le bouton lancer
-                                io.to(salles[i].listeJoueurs[0][1]).emit('lancerDispo');  // devient disponible
+                                io.to(data.nom).emit('lancerDispo');  // devient disponible
                             }
                             break;
                         }
