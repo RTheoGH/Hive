@@ -544,6 +544,24 @@ io.on('connection', (socket) => {
 
     });
 
+    socket.on("deplacerPion", (data) => {
+        parcoursDesSalles:
+        for(let salle of salles){
+            for(let joueur of salle.listeJoueurs){
+                if(joueur[1] == socket.id){
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    if(indexJoueur == salle.tour){
+                        console.log("plateau :", salle.etatPlateau);
+                    }
+                    else{
+                        io.to(socket.id).emit("pasTonTour");
+                    }
+                    break parcoursDesSalles;
+                }
+            }
+        }
+    });
+
     socket.on('envoieMessage',(data) => {
         for(const salle of salles){
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
