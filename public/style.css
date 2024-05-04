@@ -7,7 +7,7 @@ body{
 .fond{
     margin:auto;
     background-size: cover;
-    background-image:url("images/fonds/fond.png");
+    background-image:url("images/fonds/hive-1920-1080.png");
     background-repeat: no-repeat;
 }
 
@@ -338,7 +338,7 @@ footer{
     height: 100%;
     width: 100%;
     background-size: cover;
-    background-image:url("images/fonds/fond.png");
+    background-image:url("images/fonds/hive-1920-1080.png");
     background-repeat: no-repeat;
     text-align: center;
     color: white;
@@ -561,48 +561,39 @@ footer{
 /* --------------------------- */
 
 /* Ecran très petit, inférieur à 1024px */
-@media screen and (min-width: 0px) and (max-width: 1024px){
+@media screen and (max-width: 1024px){
     .hive{
         font-size: 6em;
+        top:-5%;
     }
     #accueil{
-        transform: translate(-31%,-100%);
+        transform: translate(-50%,0%);
     }
     .decalMenu {
-        margin-right: 10em;
+        margin-right: 0;
     }
-    #menuPions{
-        width:8vw;
+    .menu{
+        width: auto;
     }
     .fond{
-        background-image:url("images/fonds/fond-1024-768.png");
+        background-color: #ffe600f3;
+        background-image: none;
     }
     #creer,#rejoindre,#rechercher{
         margin-top:-2em;
         font-size: .7em;
-        width: 20vw;
+        width: 40vw;
     }
     footer{
         bottom: 15px;
     }
-    .reglesPion{
-        top: 58%;
-    }
+    
     .tailleRImg {
         height: 50px;
         width: 50px;
     }
-    .reglesDesc{
-        top: 38%;
-    }
     .cursiveR {
         font-size: 18px;
-    }
-    .posAccueil{
-        top: 21%;
-    }
-    .hiveregles{
-        top: 5%;
     }
     .detail{
         width: 40vw;
@@ -613,7 +604,8 @@ footer{
         font-size: 15px;
     }
     .victoire{
-        background-image:url("images/fonds/fond-1024-768.png");
+        background-color: #ffe600f3;
+        background-image: none;
         font-size: 3em;
     }
 }
@@ -671,13 +663,13 @@ footer{
         bottom: 10px;
     }
     .fond{
-        background-image:url("images/fonds/fond-1280-800.png");
+        background-image:url("images/fonds/hive-1280-800.png");
     }
     .positionQP {
         left: 83.5%;
     }
     .victoire{
-        background-image:url("images/fonds/fond-1280-800.png");
+        background-image:url("images/fonds/hive-1280-800.png");
         font-size: 3em;
     }
 }
@@ -719,13 +711,13 @@ footer{
         width: 60px;
     }
     .fond{
-        background-image:url("images/fonds/fond-1440-900.png");
+        background-image:url("images/fonds/hive-1440-900.png");
     }
     .positionQP {
         left: 84.5%;
     }
     .victoire{
-        background-image:url("images/fonds/fond-1440-900.png");
+        background-image:url("images/fonds/hive-1440-900.png");
         font-size: 3em;
     }
 }
@@ -811,10 +803,10 @@ footer{
         top: 3%;
     }
     .fond{
-        background-image:url("images/fonds/fond-1680-1050.png");
+        background-image:url("images/fonds/hive-1680-1050.png");
     }
     .victoire{
-        background-image:url("images/fonds/fond-1680-1050.png");
+        background-image:url("images/fonds/hive-1680-1050.png");
     }
 }
 
@@ -837,5 +829,146 @@ footer{
     }
     #menuPions:hover{
         padding-bottom:41em;
+    }
+}
+
+/* --------------------------- */
+/*   Jouer à 2 sur un écran    */
+/* --------------------------- */
+
+/* Moitié de 1024px */
+@media screen and (min-width: 0px) and (max-width: 512px){
+    #accueil{
+        width: 91%;
+        top: 17%;
+    }
+    .reglesPion{
+        width: 74%;
+        top: 71%;
+    }
+    .hiveregles{
+        top: 10%;
+    }
+    .reglesDesc{
+        top: 48%;
+    }
+    .posAccueil{
+        top: 26%;
+    }
+    #menuPions {
+        width: 15vw;
+    }
+    #menuPions:hover{
+        padding-bottom: 33em;
+    }
+    .action{
+        width: 80vw;
+        left: 17.5%;
+        font-size: 0.7em;
+    }
+}
+
+/* Moitié de 1280px */
+@media screen and (min-width: 513px) and (max-width: 640px){
+    #accueil{
+        width: 73%;
+        top: 16%;
+    }
+    .menu{
+        font-size: .6em;
+    }
+    .posAccueil{
+        top: 25%;
+    }
+    .hiveregles{
+        top: 10%;
+    }
+    .reglesPion{
+        width: 59%;
+        top: 65%;
+    }
+    #menuPions {
+        width: 12vw;
+    }
+    #menuPions:hover{
+        padding-bottom: 34em;
+    }
+}
+
+/* Moitié de 1440px */
+@media screen and (min-width: 641px) and (max-width: 720px){
+    #accueil{
+        width: 65%;
+        top: 13%;
+    }
+    .reglesPion{
+        width: 52%;
+    }
+    #menuPions {
+        width: 11vw;
+    }
+    #menuPions:hover{
+        padding-bottom: 38em;
+    }
+}
+
+/* Moitié de 1540px */
+@media screen and (min-width: 721px) and (max-width: 770px){
+    #accueil{
+        width: 61%;
+        top: 14%;
+    }
+    .reglesPion{
+        width: 50%;
+    }
+    #menuPions {
+        width: 10.5vw;
+    }
+    #menuPions:hover{
+        padding-bottom: 37em;
+    }
+}
+
+/* Moitié de 1680px */
+@media screen and (min-width: 771px)  and (max-width: 840px){
+    #accueil{
+        width: 56%;
+        top: 11%;
+    }
+    
+    .hiveregles{
+        top:8%;
+    }
+    #menuPions:hover{
+        padding-bottom: 43em;
+    }
+    #menuPions {
+        width: 9vw;
+    }
+}
+
+/* A partir de 1024px */
+@media screen and (min-width: 841px) and (max-width: 1024px){
+    #accueil{
+        width: auto;
+        top:17%;
+    }
+    #menuPions {
+        width: 8vw;
+    }
+    #menuPions:hover {
+        padding-bottom: 40em;
+    }
+    .reglesPion{
+        top: 60%;
+    }
+    .reglesDesc{
+        top: 42%;
+    }
+    .posAccueil{
+        top: 25%;
+    }
+    .hiveregles{
+        top: 10%;
     }
 }

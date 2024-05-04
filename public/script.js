@@ -38,6 +38,9 @@ const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
 const found = new Audio('public/sons/found.mp3');
 const miss = new Audio('public/sons/miss.mp3');
+const pose = new Audio('public/sons/pose.mp3');
+const deplacement = new Audio('public/sons/deplacement.mp3');
+const defaite = new Audio('public/sons/defaite.mp3');
 // -------------------
 
 var color = ['white','black'];
@@ -813,7 +816,7 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             'pionSauterelle' : 'une sauterelle',
             'pionMoustique' : 'un moustique'
         };
-        $("#actions_action").append("<li>J"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
     }
 }
 
@@ -1289,6 +1292,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
         posePionSurCase(path, data.pion, data.couleur, data.joueur);
         selectionPion = null;
+        pose.play();
     });
     
     socket.on("pasTonTour", () => {
@@ -1312,10 +1316,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             .attr('height', rayon*1.3);
         });
     
-
-    
-
-
     for(i of milieu) {
         console.log(milieu.includes(i),i);
         d3.select('#h'+i).attr("stroke", "black");
@@ -1347,7 +1347,17 @@ socket.on('envoiNombrePionsRestants', (data) => {
 
 //Affichage de la couleur du joueur pour les pions du menu
 socket.on("genereCouleurJoueur", (couleurGeneree) =>{
+    let couleurInverse = '';
     d3.selectAll('.pion').attr("fill", couleurGeneree);
+    $(".nombre").each(function() {
+        var couleurPion = $(this);
+        // Vérifier si l'élément a un attribut "id"
+        if (couleurPion.attr("id")) {
+            if(couleurGeneree == 'white') couleurInverse = 'black';
+            if(couleurGeneree == 'black') couleurInverse = 'white';
+            couleurPion.css("color",couleurInverse);
+        }
+    });
 });
 
 var selectionPion = null;
