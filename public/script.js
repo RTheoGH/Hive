@@ -63,6 +63,7 @@ let recherche = false;
 let accepter = false;
 let matchID = "";
 let casesHighlight = []
+let modeChoisi = "";
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -105,9 +106,23 @@ socket.on('lancerPlusDispo', () => {
 
 // Affichage de la partie lorqu'un joueur la lance
 socket.on('affichagePartie', (data) => {
-    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    const joueurActuel = data.salle.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
     console.log("je suis le joueur ",socket.id);
+    switch(data.extension){
+        case 'classique' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").hide();
+            break;
+        case 'extension1' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").show();
+            break;
+        case 'extension2' :
+            $("#divMoustique").show();
+            $("#divCoccinelle").show();
+            break;
+    }
     if(joueurActuel){
         console.log("Ok je rafraichie la page pour afficher le jeu");
         clear();
@@ -278,6 +293,11 @@ socket.on('recoitMessage', (data) => {
     notif.play();
 });
 
+socket.on("recupMode",(data) => {
+    modeChoisi = data;
+    console.log("Ok le mode pour la partie est : ",modeChoisi);
+})
+
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
 // --------------------------------------------------------------------------------------------------------
@@ -314,11 +334,17 @@ function initPartie(){
 }
 
 // fonction de début de partie
-function debutPartie(){
+function debutPartie(m){
+    m = modeChoisi;
+    console.log(m);
     document.getElementById("message_erreur").innerHTML = "";
     clear();
     console.log('Je lance la partie');
-    socket.emit('lancementPartie');
+    let mDefaut = "extension2";
+    console.log(mDefaut);
+    if(m != "" && mDefaut != m) mDefaut = m;
+    console.log("value :", mDefaut);
+    socket.emit('lancementPartie', mDefaut);
 }
 
 // fonction qui affiche le jeu
@@ -969,7 +995,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceRetour = [];
     switch (typeJeton){
-        case 'abeille' :
+        case 'Abeille' :
             for(position in indicesAutour){
                 if(damier[position].attr('jeton') == "vide")
                 indiceRetour.push(position);
