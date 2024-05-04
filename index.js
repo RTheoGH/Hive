@@ -475,7 +475,7 @@ io.on('connection', (socket) => {
                             io.to(salle.nom).emit('instructionsActivation', { 'indices': determinerIndicesAutour(data.case.replace("h", ""))});
                             //gestion pour poser pion
                             data.couleur = ["white", "black"][indexJoueur];
-                            data.joueur = indexJoueur + 1;
+                            data.joueur = joueur[0];
                             stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur};
                             salle.etatPlateau.push(stockePion);
                             //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
