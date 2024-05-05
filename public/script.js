@@ -64,6 +64,8 @@ let accepter = false;
 let matchID = "";
 let casesHighlight = []
 let modeChoisi = "";
+let deplacementPionOrigine = null;
+let modeSelectionDeplacement = false;
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -1165,13 +1167,13 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             }
             let tailleFin = -1;
             while(tailleFin < reponse.length){
-                console.log("Nouvelle entree boucle while");
+                //console.log("Nouvelle entree boucle while");
                 for(i of reponse){
-                    console.log("Nouvelle entree boucle for 1, i :" + i);
+                    //console.log("Nouvelle entree boucle for 1, i :" + i);
                     tailleFin = reponse.length;
                     indicesAutour = determinerIndicesAutour(i);
                     for(caseDispoFourmi of indicesAutour){
-                        console.log("Nouvelle entree boucle for 2, caseDispoFourmi :" + caseDispoFourmi);
+                        //console.log("Nouvelle entree boucle for 2, caseDispoFourmi :" + caseDispoFourmi);
                         if(damierActif.includes(caseDispoFourmi)){
                             if(damier[caseDispoFourmi].attr("jeton") == "vide"
                             && !reponse.includes(caseDispoFourmi)){
@@ -1249,12 +1251,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     return listeSansDoublons;
 }
 
-socket.on("ReceptPoserPionPlateau", (data) => {
-    var path = $('path#' + data.case);
-    d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
-    posePionSurCase(path, data.pion, data.couleur, data.joueur);
-    selectionPion = null;
-});
+
 
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
@@ -1368,7 +1365,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                     // d3.select(this).append("svg").append('image')
                     //.attr("viewBox", "0 0 " + (rayon * 2) + " " + (rayon * 2))  // Ajout de la viewBox
                     //.attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
-                    
+                    let pionActuel = d3.select(this).attr("id");
+                    console.log("pion cliqué : ", pionActuel);
+                    console.log("pion origine : ", deplacementPionOrigine);
 
                     //console.log(this)
                     if (!d3.select(this).classed("desactive")) {
@@ -1382,30 +1381,35 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                             }
                         }
                         console.log(d3.select(this).attr("jeton"));
+
                         if (d3.select(this).attr("jeton") != "vide"){
                             let listeCase = [];
+                            if(modeSelectionDeplacement){
+                                if(pionActuel == deplacementPionOrigine){
+                                    modeSelectionDeplacement = false;
+                                    deplacementPionOrigine = null;
+                                    unhighlight();
+                                }
+                            }else{
+                                modeSelectionDeplacement = true;
+                                deplacementPionOrigine = pionActuel;
+                            }
+                            
                             for (let i = 0; i < nbLignes * nbColonnes; i++) {
                                 listeCase.push(d3.select('#h' + i));
                             }
-                            d3.selectAll("*").each(function() {
-                                let c = d3.select(this); // Sélectionner l'élément actuel
-                                if (c.attr("jeton") == "vide") { // maybe cond if discover
-                                    c.attr("fill", "none")
-                                    .attr("opacity", 1)
-                                    .attr("stroke", "black");
-                                }
-                            });
+                            
 
                             let caseAutourDeplacement = determinerIndicesAutour(position);
                             let is_movement_allowed = true;
                             for(caseDeplacement of caseAutourDeplacement){
                                 let caseAutourDeplacementRec = determinerIndicesAutour(caseDeplacement);
                                 let need_allow = false;
-                                console.log("caseAutourDeplacementRec avant suppression :", caseAutourDeplacementRec);
-                                console.log("élément à supprimer :", position);
+                                // console.log("caseAutourDeplacementRec avant suppression :", caseAutourDeplacementRec);
+                                // console.log("élément à supprimer :", position);
                                 position = parseInt(position, 10); // Convertir position en nombre
                                 caseAutourDeplacementRec = caseAutourDeplacementRec.filter(element => element !== position);
-                                console.log("caseAutourDeplacementRec après suppression :", caseAutourDeplacementRec);                                
+                                //console.log("caseAutourDeplacementRec après suppression :", caseAutourDeplacementRec);                                
                                 if(d3.select("#h" + caseDeplacement).attr("jeton") != "vide"){
                                     for(caseAllow of caseAutourDeplacementRec){
                                         console.log("d3.select('#h' + caseAllow).attr('jeton') :"+d3.select("#h" + caseAllow).attr("jeton"));
@@ -1419,18 +1423,22 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                     }
                                 }
                             }
+                            let caseDisponible = [];
                             if(is_movement_allowed){
-                                console.log(listeCase);
-                                console.log(listeCase[0].attr("jeton"));
-                                let caseDisponible = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
-                                console.log(caseDisponible);
+                                // console.log(listeCase);
+                                // console.log(listeCase[0].attr("jeton"));
+                                caseDisponible = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
+                                //console.log(caseDisponible);
                                 // Sélectionner uniquement les cases disponibles
-                                caseDisponible.forEach(e => {
-                                    d3.select(`#h${e}`)
-                                        .attr("fill", "green")
-                                        .attr("opacity", 0.3)
-                                        .attr("stroke", "green");
-                                })
+                                console.log("cases disponibles :",caseDisponible);
+                                if(deplacementPionOrigine != null){
+                                    socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponible, "pionOrigine" : deplacementPionOrigine});
+                                }
+                            }
+
+                            
+                            if(caseDisponible.includes(pionActuel)){
+                                console.log("cas où on veut déplacer le pion à cet emplacement");
                             }
                         }
                         //let position=d3.select(this).attr('id').substring(1);
@@ -1489,6 +1497,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     
     socket.on("pasTonTour", () => {
         console.log("C'est le tour du joueur adverse");
+    });
+
+    socket.on("pasTonPion", () => {
+        console.log("C'est un pion adverse, vous ne pouvez pas le déplacer");
     });
 
     socket.on("infosTour", (data) => { 
@@ -1561,21 +1573,43 @@ $(document).on('click', '.pion', function(){
     }
 });
 
-socket.on("HighlightCasesJouables", (casesVides) => {
-    for(c of casesVides){
+function highlight(cases, couleurs){
+    //couleurs = {"h820" : "black", "h721" = "white"} par exemple
+    console.log("couleurs : ", couleurs);
+    for(c of cases){
         d3.select("#h"+c)
             .attr("fill", "green")
             .attr("opacity", 0.3)
             .attr("stroke", "green");
+        if(Object.keys(couleurs).includes("h"+c)){
+            casesHighlight[c] = couleurs["h"+c];
+        }
+        else{
+            casesHighlight[c] = "none";
+        }
     }
-    casesHighlight = casesVides;
-});
+}
 
-socket.on("UnhighlightCases", () => {
-    for(c of casesHighlight){
+function unhighlight(){
+    console.log("casesHighlight : ", casesHighlight);
+    for(c in casesHighlight){
         d3.select("#h"+c)
-            .attr("fill", "none")
+            .attr("fill", casesHighlight[c])
             .attr("opacity", 1)
             .attr("stroke", "black");
     }
+    casesHighlight = {};
+}
+
+socket.on("HighlightCasesJouables", (cases) => {
+    highlight(cases, {});
+});
+
+socket.on("UnhighlightCases", () => {
+    unhighlight();
+});
+
+socket.on("recupHighlightDeplacement", (data) => {
+    console.log("je vais highlight : ", data.couleurs);
+    highlight(data.cases, data.couleurs);
 });

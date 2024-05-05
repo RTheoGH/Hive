@@ -511,6 +511,7 @@ io.on('connection', (socket) => {
                 if(joueur[1] == socket.id){
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
                     if(indexJoueur == salle.tour){
+                        console.log("plateau : ", salle.etatPlateau);
                         let listeCasesVides = [];
                         if(salle.compteurTour != 1){
                             for(let p of salle.etatPlateau){
@@ -542,6 +543,43 @@ io.on('connection', (socket) => {
                 
         }}
 
+    });
+
+    socket.on("highlightDeplacement", (data) => {
+        parcoursDesSalles:
+        for(let salle of salles){
+            for(let joueur of salle.listeJoueurs){
+                if(joueur[1] == socket.id){
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    console.log(indexJoueur);
+                    if(indexJoueur == salle.tour){
+                        //console.log("plateau :", salle.etatPlateau);
+                        let couleurs = {};
+                        let bonneCouleur = true;
+                        for(p of salle.etatPlateau){
+                            if(data.casesDisponibles.toString().includes(p.position.replace("h", ""))){
+                                couleurs[p.position] = p.couleur;
+                                console.log("J'ai trouvé le pion, sa couleur est : ", p.couleur)
+                            }
+                            if(p.position == data.pionOrigine && p.couleur != ["white", "black"][indexJoueur]){
+                                bonneCouleur = false;
+                            }
+                        }
+                        if(bonneCouleur){
+                            console.log("couleurs :",couleurs)
+                            io.to(socket.id).emit("recupHighlightDeplacement", {"cases" : data.casesDisponibles, "couleurs" : couleurs});
+                        }
+                        else{
+                            io.to(socket.id).emit("pasTonPion");
+                        }
+                    }
+                    else{
+                        io.to(socket.id).emit("pasTonTour");
+                    }
+                    break parcoursDesSalles;
+                }
+            }
+        }
     });
 
     socket.on("deplacerPion", (data) => {
@@ -646,6 +684,13 @@ function checkPeutPlacer(casePossible, pionsPlateau, indexJoueur, tour){
     let peutPlacer = true;
     const c = JSON.parse(JSON.stringify(casePossible));
     let casesVoisines = determinerIndicesAutour(c);
+    for(let p of pionsPlateau){
+        if(p.position == "h"+c){
+            console.log("cas où la case est déjà prise");
+            peutPlacer = false;
+            break;
+        }
+    }
     checkCouleurAutour:
     for(let vi of casesVoisines){
         for(let p of pionsPlateau){
