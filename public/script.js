@@ -1016,8 +1016,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     switch (typeJeton){
         case 'Abeille' :
             for(position of indicesAutour){
-                console.log(position);
-                console.log(damier[position].attr('jeton'));
+                // console.log(position);
+                // console.log(damier[position].attr('jeton'));
                 if(damier[position].attr('jeton') == "vide")
                     indiceRetour.push(position);
                     console.log("indiceRetour :" + indiceRetour);
@@ -1029,7 +1029,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             let casesAutourAraignee2 = [];
 
             for(indice1 in indicesAutour){
-                console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] + "\n indicesAutour[indice1] :" + indicesAutour[indice1] + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
+                //console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] + "\n indicesAutour[indice1] :" + indicesAutour[indice1] + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
                 if(damier[indicesAutour[indice1]].attr('jeton') == "vide"){
                     casesAutourAraignee1.push(indicesAutour[indice1]);
                 }
@@ -1038,7 +1038,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             for(indice2 in casesAutourAraignee1){
                 let casesAutourTemp2 = determinerIndicesAutour(casesAutourAraignee1[indice2]);
                 for(indiceTemp2 in casesAutourTemp2){
-                    console.log("indiceTemp2 : " + indiceTemp2 + "\n damier[indiceTemp2] :" + damier[indiceTemp2] + "\n damier[indiceTemp2].attr('jeton') :" + damier[indiceTemp2].attr('jeton'));
+                    //console.log("indiceTemp2 : " + indiceTemp2 + "\n damier[indiceTemp2] :" + damier[indiceTemp2] + "\n damier[indiceTemp2].attr('jeton') :" + damier[indiceTemp2].attr('jeton'));
                     if(damier[casesAutourTemp2[indiceTemp2]].attr('jeton') == "vide"){
                         casesAutourAraignee2.push(casesAutourTemp2[indiceTemp2]);
                     }
@@ -1048,7 +1048,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             for(indicef in casesAutourAraignee2){
                 let casesAutourTempf = determinerIndicesAutour(casesAutourAraignee2[indicef]);
                 for(indiceTempf in casesAutourTempf){
-                    console.log("indiceTempf : " + indiceTempf + "\n damier[indiceTempf] :" + damier[indiceTempf] + "\n damier[indiceTempf].attr('jeton') :" + damier[indiceTempf].attr('jeton'));
+                    //console.log("indiceTempf : " + indiceTempf + "\n damier[indiceTempf] :" + damier[indiceTempf] + "\n damier[indiceTempf].attr('jeton') :" + damier[indiceTempf].attr('jeton'));
                     if(damier[casesAutourTempf[indiceTempf]].attr('jeton') == "vide"){
                         indiceRetour.push(casesAutourTempf[indiceTempf]);
                     }
@@ -1061,8 +1061,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             let casesAutourCocinelle2 = [];
 
             for(indice1 of indicesAutour){
-                console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] 
-                + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
+                // console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] 
+                // + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
                 if(damier[indice1].attr('jeton') != "vide"){
                     casesAutourCocinelle1.push(indice1);
                 }
@@ -1071,8 +1071,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             console.log("casesAutourCocinelle1 : " + casesAutourCocinelle1);
 
             for(indice2 of casesAutourCocinelle1){
-                console.log("indice2 : " + indice2 + "\n damier[indice2] :" + damier[indice2] 
-                + "\n damier[indice2].attr('jeton') :" + damier[indice2].attr('jeton'));
+                // console.log("indice2 : " + indice2 + "\n damier[indice2] :" + damier[indice2] 
+                // + "\n damier[indice2].attr('jeton') :" + damier[indice2].attr('jeton'));
                 let casesAutourTemp2 = determinerIndicesAutour(indice2);
                 for(indiceTemp2 of casesAutourTemp2){
                     if(damier[indiceTemp2].attr('jeton') != "vide"){
@@ -1129,7 +1129,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             for(let caseActive=0;caseActive<=(40*40)-1;caseActive++){
                 let caseAutourActive = determinerIndicesAutour(caseActive);
                 let conditionClearDamier = false;
-                console.log(caseAutourActive);
+                //console.log(caseAutourActive);
                 for(caseRF of caseAutourActive){
                     if(caseRF<1600 && caseRF >= 0)
                     if(damier[caseRF].attr("jeton") != "vide") conditionClearDamier = true;
@@ -1138,8 +1138,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
                     damierActif.push(caseRF);
                 }
             }
-            console.log("damierActif.length : "+ damierActif.length);
-            console.log("damierActif : " +damierActif);
+            // console.log("damierActif.length : "+ damierActif.length);
+            // console.log("damierActif : " +damierActif);
             damierActif.pop(positionActuelle);
             let caseAutourPosAct = determinerIndicesAutour(positionActuelle);
             for(indiceAPA of caseAutourPosAct){
@@ -1177,7 +1177,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
                         if(damierActif.includes(caseDispoFourmi)){
                             if(damier[caseDispoFourmi].attr("jeton") == "vide"
                             && !reponse.includes(caseDispoFourmi)){
-                                console.log("Nouvelle entree boucle if");
+                                //console.log("Nouvelle entree boucle if");
                                 reponse.push(caseDispoFourmi);
                             }
                         }
@@ -1186,11 +1186,11 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             }
             
 
-            console.log("reponse "+reponse);
+            //console.log("reponse "+reponse);
             reponse.pop(positionActuelle)
             //console.log("indiceFinalFourmi" + indiceFinalFourmi);
             indiceRetour = [...new Set(reponse)];
-            console.log("indiceRetour : " + indiceRetour);
+            //console.log("indiceRetour : " + indiceRetour);
             /*
             for(indiceFourmiTrop of indicesAutour){
                 let indiFTemps = determinerIndicesAutour(indiceFourmiTrop);
@@ -1384,6 +1384,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
                         if (d3.select(this).attr("jeton") != "vide"){
                             let listeCase = [];
+                            console.log(modeSelectionDeplacement);
                             if(modeSelectionDeplacement){
                                 if(pionActuel == deplacementPionOrigine){
                                     modeSelectionDeplacement = false;
@@ -1503,6 +1504,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         console.log("C'est un pion adverse, vous ne pouvez pas le déplacer");
     });
 
+    socket.on("caseDejaPrise", () => {
+        console.log("La case est déjà prise");
+    });
+
     socket.on("infosTour", (data) => { 
         console.log("C'est au tour du joueur", data.tour, " de jouer");
         console.log("Tour n°"+data.compteurTour);
@@ -1568,8 +1573,15 @@ var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
     if($("#nb_"+this.id).text() != 0){
-        selectionPion = this.id;
-        socket.emit("afficheCasesJouables");
+        if(selectionPion != this.id){
+            selectionPion = this.id;
+            deplacementPionOrigine = null;
+            unhighlight();
+            socket.emit("afficheCasesJouables");
+        }else{
+            selectionPion = null;
+            unhighlight();
+        }
     }
 });
 

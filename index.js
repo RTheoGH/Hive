@@ -465,10 +465,20 @@ io.on('connection', (socket) => {
                     //check si c'est le tour du joueur
                     if(salle.tour == indexJoueur){
                         let peutPlacer = true;
+                        for(let p of salle.etatPlateau){
+                            console.log("position : ",  p.position, "c :", data.case);
+                            if(p.position == data.case){
+                                console.log("cas où la case est déjà prise");
+                                peutPlacer = false;
+                                io.to(socket.id).emit("caseDejaPrise");
+                                break;
+                            }
+                        }
                         //check si le pion est joué autour d'un pion de sa couleur
                         if(salle.compteurTour >= 2){
                             let indice = data.case.replace("h", "");
-                            peutPlacer = checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                            console.log("indice : ",indice);
+                            peutPlacer = peutPlacer && checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
                         }
                         if(peutPlacer){
                             //gestion pions restants
@@ -684,13 +694,7 @@ function checkPeutPlacer(casePossible, pionsPlateau, indexJoueur, tour){
     let peutPlacer = true;
     const c = JSON.parse(JSON.stringify(casePossible));
     let casesVoisines = determinerIndicesAutour(c);
-    for(let p of pionsPlateau){
-        if(p.position == "h"+c){
-            console.log("cas où la case est déjà prise");
-            peutPlacer = false;
-            break;
-        }
-    }
+    
     checkCouleurAutour:
     for(let vi of casesVoisines){
         for(let p of pionsPlateau){
