@@ -1560,11 +1560,15 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         let pathOrigine = $('path#' + data.caseOrigine);
         let pathArrivee = $('path#' + data.caseArrivee);
         d3.select("#"+data.caseOrigine).attr("jeton", "vide");
-        d3.select("#"+data.caseArrivee).attr("jeton", data.pion.replace("pion", ""));
+        d3.select("#"+data.caseArrivee).attr("jeton", data.pionDeplace.replace("pion", ""));
         casesHighlight[data.caseOrigine.replace("h", "")] = "none";
         unhighlight();
         supprimerImageDeCase(pathOrigine);
-        posePionSurCase(pathArrivee, data.pion, data.couleur, data.joueur, "déplacer");
+        posePionSurCase(pathArrivee, data.pionDeplace, data.couleurPionDeplace, data.joueur, "déplacer");
+        if(data.pionEnDessous != null){
+            supprimerImageDeCase(pathOrigine);
+            posePionSurCase(pathOrigine, data.pionEnDessous, data.couleurPionEnDessous, data.joueur);
+        }
     });
     
     socket.on("pasTonTour", () => {

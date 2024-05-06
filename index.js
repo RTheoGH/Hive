@@ -634,18 +634,40 @@ io.on('connection', (socket) => {
                                     io.to(socket.id).emit("placerAbeille");
                                 }
                                 else{
-                                    console.log("j'ai trouvé le pion à changer")
-                                    pion.position = data.caseArrivee;
-                                    salle.tour = 1 - indexJoueur;
-                                    salle.compteurTour += 0.5;
-                                    io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
-                                    io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
-                                    let joueurGagnant = victoire(salle.etatPlateau);
-                                    console.log("gagnant :", joueurGagnant);
-                                    if( joueurGagnant != false){
-                                        io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                                    console.log("keys des piles : ", salle.pilesDePions, "pion.position : ", pion.position);
+                                    if(!Object.keys(salle.pilesDePions).includes(pion.position)){
+                                        console.log("j'ai trouvé le pion à changer")
+                                        pion.position = data.caseArrivee;
+                                        salle.tour = 1 - indexJoueur;
+                                        salle.compteurTour += 0.5;
+                                        io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pion.pion, "couleurPionDeplace" : pion.couleur, "pionEnDessous" : null, "couleurPionEnDessous" : "none", "joueur" : joueur[0]});
+                                        io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                        let joueurGagnant = victoire(salle.etatPlateau);
+                                        console.log("gagnant :", joueurGagnant);
+                                        if( joueurGagnant != false){
+                                            io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                                        }
+                                        break;
                                     }
-                                    break;
+                                    else{
+                                        let pionEnHautDeLaPile = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 1];
+                                        console.log("en haut de la pile :", pionEnHautDeLaPile);
+                                        if(pionEnHautDeLaPile.position == data.caseOrigine){
+                                            console.log("j'ai trouvé le pion à changer 2")
+                                            let pionDuDessous = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 2];
+                                            pion.position = data.caseArrivee;
+                                            salle.tour = 1 - indexJoueur;
+                                            salle.compteurTour += 0.5;
+                                            io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pionEnHautDeLaPile.pion, "couleurPionDeplace" : pionEnHautDeLaPile.couleur, "pionEnDessous" : pionDuDessous.pion, "couleurPionEnDessous" : pionDuDessous.couleur,"joueur" : joueur[0]});
+                                            io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                            let joueurGagnant = victoire(salle.etatPlateau);
+                                            console.log("gagnant :", joueurGagnant);
+                                            if( joueurGagnant != false){
+                                                io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                                            }
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
