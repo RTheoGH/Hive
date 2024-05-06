@@ -2,28 +2,46 @@
 // ----------------------------------------- Socket de démarrage ------------------------------------------
 // --------------------------------------------------------------------------------------------------------
 
-socket.on("Salut c'est le serveur ! :)", () => {
-    console.log("socket io connecté");
+document.addEventListener('DOMContentLoaded', function() {
     $("#creer").hide();
     $("#rejoindre").hide();
     $("#rechercher").hide();
     $("#matchTrouve").hide();
+    $("#regles").hide();
     $("#lobby").hide();
     $("#jeu").hide();
+
+    // Informations sur les pions sur la page des règles
+    var imageDetail = document.querySelectorAll(".image");
+
+    imageDetail.forEach(e => {
+        const image = e.querySelector(".tailleRImg");
+        const detail = e.querySelector(".detail");
+        const text = image.getAttribute("data-text");
+        detail.innerText = text;
+    });
+});
+
+socket.on("Salut c'est le serveur ! :)", () => {
+    console.log("socket io connecté");
 });
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Variables ----------------------------------------------------
 // --------------------------------------------------------------------------------------------------------
 
+// Sons -------------
 const select = new Audio('public/sons/select.mp3');
 const win = new Audio('public/sons/win.mp3');
 const erreur = new Audio('public/sons/erreur.mp3');
 const notif = new Audio('public/sons/notif.mp3');
 const ambiant = new Audio('public/sons/ambiant.mp3');
-const file = new Audio('public/sons/file.mp3');
 const found = new Audio('public/sons/found.mp3');
 const miss = new Audio('public/sons/miss.mp3');
+const pose = new Audio('public/sons/pose.mp3');
+const deplacement = new Audio('public/sons/deplacement.mp3');
+const defaite = new Audio('public/sons/defaite.mp3');
+// -------------------
 
 var color = ['white','black'];
 var nomJoueur="";
@@ -45,6 +63,10 @@ let recherche = false;
 let accepter = false;
 let matchID = "";
 let casesHighlight = []
+let modeChoisi = "";
+let deplacementPionOrigine = null;
+let modeSelectionDeplacement = false;
+var caseDisponiblePourDeplacer = [];
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -54,7 +76,8 @@ let casesHighlight = []
 socket.on('majSalle', (data) => {
     // $("#lobby").show();
     $("#lobby").fadeIn(300);
-    document.getElementById('nomCodeSalle').innerHTML = data.nom + ' : ' + data.code;
+    document.getElementById('lobbyNom').innerHTML = 'Salle : ' + data.nom;
+    document.getElementById('lobbyCode').innerHTML = data.code;
     
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
     if(joueurActuel){
@@ -86,9 +109,23 @@ socket.on('lancerPlusDispo', () => {
 
 // Affichage de la partie lorqu'un joueur la lance
 socket.on('affichagePartie', (data) => {
-    const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
+    const joueurActuel = data.salle.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
     console.log("je suis le joueur ",socket.id);
+    switch(data.extension){
+        case 'classique' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").hide();
+            break;
+        case 'extension1' :
+            $("#divMoustique").hide();
+            $("#divCoccinelle").show();
+            break;
+        case 'extension2' :
+            $("#divMoustique").show();
+            $("#divCoccinelle").show();
+            break;
+    }
     if(joueurActuel){
         console.log("Ok je rafraichie la page pour afficher le jeu");
         clear();
@@ -110,7 +147,7 @@ socket.on('majPartie', (data) => {
     if(joueurActuel){
         // Annonce de la victoire si on est le joueur qui reste encore dans la partie
         var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
-            <br/><button class='newGameButton'\
+            <br/><button class='bouton'\
             onClick='window.location.reload()'>Nouvelle Partie</button></div></div>";
         $("body").append(victoire);
         ambiant.pause();
@@ -123,7 +160,7 @@ socket.on('majPartie', (data) => {
 // Message d'erreur si le nom de la salle est déja pris
 socket.on('sallePrise', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Ce nom de salle est déja pris.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Ce nom de salle est déja pris.";
     $("#accueil").show();
     erreur.play();
 });
@@ -131,7 +168,7 @@ socket.on('sallePrise', () => {
 // Message d'erreur si la salle est pleine
 socket.on('sallePleine', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Cette salle est pleine.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Cette salle est pleine.";
     $("#accueil").show();
     erreur.play();
 });
@@ -139,7 +176,7 @@ socket.on('sallePleine', () => {
 // Message d'erreur si le pseudonyme choisi est déjà pris par quelqu'un dans la salle
 socket.on('pseudoPris', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Ce nom de joueur est déjà pris.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Ce nom de joueur est déjà pris.";
     $("#accueil").show();
     erreur.play();
 });
@@ -147,7 +184,7 @@ socket.on('pseudoPris', () => {
 // Message d'erreur si la salle n'est pas trouvé
 socket.on('salleIntrouvable', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Cette salle n'existe pas.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Cette salle n'existe pas.";
     $("#accueil").show();
     erreur.play();
 });
@@ -155,65 +192,60 @@ socket.on('salleIntrouvable', () => {
 // Message d'erreur si le code entré par le joueur n'est pas celui de la salle
 socket.on('codeFaux', () => {
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Code faux pour cette salle.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Code faux pour cette salle.";
     $("#accueil").show();
     erreur.play();
 });
 
-// Socket de réception des messages
-socket.on('recoitMessage', (data) => {
-    let puce = ["○", "●"][data.idJ];
-    $("#messages").append("<li>"+puce+" <span style='font-weight:bold'>"+data.auteur+"</span>: "+data.message+"</li>");
-    notif.play();
-});
-
+// Message d'erreur si le nom de la salle est vide
 socket.on('nomVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Nom de salle vide.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Nom de salle vide.";
     $("#accueil").show();
     erreur.play();
 });
 
+// Message d'erreur si le code de la salle est vide
 socket.on('codeVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Code de salle vide.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Code de salle vide.";
     $("#accueil").show();
     erreur.play();
 });
 
+// Message d'erreur si le nom du joueur est vide
 socket.on('joueurVide', () => {
     $("#creer").hide();
     $("#lobby").hide();
-    document.getElementById("message_erreur").innerHTML += "Nom de joueur vide.";
+    document.getElementById("message_erreur").innerHTML += "Erreur : Nom de joueur vide.";
     $("#accueil").show();
     erreur.play();
 });
 
+// Socket de réception lorsqu'un match est trouvé via la fonction de recherche de partie
 socket.on('matchTrouve', (data) => {
     matchID = data.MatchID;
     $("#rechercher").hide();
     $("#accepterM").prop("disabled",false);
     $("#matchTrouve").fadeIn(300);
     recherche = false;
-
-    // Initialiser la barre de progression à 100%
-    progress = 100;
-    updateProgressBar();
+    progress = 100; // On initialise la barre de progression à 100%
+    updateProgressBar(); // On appelle la fonction une première fois
 
     let chrono = setInterval(() => {
         progress -= 0.769; // Réduire la progression
         updateProgressBar();
 
-        if(progress <= 0){
-            clearInterval(chrono);
+        if(progress <= 0){ // Si le chronometre arrive à 0
+            clearInterval(chrono); // On arrete le chronometre
             found.pause();
             found.currentTime = 0
             $("#matchTrouve").hide();
             $("#rechercher").fadeIn(300);
-            if(!accepter){
-                miss.play();
+            if(!accepter){ // Si le joueur n'a pas accepté, on affiche la page de recherche d'une partie
+                miss.play();   // sans le remettre dans la file
                 $("#pseudoM").prop("disabled",false);
                 $("#niveau-match").prop("disabled",false);
                 $("#boutonRecherche").prop("disabled",false);
@@ -230,29 +262,44 @@ socket.on('matchTrouve', (data) => {
         }
     },100);
     found.play();
-    file.pause();
-    file.currentTime = 0;
+    ambiant.pause();
+    ambiant.currentTime = 0;
 });
 
+// Met à jour la largeur de la barre de progression
 function updateProgressBar() {
-    progressElement.style.width = progress + '%'; // Mettre à jour la largeur de la barre de progression
+    progressElement.style.width = progress + '%'; 
 }
 
+// Socket de réception pour relancer la musique de la file
 socket.on("repriseSonFile", () => {
     console.log("reprise de la file");
-    file.play();
-    file.addEventListener('timeupdate', function(){
-        if(this.currentTime >= 72){
+    ambiant.play();
+    ambiant.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 59){
             this.currentTime = 0;
         }
     });
 });
 
+// Socket de réception d'une tentative de connexion à une salle
 socket.on("clientJoin",(data) => {
     console.log(data);
     console.log("tentative de connexion à la salle",data.salle.nom);
     socket.emit("joinRoom",data);
 });
+
+// Socket de réception des messages
+socket.on('recoitMessage', (data) => {
+    let puce = ["○", "●"][data.idJ]; // La puce vide représente le joueur blanc et la puce pleine le joueur noir
+    $("#messages").append("<li>"+puce+" <span style='font-weight:bold'>"+data.auteur+"</span>: "+data.message+"</li>");
+    notif.play();
+});
+
+socket.on("recupMode",(data) => {
+    modeChoisi = data;
+    console.log("Ok le mode pour la partie est : ",modeChoisi);
+})
 
 // --------------------------------------------------------------------------------------------------------
 // -------------------------------------------- Fonctions -------------------------------------------------
@@ -260,31 +307,47 @@ socket.on("clientJoin",(data) => {
 
 // Redirection vers la page des règles
 function ouvrirRegles() {
-    window.location.href = '/regles';
+    $("#accueil").hide();
+    select.play();
+    $("#regles").fadeIn(300); // Alternative à .show()
 }
 
 // Redirection vers l'accueil
 function fermerRegles() {
-    window.location.href = '/';
+    $("#regles").hide();
+    select.play();
+    $("#accueil").fadeIn(300);
 }
 
-function initPartie(){
-    genereDamier(40,40,40);
-    ambiant.currentTime = 0;
-    ambiant.play();
-    ambiant.addEventListener('timeupdate', function(){
-        if(this.currentTime >= 59){
-            this.currentTime = 0;
-        }
+// Fonction qui copie le code d'une salle via un bouton
+function copierCode(){
+    var copie = document.getElementById("lobbyCode").innerText;
+    navigator.clipboard.writeText(copie) // API clipboard
+    .then(() => {
+        console.log('Code copier');
+    })
+    .catch(e => {
+        console.error('Erreur lors de la copie dans le presse-papiers : ', e);
     });
 }
 
+// Fonction qui initialise la partie ainsi que le damier
+function initPartie(){
+    genereDamier(40,40,40);
+}
+
 // fonction de début de partie
-function debutPartie(){
+function debutPartie(m){
+    m = modeChoisi;
+    console.log(m);
     document.getElementById("message_erreur").innerHTML = "";
     clear();
     console.log('Je lance la partie');
-    socket.emit('lancementPartie');
+    let mDefaut = "extension2";
+    console.log(mDefaut);
+    if(m != "" && mDefaut != m) mDefaut = m;
+    console.log("value :", mDefaut);
+    socket.emit('lancementPartie', mDefaut);
 }
 
 // fonction qui affiche le jeu
@@ -309,6 +372,7 @@ function rejoindre(){
     $("#rejoindre").fadeIn(300);
 }
 
+// Fonction d'affichage de la page rechercher
 function rechercher(){
     document.getElementById("message_erreur").innerHTML = "";
     $("#accueil").hide();
@@ -319,7 +383,7 @@ function rechercher(){
     $("#rechercher").fadeIn(300);
 }
 
-// Fonction pour formater le temps au format mm:ss
+// Fonction pour formater le temps au format mm:ss, exemple : 01:45 -> 1 minute et 45 secondes
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -336,10 +400,11 @@ function updateTimer() {
     }
 }
 
+// Fonction principale de la recherche
 async function recherchePartie() {
     recherche = true;
     while(recherche){
-        socket.emit("recherchePartie");
+        socket.emit("recherchePartie"); // Envoie chaque seconde le message au serveur si le joueur recherche une partie
         await attente(1000);
     }
 }
@@ -348,29 +413,32 @@ function attente(temps){
     return new Promise(resolve => setTimeout(resolve,temps));
 }
 
+// Fonction pour lancer la recherche
 function lancerRecherche(){
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
     console.log("Je lance la file :",nomJoueur);
-    socket.emit("rejoindreFile",{"joueur":[niveau,nomJoueur,socket.id,null]});
+    socket.emit("rejoindreFile",{"joueur":[niveau,nomJoueur,socket.id,null]}); // Le joueur rejoint la file
     if (!timerElement) {
         timerElement = document.getElementById('tempsDAttente');
     }
     if (!timerInterval) {
         timerInterval = setInterval(updateTimer, 1000); // Appelle updateTimer() toutes les 1000 ms (1 seconde)
     }
-    file.play();
-    file.addEventListener('timeupdate', function(){
-        if(this.currentTime >= 72){
+    select.play();
+    ambiant.play();
+    ambiant.addEventListener('timeupdate', function(){
+        if(this.currentTime >= 59){
             this.currentTime = 0;
         }
     });
     $("#pseudoM").prop("disabled",true);
     $("#niveau-match").prop("disabled",true);
     $("#boutonRecherche").prop("disabled",true);
-    recherchePartie();
+    recherchePartie(); // On lance la fonction de recherche une première fois
 }
 
+// Fonction pour annuler la recherche
 function retourRecherche(){
     clearInterval(timerInterval);
     timerInterval = undefined;
@@ -381,23 +449,25 @@ function retourRecherche(){
     }
     document.getElementById("message_erreur").innerHTML = "";
     $("#rechercher").hide();
-    file.pause();
-    file.currentTime = 0;
+    ambiant.pause();
+    ambiant.currentTime = 0;
     select.play();
     $("#accueil").fadeIn(300);
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     console.log(nomJoueur);
     let niveau = document.getElementById("niveau-match").value;
     console.log(niveau);
-    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]});
+    socket.emit("quitterMatchmaking",{"joueur":[niveau,nomJoueur,socket.id,null]}); // On retire le joueur de la file de recherche
 }
 
+// Fonction pour accepter un match lors de la recherche d'une partie
 function accepterMatch(){
     accepter = true;
     console.log("Accepter :",accepter);
     nomJoueur = document.getElementById("pseudoM").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');
     let niveau = document.getElementById("niveau-match").value;
     $("#accepterM").prop("disabled",true);
+    select.play();
     socket.emit("accepterMatch",{"joueur":[niveau,nomJoueur,socket.id,null],"matchID":matchID});
 }
 
@@ -430,26 +500,13 @@ function validerCreation(){
     nomJoueur = document.getElementById("pseudo").value.trim().replace(/[^a-zA-Z0-9 'çàéèù]/g,'');     // Recup le nom du créateur de la salle (J1)
     salle.listeJoueurs.push([nomJoueur,null, null]);
 
-    const typeListe = document.querySelectorAll("input[name='Type']");       // Recup si Duel ou IA
-    let typeChoix;
-    for (const type of typeListe) {
-        if (type.checked) {
-            typeChoix = type.value;
-            break;
-        }
-    }
-    salle.type=typeChoix;
-    const modeListe = document.querySelectorAll("input[name='Mode']");       // Recup si classique/ext1/ext2/ext3
-    let modeChoix;
-    for (const mode of modeListe) {
-        if (mode.checked) {
-            modeChoix = mode.value;
-            break;
-        }
-    }
-    salle.mode=modeChoix;
+    var typeSelect = document.getElementById("Type"); // Recup si Duel ou IA
+    salle.type = typeSelect.value;
+    var modeSelect = document.getElementById("Mode"); // Recup si classique/ext1/ext2/ext3
+    salle.mode = modeSelect.value;
 
-    document.getElementById('nomCodeSalle').innerHTML = salle.nom+' : '+salle.code; // Affichage du nom de la salle et du code pour rejoindre
+    document.getElementById('lobbyNom').innerHTML = 'Salle  : ' + salle.nom; // Affichage du nom de la salle 
+    document.getElementById('lobbyCode').innerHTML = salle.code;             // et du code pour rejoindre
     document.getElementById('J1').innerHTML = salle.listeJoueurs[0][0];
     console.log(salle);
 
@@ -482,9 +539,9 @@ function retourAccueil(){
 // fonction qui permet de quitter la salle actuelle pour retourner à l'accueil
 function quitter(){
     select.play();
-    retourAccueil();
     console.log("Je quitte la salle");
     socket.emit('quittePartie');
+    retourAccueil();
     $("#lancer").prop("disabled",true);
 }
 
@@ -495,20 +552,8 @@ function quitterPartieEnCours(){
     socket.emit('quittePartieEnCours');
     $("#jeu").hide();
     retourAccueil();
-    ambiant.pause();
-    ambiant.currentTime = 0;
     $("#lancer").prop("disabled",true);
 }
-
-function hideHex(position){
-    console.log('fonction hideHex sur : '+ position);
-    d3.select('#h'+position).attr("stroke", "black");
-}
-
-socket.on('hide', (data) => {
-    console.log('chemin hide client : '+ position);
-    hideHex(data.position);
-})
 
 // fonction pour envoyer un message dans le tchat
 function send(){
@@ -519,6 +564,20 @@ function send(){
     }
     $('#message').val("");
 }
+
+// ------------------
+// Fin des fonctions principales pour les salles
+// ------------------
+
+function hideHex(position){
+    console.log('fonction hideHex sur : '+ position);
+    d3.select('#h'+position).attr("stroke", "black");
+}
+
+socket.on('hide', (data) => {
+    console.log('chemin hide client : '+ position);
+    hideHex(data.position);
+});
 
 // Fonction raccourci pour envoyer un message
 function fsend(event){
@@ -728,8 +787,16 @@ socket.on('instructionsRedActivation', (data) => {
 
 var rayonGlobal = 0
 
+//fonction pour supprimer l'image ajoutée à la case "elemCase" désignée par la balise path
+function supprimerImageDeCase(elemCase) {
+    var svgElement = elemCase.closest('svg')[0];
+    var image = d3.select(svgElement).select('image');
+    image.remove();
+}
+
+
 //fonction pour poser le pion "pion" sur la case "elemCase" désignée par la balise path
-function posePionSurCase(elemCase, pion, couleur, joueur){
+function posePionSurCase(elemCase, pion, couleur, joueur, type){
     var svgElement = elemCase.closest('svg')[0];
     if (elemCase.length > 0) {            // Si on le trouve
         var d = elemCase.attr('d');       // On récupère son d
@@ -760,7 +827,12 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             'pionSauterelle' : 'une sauterelle',
             'pionMoustique' : 'un moustique'
         };
-        $("#actions_action").append("<li>J"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        if(type == "poser"){
+            $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        }
+        else{
+            $("#actions_action").append("<li>"+joueur+" a déplacé "+dicoPionHistorique[pion]+"</li>");
+        }
     }
 }
 
@@ -958,8 +1030,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     switch (typeJeton){
         case 'Abeille' :
             for(position of indicesAutour){
-                console.log(position);
-                console.log(damier[position].attr('jeton'));
+                // console.log(position);
+                // console.log(damier[position].attr('jeton'));
                 if(damier[position].attr('jeton') == "vide")
                     indiceRetour.push(position);
                     console.log("indiceRetour :" + indiceRetour);
@@ -970,7 +1042,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             let casesAutourAraignee1 = [];
             let casesAutourAraignee2 = [];
             for(indice1 in indicesAutour){
-                console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] + "\n indicesAutour[indice1] :" + indicesAutour[indice1] + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
+                //console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] + "\n indicesAutour[indice1] :" + indicesAutour[indice1] + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
                 if(damier[indicesAutour[indice1]].attr('jeton') == "vide"){
                     casesAutourAraignee1.push(indicesAutour[indice1]);
                 }
@@ -979,7 +1051,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             for(indice2 in casesAutourAraignee1){
                 let casesAutourTemp2 = determinerIndicesAutour(casesAutourAraignee1[indice2]);
                 for(indiceTemp2 in casesAutourTemp2){
-                    console.log("indiceTemp2 : " + indiceTemp2 + "\n damier[indiceTemp2] :" + damier[indiceTemp2] + "\n damier[indiceTemp2].attr('jeton') :" + damier[indiceTemp2].attr('jeton'));
+                    //console.log("indiceTemp2 : " + indiceTemp2 + "\n damier[indiceTemp2] :" + damier[indiceTemp2] + "\n damier[indiceTemp2].attr('jeton') :" + damier[indiceTemp2].attr('jeton'));
                     if(damier[casesAutourTemp2[indiceTemp2]].attr('jeton') == "vide"){
                         casesAutourAraignee2.push(casesAutourTemp2[indiceTemp2]);
                     }
@@ -989,7 +1061,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             for(indicef in casesAutourAraignee2){
                 let casesAutourTempf = determinerIndicesAutour(casesAutourAraignee2[indicef]);
                 for(indiceTempf in casesAutourTempf){
-                    console.log("indiceTempf : " + indiceTempf + "\n damier[indiceTempf] :" + damier[indiceTempf] + "\n damier[indiceTempf].attr('jeton') :" + damier[indiceTempf].attr('jeton'));
+                    //console.log("indiceTempf : " + indiceTempf + "\n damier[indiceTempf] :" + damier[indiceTempf] + "\n damier[indiceTempf].attr('jeton') :" + damier[indiceTempf].attr('jeton'));
                     if(damier[casesAutourTempf[indiceTempf]].attr('jeton') == "vide"){
                         indiceRetour.push(casesAutourTempf[indiceTempf]);
                     }
@@ -1003,8 +1075,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
 
 
             for(indice1 of indicesAutour){
-                console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] 
-                + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
+                // console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] 
+                // + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
                 if(damier[indice1].attr('jeton') != "vide"){
                     casesAutourCocinelle1.push(indice1);
                 }
@@ -1013,8 +1085,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             console.log("casesAutourCocinelle1 : " + casesAutourCocinelle1);
 
             for(indice2 of casesAutourCocinelle1){
-                console.log("indice2 : " + indice2 + "\n damier[indice2] :" + damier[indice2] 
-                + "\n damier[indice2].attr('jeton') :" + damier[indice2].attr('jeton'));
+                // console.log("indice2 : " + indice2 + "\n damier[indice2] :" + damier[indice2] 
+                // + "\n damier[indice2].attr('jeton') :" + damier[indice2].attr('jeton'));
                 let casesAutourTemp2 = determinerIndicesAutour(indice2);
                 for(indiceTemp2 of casesAutourTemp2){
                     if(damier[indiceTemp2].attr('jeton') != "vide"){
@@ -1071,7 +1143,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             for(let caseActive=0;caseActive<=(40*40)-1;caseActive++){
                 let caseAutourActive = determinerIndicesAutour(caseActive);
                 let conditionClearDamier = false;
-                console.log(caseAutourActive);
+                //console.log(caseAutourActive);
                 for(caseRF of caseAutourActive){
                     if(caseRF<1600 && caseRF >= 0)
                     if(damier[caseRF].attr("jeton") != "vide") conditionClearDamier = true;
@@ -1081,6 +1153,8 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
                 }
             }
 
+            // console.log("damierActif.length : "+ damierActif.length);
+            // console.log("damierActif : " +damierActif);
 
             let damierFourmi = []; // /!\ ptite triche en attendant /!\
             for(hexa of damier){
@@ -1092,6 +1166,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
 
             console.log("damierActif.length : "+ damierActif.length);
             console.log("damierActif : " +damierActif);
+
             damierActif.pop(positionActuelle);
             let caseAutourPosAct = determinerIndicesAutour(positionActuelle);
             for(indiceAPA of caseAutourPosAct){
@@ -1119,17 +1194,17 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             }
             let tailleFin = -1;
             while(tailleFin < reponse.length){
-                console.log("Nouvelle entree boucle while");
+                //console.log("Nouvelle entree boucle while");
                 for(i of reponse){
-                    console.log("Nouvelle entree boucle for 1, i :" + i);
+                    //console.log("Nouvelle entree boucle for 1, i :" + i);
                     tailleFin = reponse.length;
                     indicesAutour = determinerIndicesAutour(i);
                     for(caseDispoFourmi of indicesAutour){
-                        console.log("Nouvelle entree boucle for 2, caseDispoFourmi :" + caseDispoFourmi);
+                        //console.log("Nouvelle entree boucle for 2, caseDispoFourmi :" + caseDispoFourmi);
                         if(damierActif.includes(caseDispoFourmi)){
                             if(damier[caseDispoFourmi].attr("jeton") == "vide"
                             && !reponse.includes(caseDispoFourmi)){
-                                console.log("Nouvelle entree boucle if");
+                                //console.log("Nouvelle entree boucle if");
                                 reponse.push(caseDispoFourmi);
                             }
                         }
@@ -1138,11 +1213,11 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             }
             
 
-            console.log("reponse "+reponse);
+            //console.log("reponse "+reponse);
             reponse.pop(positionActuelle)
             //console.log("indiceFinalFourmi" + indiceFinalFourmi);
             indiceRetour = [...new Set(reponse)];
-            console.log("indiceRetour : " + indiceRetour);
+            //console.log("indiceRetour : " + indiceRetour);
             /*
             for(indiceFourmiTrop of indicesAutour){
                 let indiFTemps = determinerIndicesAutour(indiceFourmiTrop);
@@ -1217,12 +1292,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     return listeSansDoublons;
 }
 
-socket.on("ReceptPoserPionPlateau", (data) => {
-    var path = $('path#' + data.case);
-    d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
-    posePionSurCase(path, data.pion, data.couleur, data.joueur);
-    selectionPion = null;
-});
+
 
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
@@ -1336,7 +1406,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                     // d3.select(this).append("svg").append('image')
                     //.attr("viewBox", "0 0 " + (rayon * 2) + " " + (rayon * 2))  // Ajout de la viewBox
                     //.attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
-                    
+                    let pionActuel = d3.select(this).attr("id");
+                    console.log("pion cliqué : ", pionActuel);
+                    console.log("pion origine : ", deplacementPionOrigine);
 
                     //console.log(this)
                     if (!d3.select(this).classed("desactive")) {
@@ -1350,19 +1422,35 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                             }
                         }
                         console.log(d3.select(this).attr("jeton"));
+                        if(!modeSelectionDeplacement){
+                            caseDisponiblePourDeplacer = [];
+                        }
                         if (d3.select(this).attr("jeton") != "vide"){
                             let listeCase = [];
+                            console.log(modeSelectionDeplacement);
+                            if(modeSelectionDeplacement){
+                                if(pionActuel == deplacementPionOrigine){
+                                    deplacementPionOrigine = null;
+                                }
+                                modeSelectionDeplacement = false;
+                                unhighlight();
+                                // if(pionActuel == deplacementPionOrigine){
+                                //     modeSelectionDeplacement = false;
+                                //     deplacementPionOrigine = null;
+                                //     unhighlight();
+                                // }
+                                // else{
+                                //     deplacementPionOrigine = pionActuel;
+                                // }
+                            }else{
+                                modeSelectionDeplacement = true;
+                                deplacementPionOrigine = pionActuel;
+                            }
+                            
                             for (let i = 0; i < nbLignes * nbColonnes; i++) {
                                 listeCase.push(d3.select('#h' + i));
                             }
-                            d3.selectAll("*").each(function() {
-                                let c = d3.select(this); // Sélectionner l'élément actuel
-                                if (c.attr("jeton") == "vide") { // maybe cond if discover
-                                    c.attr("fill", "none")
-                                    .attr("opacity", 1)
-                                    .attr("stroke", "black");
-                                }
-                            });
+                            
 
                             let caseAutourDeplacement = determinerIndicesAutour(position);
                             let is_movement_allowed = true;
@@ -1371,11 +1459,11 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                 if(d3.select("#h" + caseDeplacement).attr("jeton") != "vide") nb_pion++;
                                 let caseAutourDeplacementRec = determinerIndicesAutour(caseDeplacement);
                                 let need_allow = false;
-                                console.log("caseAutourDeplacementRec avant suppression :", caseAutourDeplacementRec);
-                                console.log("élément à supprimer :", position);
+                                // console.log("caseAutourDeplacementRec avant suppression :", caseAutourDeplacementRec);
+                                // console.log("élément à supprimer :", position);
                                 position = parseInt(position, 10); // Convertir position en nombre
                                 caseAutourDeplacementRec = caseAutourDeplacementRec.filter(element => element !== position);
-                                console.log("caseAutourDeplacementRec après suppression :", caseAutourDeplacementRec);                                
+                                //console.log("caseAutourDeplacementRec après suppression :", caseAutourDeplacementRec);                                
                                 if(d3.select("#h" + caseDeplacement).attr("jeton") != "vide"){
                                     for(caseAllow of caseAutourDeplacementRec){
                                         console.log("d3.select('#h' + caseAllow).attr('jeton') :"+d3.select("#h" + caseAllow).attr("jeton"));
@@ -1389,19 +1477,27 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                     }
                                 }
                             }
+                          
+                            console.log("movement allowed :", is_movement_allowed);
                             if(is_movement_allowed || nb_pion == 1){
-                                console.log(listeCase);
-                                console.log(listeCase[0].attr("jeton"));
-                                let caseDisponible = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
-                                console.log(caseDisponible);
+                                // console.log(listeCase);
+                                // console.log(listeCase[0].attr("jeton"));
+                                caseDisponiblePourDeplacer = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
+                                //console.log(caseDisponiblePourDeplacer);
+
                                 // Sélectionner uniquement les cases disponibles
-                                caseDisponible.forEach(e => {
-                                    d3.select(`#h${e}`)
-                                        .attr("fill", "green")
-                                        .attr("opacity", 0.3)
-                                        .attr("stroke", "green");
-                                })
+                                console.log("cases disponibles :",caseDisponiblePourDeplacer);
+                                if(deplacementPionOrigine != null && modeSelectionDeplacement){
+                                    socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponiblePourDeplacer, "pionOrigine" : deplacementPionOrigine});
+                                }
                             }
+
+                           
+                        }
+                        console.log(parseInt(pionActuel.replace("h", "")));
+                        if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
+                            console.log("cas où on veut déplacer le pion à cet emplacement");
+                            socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel});
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -1451,12 +1547,33 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
-        posePionSurCase(path, data.pion, data.couleur, data.joueur);
+        d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
+        posePionSurCase(path, data.pion, data.couleur, data.joueur, "poser");
         selectionPion = null;
+        pose.play();
+    });
+
+    socket.on("ReceptDeplacerPion", (data) => {
+        let pathOrigine = $('path#' + data.caseOrigine);
+        let pathArrivee = $('path#' + data.caseArrivee);
+        d3.select("#"+data.caseOrigine).attr("jeton", "vide");
+        d3.select("#"+data.caseArrivee).attr("jeton", data.pion.replace("pion", ""));
+        casesHighlight[data.caseOrigine.replace("h", "")] = "none";
+        unhighlight();
+        supprimerImageDeCase(pathOrigine);
+        posePionSurCase(pathArrivee, data.pion, data.couleur, data.joueur, "déplacer");
     });
     
     socket.on("pasTonTour", () => {
         console.log("C'est le tour du joueur adverse");
+    });
+
+    socket.on("pasTonPion", () => {
+        console.log("C'est un pion adverse, vous ne pouvez pas le déplacer");
+    });
+
+    socket.on("caseDejaPrise", () => {
+        console.log("La case est déjà prise");
     });
 
     socket.on("infosTour", (data) => { 
@@ -1476,10 +1593,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             .attr('height', rayon*1.3);
         });
     
-
-    
-
-
     for(i of milieu) {
         console.log(milieu.includes(i),i);
         d3.select('#h'+i).attr("stroke", "black");
@@ -1511,33 +1624,72 @@ socket.on('envoiNombrePionsRestants', (data) => {
 
 //Affichage de la couleur du joueur pour les pions du menu
 socket.on("genereCouleurJoueur", (couleurGeneree) =>{
+    let couleurInverse = '';
     d3.selectAll('.pion').attr("fill", couleurGeneree);
+    $(".nombre").each(function() {
+        var couleurPion = $(this);
+        // Vérifier si l'élément a un attribut "id"
+        if (couleurPion.attr("id")) {
+            if(couleurGeneree == 'white') couleurInverse = 'black';
+            if(couleurGeneree == 'black') couleurInverse = 'white';
+            couleurPion.css("color",couleurInverse);
+        }
+    });
 });
 
 var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
     if($("#nb_"+this.id).text() != 0){
-        selectionPion = this.id;
-        socket.emit("afficheCasesJouables");
+        if(selectionPion != this.id){
+            selectionPion = this.id;
+            deplacementPionOrigine = null;
+            unhighlight();
+            socket.emit("afficheCasesJouables");
+        }else{
+            selectionPion = null;
+            unhighlight();
+        }
     }
 });
 
-socket.on("HighlightCasesJouables", (casesVides) => {
-    for(c of casesVides){
+function highlight(cases, couleurs){
+    //couleurs = {"h820" : "black", "h721" = "white"} par exemple
+    console.log("couleurs : ", couleurs);
+    for(c of cases){
         d3.select("#h"+c)
             .attr("fill", "green")
             .attr("opacity", 0.3)
             .attr("stroke", "green");
+        if(Object.keys(couleurs).includes("h"+c)){
+            casesHighlight[c] = couleurs["h"+c];
+        }
+        else{
+            casesHighlight[c] = "none";
+        }
     }
-    casesHighlight = casesVides;
-});
+}
 
-socket.on("UnhighlightCases", () => {
-    for(c of casesHighlight){
+function unhighlight(){
+    console.log("casesHighlight : ", casesHighlight);
+    for(c in casesHighlight){
         d3.select("#h"+c)
-            .attr("fill", "none")
+            .attr("fill", casesHighlight[c])
             .attr("opacity", 1)
             .attr("stroke", "black");
     }
+    casesHighlight = {};
+}
+
+socket.on("HighlightCasesJouables", (cases) => {
+    highlight(cases, {});
+});
+
+socket.on("UnhighlightCases", () => {
+    unhighlight();
+});
+
+socket.on("recupHighlightDeplacement", (data) => {
+    console.log("je vais highlight : ", data.couleurs);
+    highlight(data.cases, data.couleurs);
 });
