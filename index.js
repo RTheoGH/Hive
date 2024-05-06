@@ -152,7 +152,8 @@ io.on('connection', (socket) => {
                             const copiePions = JSON.parse(JSON.stringify(pions));
                             data.joueur[2] = copiePions;
                             salles[i].listeJoueurs.push(data.joueur);
-                            salles[i]["etatPlateau"] = []  //liste de dicos, représente les pièces par leur position, le pion et la couleur
+                            salles[i]["etatPlateau"] = [];  //liste de dicos, représente les pièces par leur position, le pion et la couleur
+                            salles[i]["pilesDePions"] = {};
                             salles[i]["compteurTour"] = 1;
                             salles[i]["tour"] = randInt(2);
                             console.log("C'est au tour du joueur : ",salles[i].tour);
@@ -387,7 +388,7 @@ io.on('connection', (socket) => {
             console.log(matchPop);
             const copiePionsJ1 = JSON.parse(JSON.stringify(pions));
             const copiePionsJ2 = JSON.parse(JSON.stringify(pions));
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "tour":randInt(2), "compteurTour":1};
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "pileDePion" : {}, "tour":randInt(2), "compteurTour":1};
             salles.push(nouvelle_salle); // On crée et ajoute la nouvelle salle dans les salles
             let cpt = 0; // compteur pour éviter de lancer deux fois la partie (voir socket suivante)
             io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt}); // On fait rejoindre le joueur 1
@@ -600,6 +601,35 @@ io.on('connection', (socket) => {
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
                     if(indexJoueur == salle.tour){
                         console.log("plateau :", salle.etatPlateau);
+                        console.log("Case d'origine :", data.caseOrigine);
+                        bouclePilePions:
+                        for(pion of salle.etatPlateau){
+                            if(pion.position == data.caseArrivee){
+                                for(p of salle.etatPlateau){ //pour récupérer les données du pion à déplacer
+                                    if(p.position == data.caseOrigine){
+                                        console.log("cas où on fait une pile de pion");
+                                        if(Object.keys(salle.pilesDePions).includes(pion.position)){
+                                            salle.pilesDePions[pion.position].push();
+                                        }
+                                        else{
+                                            salle.pilesDePions[pion.position] = [pion, p] //liste des pions du plut bas au plus haut
+                                        }
+                                        break bouclePilePions;
+                                    }
+                                }
+                            }
+                        }
+                        for(pion of salle.etatPlateau){
+                            if(data.caseOrigine == pion.position){
+                                console.log("j'ai trouvé le pion à changer")
+                                pion.position = data.caseArrivee;
+                                salle.tour = 1 - indexJoueur;
+                                salle.compteurTour += 0.5;
+                                io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
+                                io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                break;
+                            }
+                        }
                     }
                     else{
                         io.to(socket.id).emit("pasTonTour");

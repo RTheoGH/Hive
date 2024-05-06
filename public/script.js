@@ -66,6 +66,7 @@ let casesHighlight = []
 let modeChoisi = "";
 let deplacementPionOrigine = null;
 let modeSelectionDeplacement = false;
+var caseDisponiblePourDeplacer = [];
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -786,8 +787,16 @@ socket.on('instructionsRedActivation', (data) => {
 
 var rayonGlobal = 0
 
+//fonction pour supprimer l'image ajoutée à la case "elemCase" désignée par la balise path
+function supprimerImageDeCase(elemCase) {
+    var svgElement = elemCase.closest('svg')[0];
+    var image = d3.select(svgElement).select('image');
+    image.remove();
+}
+
+
 //fonction pour poser le pion "pion" sur la case "elemCase" désignée par la balise path
-function posePionSurCase(elemCase, pion, couleur, joueur){
+function posePionSurCase(elemCase, pion, couleur, joueur, type){
     var svgElement = elemCase.closest('svg')[0];
     if (elemCase.length > 0) {            // Si on le trouve
         var d = elemCase.attr('d');       // On récupère son d
@@ -818,7 +827,12 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             'pionSauterelle' : 'une sauterelle',
             'pionMoustique' : 'un moustique'
         };
-        $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        if(type == "poser"){
+            $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        }
+        else{
+            $("#actions_action").append("<li>"+joueur+" a déplacé "+dicoPionHistorique[pion]+"</li>");
+        }
     }
 }
 
@@ -1381,13 +1395,17 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                             }
                         }
                         console.log(d3.select(this).attr("jeton"));
-
+                        if(!modeSelectionDeplacement){
+                            caseDisponiblePourDeplacer = [];
+                        }
                         if (d3.select(this).attr("jeton") != "vide"){
                             let listeCase = [];
                             console.log(modeSelectionDeplacement);
                             if(modeSelectionDeplacement){
+                                if(pionActuel == deplacementPionOrigine){
+                                    deplacementPionOrigine = null;
+                                }
                                 modeSelectionDeplacement = false;
-                                deplacementPionOrigine = null;
                                 unhighlight();
                                 // if(pionActuel == deplacementPionOrigine){
                                 //     modeSelectionDeplacement = false;
@@ -1430,24 +1448,25 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                     }
                                 }
                             }
-                            let caseDisponible = [];
                             console.log("movement allowed :", is_movement_allowed);
                             if(is_movement_allowed){
                                 // console.log(listeCase);
                                 // console.log(listeCase[0].attr("jeton"));
-                                caseDisponible = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
-                                //console.log(caseDisponible);
+                                caseDisponiblePourDeplacer = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
+                                //console.log(caseDisponiblePourDeplacer);
                                 // Sélectionner uniquement les cases disponibles
-                                console.log("cases disponibles :",caseDisponible);
+                                console.log("cases disponibles :",caseDisponiblePourDeplacer);
                                 if(deplacementPionOrigine != null && modeSelectionDeplacement){
-                                    socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponible, "pionOrigine" : deplacementPionOrigine});
+                                    socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponiblePourDeplacer, "pionOrigine" : deplacementPionOrigine});
                                 }
                             }
 
-                            
-                            if(caseDisponible.includes(pionActuel)){
-                                console.log("cas où on veut déplacer le pion à cet emplacement");
-                            }
+                           
+                        }
+                        console.log(parseInt(pionActuel.replace("h", "")));
+                        if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
+                            console.log("cas où on veut déplacer le pion à cet emplacement");
+                            socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel});
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -1498,9 +1517,20 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
         d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
-        posePionSurCase(path, data.pion, data.couleur, data.joueur);
+        posePionSurCase(path, data.pion, data.couleur, data.joueur, "poser");
         selectionPion = null;
         pose.play();
+    });
+
+    socket.on("ReceptDeplacerPion", (data) => {
+        let pathOrigine = $('path#' + data.caseOrigine);
+        let pathArrivee = $('path#' + data.caseArrivee);
+        d3.select("#"+data.caseOrigine).attr("jeton", "vide");
+        d3.select("#"+data.caseArrivee).attr("jeton", data.pion.replace("pion", ""));
+        casesHighlight[data.caseOrigine.replace("h", "")] = "none";
+        unhighlight();
+        supprimerImageDeCase(pathOrigine);
+        posePionSurCase(pathArrivee, data.pion, data.couleur, data.joueur, "déplacer");
     });
     
     socket.on("pasTonTour", () => {
