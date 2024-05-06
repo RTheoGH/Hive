@@ -1494,6 +1494,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
                            
                         }
+                        caseDisponiblePourDeplacer = caseDisponiblePourDeplacer.map(function (x) { 
+                            return parseInt(x); 
+                          });
                         console.log(parseInt(pionActuel.replace("h", "")));
                         if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
                             console.log("cas où on veut déplacer le pion à cet emplacement");
