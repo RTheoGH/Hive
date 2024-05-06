@@ -1386,11 +1386,17 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                             let listeCase = [];
                             console.log(modeSelectionDeplacement);
                             if(modeSelectionDeplacement){
-                                if(pionActuel == deplacementPionOrigine){
-                                    modeSelectionDeplacement = false;
-                                    deplacementPionOrigine = null;
-                                    unhighlight();
-                                }
+                                modeSelectionDeplacement = false;
+                                deplacementPionOrigine = null;
+                                unhighlight();
+                                // if(pionActuel == deplacementPionOrigine){
+                                //     modeSelectionDeplacement = false;
+                                //     deplacementPionOrigine = null;
+                                //     unhighlight();
+                                // }
+                                // else{
+                                //     deplacementPionOrigine = pionActuel;
+                                // }
                             }else{
                                 modeSelectionDeplacement = true;
                                 deplacementPionOrigine = pionActuel;
@@ -1425,6 +1431,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                 }
                             }
                             let caseDisponible = [];
+                            console.log("movement allowed :", is_movement_allowed);
                             if(is_movement_allowed){
                                 // console.log(listeCase);
                                 // console.log(listeCase[0].attr("jeton"));
@@ -1432,7 +1439,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                 //console.log(caseDisponible);
                                 // Sélectionner uniquement les cases disponibles
                                 console.log("cases disponibles :",caseDisponible);
-                                if(deplacementPionOrigine != null){
+                                if(deplacementPionOrigine != null && modeSelectionDeplacement){
                                     socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponible, "pionOrigine" : deplacementPionOrigine});
                                 }
                             }

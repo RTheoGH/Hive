@@ -561,7 +561,7 @@ io.on('connection', (socket) => {
             for(let joueur of salle.listeJoueurs){
                 if(joueur[1] == socket.id){
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
-                    console.log(indexJoueur);
+                    //console.log(indexJoueur);
                     if(indexJoueur == salle.tour){
                         //console.log("plateau :", salle.etatPlateau);
                         let couleurs = {};
@@ -569,7 +569,7 @@ io.on('connection', (socket) => {
                         for(p of salle.etatPlateau){
                             if(data.casesDisponibles.toString().includes(p.position.replace("h", ""))){
                                 couleurs[p.position] = p.couleur;
-                                console.log("J'ai trouvé le pion, sa couleur est : ", p.couleur)
+                                //console.log("J'ai trouvé le pion, sa couleur est : ", p.couleur)
                             }
                             if(p.position == data.pionOrigine && p.couleur != ["white", "black"][indexJoueur]){
                                 bonneCouleur = false;
