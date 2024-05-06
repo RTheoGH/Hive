@@ -1486,7 +1486,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                 //console.log(caseDisponiblePourDeplacer);
 
                                 // Sélectionner uniquement les cases disponibles
-                                console.log("cases disponibles :",caseDisponiblePourDeplacer);
+                                //console.log("cases disponibles :",caseDisponiblePourDeplacer);
                                 if(deplacementPionOrigine != null && modeSelectionDeplacement){
                                     socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponiblePourDeplacer, "pionOrigine" : deplacementPionOrigine});
                                 }
@@ -1588,6 +1588,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     socket.on("placerAbeille", () => {
         console.log("Il faut placer l'abeille");
     })
+
+    socket.on("victoire", (gagnant) =>{
+        console.log("Le gagnant est : ", gagnant);
+    });
 
     //Pour mettre les images sur les pions du menu :
     
