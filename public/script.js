@@ -1041,7 +1041,6 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
         case 'Araignee' :
             let casesAutourAraignee1 = [];
             let casesAutourAraignee2 = [];
-
             for(indice1 in indicesAutour){
                 //console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] + "\n indicesAutour[indice1] :" + indicesAutour[indice1] + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
                 if(damier[indicesAutour[indice1]].attr('jeton') == "vide"){
@@ -1073,6 +1072,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
         case 'Coccinelle' :
             let casesAutourCocinelle1 = [];
             let casesAutourCocinelle2 = [];
+
 
             for(indice1 of indicesAutour){
                 // console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] 
@@ -1152,8 +1152,21 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
                     damierActif.push(caseRF);
                 }
             }
+
             // console.log("damierActif.length : "+ damierActif.length);
             // console.log("damierActif : " +damierActif);
+
+            let damierFourmi = []; // /!\ ptite triche en attendant /!\
+            for(hexa of damier){
+                if(hexa.attr("jeton")=="vide" && parseInt(hexa.attr("id").substring(1)) < 1600 && parseInt(hexa.attr("id").substring(1)) >= 0){
+                    damierFourmi.push(hexa.attr("id").substring(1));
+                }
+            }
+
+
+            console.log("damierActif.length : "+ damierActif.length);
+            console.log("damierActif : " +damierActif);
+
             damierActif.pop(positionActuelle);
             let caseAutourPosAct = determinerIndicesAutour(positionActuelle);
             for(indiceAPA of caseAutourPosAct){
@@ -1221,6 +1234,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             if(indiceRetour.includes(positionActuelle))
                 indiceRetour.pop(positionActuelle);
                 */
+            indiceRetour = damierFourmi; // A retirer !
         break;
         
         case 'Moustique' :
@@ -1258,6 +1272,19 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
 
         case 'Scarabee' :
             return determinerIndicesAutour(positionActuelle);
+    }
+    for(ind of indicesAutour){
+        let verifCasesSeul = determinerIndicesAutour(ind);
+        let seul = true;
+        for(CaseInd of verifCasesSeul){
+            if(damier[CaseInd].attr("jeton") != "vide" && CaseInd != positionActuelle) seul = false;
+        }
+        if(seul){
+            console.log("indiceRetour avant filtre : " + indiceRetour);
+            console.log("élément a retirer : " + ind);
+            indiceRetour = indiceRetour.filter(element => element !== ind);
+            console.log("indiceRetour Après filtre : " + indiceRetour);
+        }
     }
     console.log("indiceRetour :" + indiceRetour);
     let listeSansDoublons = [...new Set(indiceRetour)];
@@ -1427,7 +1454,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
                             let caseAutourDeplacement = determinerIndicesAutour(position);
                             let is_movement_allowed = true;
+                            let nb_pion = 0;
                             for(caseDeplacement of caseAutourDeplacement){
+                                if(d3.select("#h" + caseDeplacement).attr("jeton") != "vide") nb_pion++;
                                 let caseAutourDeplacementRec = determinerIndicesAutour(caseDeplacement);
                                 let need_allow = false;
                                 // console.log("caseAutourDeplacementRec avant suppression :", caseAutourDeplacementRec);
@@ -1448,12 +1477,14 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                     }
                                 }
                             }
+                          
                             console.log("movement allowed :", is_movement_allowed);
-                            if(is_movement_allowed){
+                            if(is_movement_allowed || nb_pion == 1){
                                 // console.log(listeCase);
                                 // console.log(listeCase[0].attr("jeton"));
                                 caseDisponiblePourDeplacer = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
                                 //console.log(caseDisponiblePourDeplacer);
+
                                 // Sélectionner uniquement les cases disponibles
                                 console.log("cases disponibles :",caseDisponiblePourDeplacer);
                                 if(deplacementPionOrigine != null && modeSelectionDeplacement){
