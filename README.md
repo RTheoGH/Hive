@@ -18,6 +18,8 @@
 | Fay          | Corentin     | 22013398          | Groupe C   |
 | Viguier      | Killian      | 22011024          | Groupe C   |
 
+---
+
 ## Description
 
 Hive est un jeu de stratégie pour deux joueurs, créé par John Yianni et édité par Gen42 en 2001.
@@ -25,6 +27,8 @@ Hive est un jeu de stratégie pour deux joueurs, créé par John Yianni et édit
 Véritable jeu d’échecs des temps modernes, Hive porte en lui des éléments qui font l’essence du jeu d’échecs : Simplicité et profondeur, pièces aux caractéristiques et déplacements uniques.
 
 Ce jeu ravira les Pousseurs de Bois les plus obtus. Si Magnus Carlsen renonce au Roi des Jeux, c’est qu’il batifole avec la « Reine Abeille » !
+
+---
 
 ## Règles du jeu
 
@@ -64,6 +68,8 @@ Une pièce doit être placée à côté d’une pièce amie et ne peut en aucun 
 
 ![Moustique](/public/insectes/moustique.png)
 
+---
+
 ## Liste des fonctionnalités implémentés
 
 - Page d'accueil
@@ -77,18 +83,44 @@ Une pièce doit être placée à côté d’une pièce amie et ne peut en aucun 
 - Système audio sur les pages
 - Affichage selon les tailles d'écran
 - Pose des pions sur le plateau
--
+- Vérification des positions possibles
+- Tour par tour
+- Base de donnée mongoDB (mongoose)
+- Déplacement des pions (non terminé / a tester)
+- Détection de la victoire (non terminé)
 
-## Installer les packages
+---
+
+## Jouer en ligne
+
+Adresse : https://hive-qcdu.onrender.com/
+
+---
+
+## Installation locale
+### Installer les packages
 ```bash
 npm install
 ```
 
-## Pour lancer le jeu 
+### Installer mongoDB
+- Installer le serveur mongoDB sur sa machine :
+https://www.mongodb.com/try/download/community
+- Installer mongoDB compass, l'interface de mongoDB :
+https://www.mongodb.com/try/download/compass
+```bash
+npm i mongodb
+npm i mongoose
+```
+
+### Pour lancer le jeu 
 ```bash
 node index.js
 ```
 
+---
+
 ## Références
 
 - Page du jeu : https://www.regledujeu.fr/hive/
+- MongoDB : https://www.mongodb.com/
