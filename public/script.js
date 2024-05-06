@@ -39,7 +39,7 @@ const ambiant = new Audio('public/sons/ambiant.mp3');
 const found = new Audio('public/sons/found.mp3');
 const miss = new Audio('public/sons/miss.mp3');
 const pose = new Audio('public/sons/pose.mp3');
-const deplacement = new Audio('public/sons/deplacement.mp3');
+const deplacementAudio = new Audio('public/sons/deplacement.mp3');
 const defaite = new Audio('public/sons/defaite.mp3');
 // -------------------
 
@@ -139,42 +139,42 @@ socket.on('lancementR',() => {
     debutPartie();
 })
 
+function affichageDeLaVictoire(){
+    let w = window.innerWidth;
+    console.log(w);
+    if (w >= 1920) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1920-1080.png")');
+    } else if (w < 1920 && w >= 1680) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1680-1050.png")');
+    } else if (w < 1680 && w >= 1540) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1540-870.png")');
+    } else if (w < 1540 && w >= 1440) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1440-900.png")');
+    } else if (w < 1440 && w >= 1280) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1280-800.png")');
+    } else if (w < 1280 && w >= 1024) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1024-768.png")');
+    }
+    
+    $("#actions").hide();
+    $("#menuPions").hide();
+    $("#chat").hide();
+    $(".hive").hide();
+    $("#VNW").text("Nouvelle Partie !");
+    ambiant.pause();
+    ambiant.currentTime = 0;
+    $("#lancer").prop("disabled",true);
+}
+
 // Actualisation de la partie en cours
 socket.on('majPartie', (data) => {
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
     socket.emit("sortieDePartie",data);
     if(joueurActuel){
-        // Annonce de la victoire si on est le joueur qui reste encore dans la partie
-        var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
-            <br/><button class='bouton'\
-            onClick='window.location.reload()'>Nouvelle Partie</button></div></div>";
-        // $("#jeu").append(victoire);
-        w = window.innerWidth;
-        console.log(w);
-        if (w >= 1920) {
-            $("#tablier").css("background-image", 'url("images/fonds/hive-1920-1080.png")');
-        } else if (w < 1920 && w >= 1680) {
-            $("#tablier").css("background-image", 'url("images/fonds/hive-1680-1050.png")');
-        } else if (w < 1680 && w >= 1540) {
-            $("#tablier").css("background-image", 'url("images/fonds/hive-1540-870.png")');
-        } else if (w < 1540 && w >= 1440) {
-            $("#tablier").css("background-image", 'url("images/fonds/hive-1440-900.png")');
-        } else if (w < 1440 && w >= 1280) {
-            $("#tablier").css("background-image", 'url("images/fonds/hive-1280-800.png")');
-        } else if (w < 1280 && w >= 1024) {
-            $("#tablier").css("background-image", 'url("images/fonds/hive-1024-768.png")');
-        }
-        $("#tourJoueur").text(joueurActuel[0]+" a remporté la partie !");
-        $("#actions").hide();
-        $("#menuPions").hide();
-        $("#chat").hide();
-        $(".hive").hide();
-        $("#VNW").text("Nouvelle Partie !");
-        ambiant.pause();
-        ambiant.currentTime = 0;
+        affichageDeLaVictoire();
         win.play();
-        $("#lancer").prop("disabled",true);
+        $("#tourJoueur").text(joueurActuel[0]+" a remporté la partie !");
     }
 });
 
@@ -1522,6 +1522,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
                             console.log("cas où on veut déplacer le pion à cet emplacement");
                             socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel});
+                            deplacementAudio.play();
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -1610,8 +1611,25 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         console.log("Il faut placer l'abeille");
     })
 
-    socket.on("victoire", (gagnant) =>{
-        console.log("Le gagnant est : ", gagnant);
+    socket.on("victoire", (data) =>{
+        // console.log("Le gagnant est : ", data.gagnant[0]);
+        console.log("Ma data :\n",data);
+        affichageDeLaVictoire();
+        socket.emit("sortieDePartie",data);
+        if(data.equalite1 && data.equalite2){
+            defaite.play();
+            $("#tourJoueur").text("Egalité ! - Personne ne gagne !");
+        }
+        if(data.gagnant && data.perdant){
+            if(socket.id === data.gagnant[1]){
+                win.play();
+                $("#tourJoueur").text(data.gagnant[0]+" a remporté la partie ! - Vous avez gagné !");
+            }
+            if(socket.id === data.perdant[1]){
+                defaite.play();
+                $("#tourJoueur").text(data.gagnant[0]+" a remporté la partie ! - Vous avez perdu...");
+            }
+        }
     });
 
     //Pour mettre les images sur les pions du menu :

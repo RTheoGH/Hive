@@ -643,7 +643,33 @@ io.on('connection', (socket) => {
                                     let joueurGagnant = victoire(salle.etatPlateau);
                                     console.log("gagnant :", joueurGagnant);
                                     if( joueurGagnant != false){
-                                        io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                                        if(joueurGagnant == "egalite"){
+                                            io.to(salle.nom).emit("victoire", {
+                                                "equalite1" : salle.listeJoueurs[0],
+                                                "equalite2" : salle.listeJoueurs[1]
+                                            });
+                                        }else{
+                                            io.to(salle.nom).emit("victoire", {
+                                                "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
+                                                "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                            });
+                                        }
+                                        
+                                        for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
+                                            console.log("i :",i);
+                                            let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
+                                            console.log(index);
+                                            if (index !== -1) {
+                                                console.log(salle.listeJoueurs.splice(index, 1));
+                                                salle.listeJoueurs.splice(index, 1);
+                                                socket.leave(salle.nom);
+                                            }
+                                            console.log(salle.listeJoueurs);
+                                        }
+                                        
+                                        console.log(salles);
+                                        salles.splice(salle,1);
+                                        console.log(salles);
                                     }
                                     break;
                                 }
@@ -704,7 +730,7 @@ function victoire(plateau){
             }
         }
     }
-    if(victoireBlack && victoireWhite) return "égalité"; // Envoyer égalité
+    if(victoireBlack && victoireWhite) return "egalite"; // Envoyer égalité
     if(victoireBlack) return "black"; // Envoyer victoire black
     if(victoireWhite) return "white"; // envoyer victoire white
     return false;
