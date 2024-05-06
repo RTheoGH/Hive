@@ -1585,6 +1585,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
     })
 
+    socket.on("placerAbeille", () => {
+        console.log("Il faut placer l'abeille");
+    })
+
     //Pour mettre les images sur les pions du menu :
     
     d3.selectAll('.pion').each( function(){

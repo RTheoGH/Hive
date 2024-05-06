@@ -481,6 +481,10 @@ io.on('connection', (socket) => {
                             console.log("indice : ",indice);
                             peutPlacer = peutPlacer && checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
                         }
+                        if(salle.compteurTour >= 3 && data.pion != "pionAbeille" && joueur[2]["pionAbeille"] != 0){
+                            peutPlacer = false;
+                            io.to(socket.id).emit("placerAbeille");
+                        }
                         if(peutPlacer){
                             //gestion pions restants
                             joueur[2][data["pion"]] --;
@@ -621,13 +625,18 @@ io.on('connection', (socket) => {
                         }
                         for(pion of salle.etatPlateau){
                             if(data.caseOrigine == pion.position){
-                                console.log("j'ai trouvé le pion à changer")
-                                pion.position = data.caseArrivee;
-                                salle.tour = 1 - indexJoueur;
-                                salle.compteurTour += 0.5;
-                                io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
-                                io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
-                                break;
+                                if(salle.compteurTour >= 3 && pion.pion != "pionAbeille" && joueur[2]["pionAbeille"] != 0){
+                                    io.to(socket.id).emit("placerAbeille");
+                                }
+                                else{
+                                    console.log("j'ai trouvé le pion à changer")
+                                    pion.position = data.caseArrivee;
+                                    salle.tour = 1 - indexJoueur;
+                                    salle.compteurTour += 0.5;
+                                    io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
+                                    io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                    break;
+                                }
                             }
                         }
                     }
