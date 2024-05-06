@@ -388,7 +388,7 @@ io.on('connection', (socket) => {
             console.log(matchPop);
             const copiePionsJ1 = JSON.parse(JSON.stringify(pions));
             const copiePionsJ2 = JSON.parse(JSON.stringify(pions));
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "pileDePion" : {}, "tour":randInt(2), "compteurTour":1};
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "pilesDePions" : {}, "tour":randInt(2), "compteurTour":1};
             salles.push(nouvelle_salle); // On crée et ajoute la nouvelle salle dans les salles
             let cpt = 0; // compteur pour éviter de lancer deux fois la partie (voir socket suivante)
             io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt}); // On fait rejoindre le joueur 1
@@ -480,6 +480,10 @@ io.on('connection', (socket) => {
                             let indice = data.case.replace("h", "");
                             console.log("indice : ",indice);
                             peutPlacer = peutPlacer && checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                        }
+                        if(salle.compteurTour >= 3 && data.pion != "pionAbeille" && joueur[2]["pionAbeille"] != 0){
+                            peutPlacer = false;
+                            io.to(socket.id).emit("placerAbeille");
                         }
                         if(peutPlacer){
                             //gestion pions restants
@@ -621,13 +625,18 @@ io.on('connection', (socket) => {
                         }
                         for(pion of salle.etatPlateau){
                             if(data.caseOrigine == pion.position){
-                                console.log("j'ai trouvé le pion à changer")
-                                pion.position = data.caseArrivee;
-                                salle.tour = 1 - indexJoueur;
-                                salle.compteurTour += 0.5;
-                                io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
-                                io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
-                                break;
+                                if(salle.compteurTour >= 3 && pion.pion != "pionAbeille" && joueur[2]["pionAbeille"] != 0){
+                                    io.to(socket.id).emit("placerAbeille");
+                                }
+                                else{
+                                    console.log("j'ai trouvé le pion à changer")
+                                    pion.position = data.caseArrivee;
+                                    salle.tour = 1 - indexJoueur;
+                                    salle.compteurTour += 0.5;
+                                    io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
+                                    io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                    break;
+                                }
                             }
                         }
                     }

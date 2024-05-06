@@ -1494,6 +1494,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
                            
                         }
+                        caseDisponiblePourDeplacer = caseDisponiblePourDeplacer.map(function (x) { 
+                            return parseInt(x); 
+                          });
                         console.log(parseInt(pionActuel.replace("h", "")));
                         if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
                             console.log("cas où on veut déplacer le pion à cet emplacement");
@@ -1580,6 +1583,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         console.log("C'est au tour du joueur", data.tour, " de jouer");
         console.log("Tour n°"+data.compteurTour);
         $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
+    })
+
+    socket.on("placerAbeille", () => {
+        console.log("Il faut placer l'abeille");
     })
 
     //Pour mettre les images sur les pions du menu :
