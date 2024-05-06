@@ -598,6 +598,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on("deplacerPion", (data) => {
+        //console.log("entrée dans le socket deplacerPion")
+        //if(validerDeplacementJeton(data.damier,data.caseOrigine,data.caseArrivee,data.typePion)){
+        console.log("Validation mouvement du pion");
         parcoursDesSalles:
         for(let salle of salles){
             for(let joueur of salle.listeJoueurs){
@@ -647,6 +650,7 @@ io.on('connection', (socket) => {
                 }
             }
         }
+    //}
     });
 
     socket.on('envoieMessage',(data) => {
@@ -696,8 +700,7 @@ function victoire(damier){
 function determinerIndicesAutour(position) {
     // rend toutes les cases autour de la position
     let indicesAutour = [];
-    nbLignes = 40;
-    nbColonnes = 40;
+    let nbColonnes = 40;
 
     // Convertir la position en coordonnées de ligne et colonne
     let ligne = Math.floor(position / nbColonnes);
@@ -881,7 +884,13 @@ function determinerIndicesLigne(positionDepart, positionArrive) {
 
 
 // le serveur ne connaît pas l'état de la partie ?
-function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
+function validerDeplacementJeton(damier, positionActuelle1, positionCible1, typeJeton) {
+    console.log("entrée dans la fonction validerDeplacementJeton")
+    console.log("damier : " + damier);
+    console.log("positionActuelle1 : " + positionActuelle1 + " positionCible1 : " + positionCible1);
+    let positionActuelle = positionActuelle1.substring(1);
+    let positionCible = positionCible1.substring(1);
+    console.log("positionActuelle : " + positionActuelle + " positionCible : " + positionCible);
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceAutourCible = determinerIndicesAutour(positionCible);
     for(position of positionCible){
@@ -889,13 +898,30 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             indiceAutourCible.pop(positionActuelle);
         }
     }
+    console.log("typeJeton début fonction valider déplacement : " + typeJeton);
+    console.log("typeof : " + typeof typeJeton);
     switch (typeJeton){
         case 'Abeille' :
-            for(position in indicesAutour){
+            console.log("dans l'abeille");
+            console.log("indicesAutour : " + indicesAutour);
+            for(position of indicesAutour){
+                console.log("positionCible == position : "+ positionCible + "==" + position + " ? " + positionCible == position );
                 if(positionCible == position ){
+                    console.log("damier[positionCible] : " + damier[positionCible]);
+                    for (var prop in damier[positionCible]) {
+                        console.log("prop : " + prop);
+                        if (prop === 'jeton') {
+                            var jeton = damier[positionCible].jeton;
+                            console.log("jeton : " +jeton);
+                            break;
+                        }
+                    }
+                    console.log("Abeille premier if valider ! \n damier[positionCible].attr('jeton') == 'vide' : " + damier[positionCible].attr('jeton'));
                     if(damier[positionCible].attr('jeton') == "vide"){
+                        console.log("On a trouvé la positionCible aux alentours ! " + position + " attendu : " + positionCible);
                         indiceAutourCible.pop(positionActuelle);
                         for(indice of indiceAutourCible){
+                            console.log("Abeille dernière étape ! Pitié qqn a côté ? " + damier[indice].attr('jeton'));
                             if(damier[indice].attr('jeton') != "vide"){
                                 return true;
                             }
