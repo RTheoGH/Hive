@@ -131,7 +131,28 @@ socket.on('majPartie', (data) => {
         var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
             <br/><button class='bouton'\
             onClick='window.location.reload()'>Nouvelle Partie</button></div></div>";
-        $("body").append(victoire);
+        // $("#jeu").append(victoire);
+        w = window.innerWidth;
+        console.log(w);
+        if (w >= 1920) {
+            $("#tablier").css("background-image", 'url("images/fonds/hive-1920-1080.png")');
+        } else if (w < 1920 && w >= 1680) {
+            $("#tablier").css("background-image", 'url("images/fonds/hive-1680-1050.png")');
+        } else if (w < 1680 && w >= 1540) {
+            $("#tablier").css("background-image", 'url("images/fonds/hive-1540-870.png")');
+        } else if (w < 1540 && w >= 1440) {
+            $("#tablier").css("background-image", 'url("images/fonds/hive-1440-900.png")');
+        } else if (w < 1440 && w >= 1280) {
+            $("#tablier").css("background-image", 'url("images/fonds/hive-1280-800.png")');
+        } else if (w < 1280 && w >= 1024) {
+            $("#tablier").css("background-image", 'url("images/fonds/hive-1024-768.png")');
+        }
+        $("#tourJoueur").text(joueurActuel[0]+" a remporté la partie !");
+        $("#actions").hide();
+        $("#menuPions").hide();
+        $("#chat").hide();
+        $(".hive").hide();
+        $("#VNW").text("Nouvelle Partie !");
         ambiant.pause();
         ambiant.currentTime = 0;
         win.play();
