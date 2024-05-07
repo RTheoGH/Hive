@@ -67,6 +67,7 @@ let modeChoisi = "";
 let deplacementPionOrigine = null;
 let modeSelectionDeplacement = false;
 var caseDisponiblePourDeplacer = [];
+var messageEnCours = false;
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -1522,7 +1523,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                         if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
                             console.log("cas où on veut déplacer le pion à cet emplacement");
                             socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel});
-                            deplacementAudio.play();
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -1587,18 +1587,34 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         unhighlight();
         supprimerImageDeCase(pathOrigine);
         posePionSurCase(pathArrivee, data.pion, data.couleur, data.joueur, "déplacer");
+        deplacementAudio.play();
     });
+
+    function messageErreurEnJeu(message){
+        if(!messageEnCours){
+            messageEnCours = true;
+            var zoneErreur ="<div id='zoneErreur' class='jeuErreur'><div class='texteJErreur'>"+message+"</div></div>";
+            $("body").append(zoneErreur);
+            $('#zoneErreur').delay(2000).fadeOut(300).delay(0).queue(() => {
+                $('#zoneErreur').remove();
+                messageEnCours = false;
+            });
+        }
+    }
     
     socket.on("pasTonTour", () => {
         console.log("C'est le tour du joueur adverse");
+        messageErreurEnJeu("Ce n'est pas votre tour.");
     });
 
     socket.on("pasTonPion", () => {
         console.log("C'est un pion adverse, vous ne pouvez pas le déplacer");
+        messageErreurEnJeu("Ce n'est pas votre pion.");
     });
 
     socket.on("caseDejaPrise", () => {
         console.log("La case est déjà prise");
+        messageErreurEnJeu("Cette case est déjà occupée.");
     });
 
     socket.on("infosTour", (data) => { 
@@ -1609,6 +1625,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
 
     socket.on("placerAbeille", () => {
         console.log("Il faut placer l'abeille");
+        messageErreurEnJeu("Vous devez placer votre abeille.");
     })
 
     socket.on("victoire", (data) =>{

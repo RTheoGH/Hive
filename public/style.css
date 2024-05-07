@@ -330,11 +330,11 @@ footer{
 }
 
 /* Fond message de victoire */
-.victoire{
+/* .victoire{
     position: absolute;
-    /* top: 45%; */
-    /* left: 50%; */
-    /* transform: translate(-50%,-50%); */
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%,-50%);
     height: 100%;
     width: 100%;
     background-size: cover;
@@ -343,13 +343,30 @@ footer{
     text-align: center;
     color: white;
     font-size: 4em;
-}
+} */
 
 /* Texte de victoire */
-.textVictoire{
+/* .textVictoire{
     font-family: "Handlee", cursive;
     color: black;
     margin-top: 20%;
+} */
+
+.jeuErreur{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background-color: #ffb700;
+    border-radius: 24px;
+    padding: 1em;
+    box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.texteJErreur{
+    font-family: "Handlee", cursive;
+    color: black;
+    font-size: 2em;
 }
 
 /* Bouton nouvelle partie */
