@@ -1,3 +1,9 @@
+// const { range } = require('d3');
+import('d3').then((d3) => {
+    const { range } = d3;
+}).catch((error) => {
+    console.error('Une erreur s\'est produite lors du chargement du module D3:', error);
+});
 const express = require('express')
 const app = express()
 const port = 3000
@@ -14,36 +20,16 @@ const pions = {
     'pionAraignee' : 2,'pionSauterelle' : 3,
     'pionMoustique' : 1
 }
-var etatP = false;
+var etatP = false; // etat pour la recherche de partie
+
 function randInt(max) { //renvoie un entier random entre 0 et < max
     return Math.floor(Math.random() * max);
 }
-// collection => J1, J2, Winner,Screen_of_party 
-//=============MongoDB et Mongoose===========
 
-// les appeller de mongoose et des différent schema (table bdd)
+// MongoDB
 const mongoose = require("mongoose"); 
 const Historique = require("./schema/historique.js")
-/* exemple de fonction pour create
 
-(async () => {
-try {
-    await mongoose.connect("mongodb://localhost:27017");
-    console.log("Connexion réussi avec MongoDB");
-    const resultat = await Historique.create({
-        Joueur_1 : ,
-        Joueur_2 : ,
-        Winner : ,
-        Plateau
-    });
-    console.log(resultat);
-}catch(error){
-    console.log("erreur soit dans la connexion soit dans le create");
-}
-
-})();
-*/
-//==============================================
 // ==================================
 // ========= Partie Express ========= 
 // ==================================
@@ -56,10 +42,6 @@ app.get('/',(req,res) => {
     res.sendFile('public/index.html',{root: __dirname})
 })
 
-app.get('/regles', (req, res) => {
-    res.sendFile('public/regles.html',{root: __dirname});
-});
-
 // chemin permettant d'utiliser les fichiers de public
 app.get('/public/:nomFichier', (req,res) => {
     res.sendFile("public/"+req.params.nomFichier,{root: __dirname});
@@ -68,6 +50,11 @@ app.get('/public/:nomFichier', (req,res) => {
 // chemin permettant d'utiliser les images de public
 app.get('/public/images/:nomFichier', (req,res) => {       
     res.sendFile("public/images/"+req.params.nomFichier,{root: __dirname});
+});
+
+// chemin annexe d'images pour les différents fonds
+app.get('/public/images/fonds/:nomFichier', (req,res) => {
+    res.sendFile("public/images/fonds/"+req.params.nomFichier,{root: __dirname});
 });
 
 // chemin permettant d'utiliser les images d'insectes de public
@@ -90,13 +77,13 @@ io.on('connection', (socket) => {
     // Socket de création d'une nouvelle salle
     socket.on('nouvelleSalle',(data) =>{
         console.log("nom : '",data.nom,"' code : '",data.code,"' Joueur 1 : '",data.listeJoueurs[0][0],"'");
-        if(data.nom == ''){
+        if(data.nom == ''){ // Si le nom de la salle est vide
             console.log("nom de salle vide");
             socket.emit('nomVide');
-        }else if(data.code == ''){
+        }else if(data.code == ''){ // Si le code de la salle est vide
             console.log("code de salle vide");
             socket.emit('codeVide');
-        }else if(data.listeJoueurs[0][0] == ''){
+        }else if(data.listeJoueurs[0][0] == ''){ // Si le nom du joueur est vide
             console.log("nom du joueur vide");
             socket.emit('joueurVide');
         }else{
@@ -170,8 +157,11 @@ io.on('connection', (socket) => {
                             salles[i]["tour"] = randInt(2);
                             console.log("C'est au tour du joueur : ",salles[i].tour);
                             console.log("Joueurs : ",salles[i].listeJoueurs);
-        
+                            
                             socket.join(data.nom);  // Actualisation uniquement pour cette salle
+                            let recupMode = salles[i].mode;
+                            console.log("Le mode est ",recupMode);
+                            io.to(data.nom).emit("recupMode",recupMode);
                             io.to(data.nom).emit('majSalle',salles[i]);
                             if(salles[i].listeJoueurs.length == 2){ // Si deux joueurs sont présente dans la salle, le bouton lancer
                                 io.to(data.nom).emit('lancerDispo');  // devient disponible
@@ -200,7 +190,7 @@ io.on('connection', (socket) => {
         console.log("quitter la salle reçu");
         let joueurQuittant = null;
         let salleAQuitter = null;
-    
+        
         for(const salle of salles){  // Parcourir toutes les salles
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);  // Recherche le joueur dans la liste des joueurs de chaque salle
             console.log(indexJoueur);
@@ -214,13 +204,9 @@ io.on('connection', (socket) => {
                 salleAQuitter.listeJoueurs.splice(indexJoueur, 1);  // Retire le joueur de la liste des joueurs de la salle
                 socket.leave(salleAQuitter.nom);
                 console.log(salleAQuitter.listeJoueurs);
-                // if(indexJoueur == 0){  // Si le joueur est le créateur de la salle, supprime la salle
-                //     salles.splice(salles.indexOf(salleAQuitter), 1);
-                // }
 
                 // Émettre une mise à jour de la salle aux autres joueurs de la salle
                 io.to(salleAQuitter.nom).emit('majSalle',salleAQuitter);
-
                 if(salleAQuitter.listeJoueurs == 0){ // Si la salle est vide, on peut la supprimer
                     salles.splice(salles.indexOf(salleAQuitter),1);
                 }
@@ -234,11 +220,9 @@ io.on('connection', (socket) => {
     });
 
     // Socket de lancement de partie
-    socket.on('lancementPartie', () => {
+    socket.on('lancementPartie', (extension) => {
         console.log("Lancement de Partie reçu");
         let salleActuelle = null;
-        
-
         console.log("Je cherche la salle actuelle en cherchant le joueur");
         for(const salle of salles){ // Recherche de la salle
             var indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id); // Joueur qui a lancé
@@ -251,10 +235,10 @@ io.on('connection', (socket) => {
                     if (indexJoueur != 0){indexJoueur = 1-indexJoueur;}
                     io.to(salle.listeJoueurs[indexJoueur][1]).emit("genereCouleurJoueur", "white");
                     io.to(salle.listeJoueurs[1-indexJoueur][1]).emit("genereCouleurJoueur", "black");
-                    io.to(salleActuelle.nom).emit('affichagePartie',salleActuelle);
+                    io.to(salleActuelle.nom).emit('affichagePartie',{"salle" : salleActuelle, "extension" : extension});
                     console.log("liste des joueurs : ", salle.listeJoueurs);
                     console.log("tour : ", salle.tour);
-                    io.to(salleActuelle.nom).emit("infosTour", {"tour" : salles[i].tour, "compteurTour" : Math.floor(salles[i].compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                    io.to(salleActuelle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                     break;
                 }
             }
@@ -266,7 +250,7 @@ io.on('connection', (socket) => {
         console.log("Quitter la partie reçu");
         let joueurQuittant = null;
         let salleAQuitter = null;
-    
+        
         for(const salle of salles){  // Parcourir toutes les salles
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);  // Recherche le joueur dans la liste des joueurs de chaque salle
             console.log(indexJoueur);
@@ -306,7 +290,6 @@ io.on('connection', (socket) => {
 
                 // Émettre une mise à jour de la partie aux autres joueurs de la salle
                 io.to(salleAQuitter.nom).emit('majPartie',salleAQuitter);
-
                 console.log(salleAQuitter.listeJoueurs == 0);
                 console.log(salleAQuitter.listeJoueurs.length == 1);
                 if(salleAQuitter.listeJoueurs == 0 || salleAQuitter.listeJoueurs.length == 1){ // Si tout le monde quitte ou s'il reste
@@ -318,28 +301,32 @@ io.on('connection', (socket) => {
         console.log(salles);
     });
 
+    // Socket lorsqu'un joueur quitte une partie
     socket.on("sortieDePartie", (data) => {
         socket.leave(data.nom);
     })
 
+    // Socket lorqu'un joueur lance la recherche de partie
     socket.on('rejoindreFile', (data) => {
         console.log("Joueur en recherche :",data.joueur[1]);
         console.log("Niveau :",data.joueur[0]);
-        file.push(data.joueur);
+        file.push(data.joueur); // On l'ajoute dans la file
         console.log(file);
     });
 
+    // Socket lorqu'un joueur quitte la recherche de partie
     socket.on('quitterFile', (data) => {
         let joueurQuittant = data.joueur;
         console.log("Joueur qui souhaite quitter la recherche :",joueurQuittant[1]);
         let index = file.findIndex(joueur => joueur[0] === joueurQuittant[0] && joueur[1] === joueurQuittant[1]);
         if(index !== -1){
-            file.splice(index,1);
+            file.splice(index,1); // One le retire de la file
             console.log("Le joueur quitte");
         }
         console.log(file);
     });
 
+    // Socket de réception qu'un joueur recherche (toute les 1 secondes)
     socket.on("recherchePartie", () => {
         // console.log("recherche...");
         // console.log(file);
@@ -347,80 +334,76 @@ io.on('connection', (socket) => {
             // console.log("L>2");
             for(i=0;i<file.length;i++){
                 for(j=0;j<file.length;j++){
-                    if(file[i][0] == file[j][0] && file[i][1] != file[j][1]){
+                    if(file[i][0] == file[j][0] && file[i][1] != file[j][1]){ // Si même niveau et pas le même joueur
                         console.log(file[i][1],"VS",file[j][1],"?");
                         let matchID = generateRandomText();
                         console.log("Match :",matchID);
                         let match = {"J1":file[i],"J2":file[j],"MatchID":matchID,"accept":[false,false]};
-                        matchmaking.push(match);
+                        matchmaking.push(match); // On les ajoute dans la liste des 'duels' (matchmaking)
                         io.to(file[i]).emit("matchTrouve",match);
                         io.to(file[j]).emit("matchTrouve",match);
-                        file.pop(file[i]);
-                        file.pop(file[j]);
+                        file.pop(file[i]); // On retire le premier de la file
+                        file.pop(file[j]); // et le deuxième également
 
-                        setTimeout(() => {
+                        setTimeout(() => { // Si au bout d'un certain temps la partie n'est pas lancé
                             let leMatch = matchmaking.find(m => m.MatchID == match.MatchID);
                             if(leMatch != undefined){
                                 console.log("Temps écoulé pour le match ",leMatch.MatchID);
                                 matchmaking.pop(leMatch);
-                                if(leMatch.accept[0]){
+                                if(leMatch.accept[0]){ // Si le premier joueur n'a pas accepté
                                     console.log("J1 a accepté");
                                     file.push(leMatch.J1);
                                     io.to(leMatch.J1).emit("repriseSonFile");
-                                    // console.log(file);
                                 }
-                                if(leMatch.accept[1]){
+                                if(leMatch.accept[1]){ // Si le deuxième joueur n'a pas accepté
                                     console.log("J2 a accepté");
                                     file.push(leMatch.J2);
                                     io.to(leMatch.J2).emit("repriseSonFile");
                                 }
                             }
-                        }, 13000);
+                        }, 13000); // Au bout de 13 secondes
                     }
                 }
             }
         }
     });
 
+    // Socket quand un joueur accepte le match trouvé
     socket.on('accepterMatch', (data) => {
         console.log(data.joueur[1],"accepte");
         matchmaking = matchmaking.map(match => {
-            // Vérifier si l'id correspond à celui que nous voulons mettre à jour
-            if (match.MatchID === data.matchID) {
-                // Si la condition est remplie, mettre à jour la propriété accept
-                if(data.joueur[2] == match.J1[2]){
+            if (match.MatchID === data.matchID) { // Vérifie si l'id correspond
+                if(data.joueur[2] == match.J1[2]){ // Si le joueur 1 accepte on le passe à true
                     match.accept[0] = true;
-                }else{
+                }else{ // Sinon on passe le joueur 2 a true
                     match.accept[1] = true;
                 }
             }
-            // Retourner l'objet, modifié ou non
             return match;
         });
         console.log(matchmaking);
         let matchPop = matchmaking.find(match => match.MatchID == data.matchID);
-        if(matchPop.accept[0] == true && matchPop.accept[1] == true){
+        if(matchPop.accept[0] == true && matchPop.accept[1] == true){ // SI les deux ont acceptés ([true,true])
             console.log(matchPop);
-            const copiePions = JSON.parse(JSON.stringify(pions));
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePions],[matchPop.J2[1],matchPop.J2[2],copiePions]],"type":"VS","mode":"extension2"}
-            salles.push(nouvelle_salle);
-            let cpt = 0;
-            // console.log("1-compteur à ",cpt);
-            io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt});
+            const copiePionsJ1 = JSON.parse(JSON.stringify(pions));
+            const copiePionsJ2 = JSON.parse(JSON.stringify(pions));
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "tour":randInt(2), "compteurTour":1};
+            salles.push(nouvelle_salle); // On crée et ajoute la nouvelle salle dans les salles
+            let cpt = 0; // compteur pour éviter de lancer deux fois la partie (voir socket suivante)
+            io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt}); // On fait rejoindre le joueur 1
             cpt++;
-            // console.log("2-compteur à ",cpt);
-            io.to(matchPop.J2).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt});
+            io.to(matchPop.J2).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt}); // On fait rejoindre le joueur 2
             matchmaking.pop(matchPop);
-            // console.log(matchmaking);
             console.log(salles);
         }
     });
 
+    // Socket pour rejoindre une partie crée par le matchmaking
     socket.on("joinRoom", (data) => {
         console.log("connexion à la salle",data);
         console.log("cpt :",data.cpt);
         socket.join(data.salle.nom);
-        // let etatP = false;
+        // La suite correspond au compteur précédent utilisé afin de ne pas lancer deux fois la partie, combiné avec etatP
         if(data.cpt == 0) {
             if(!etatP){
                 io.to(data.salle.nom).emit('lancementR');
@@ -484,18 +467,8 @@ io.on('connection', (socket) => {
                         let peutPlacer = true;
                         //check si le pion est joué autour d'un pion de sa couleur
                         if(salle.compteurTour >= 2){
-                            peutPlacer = false;
                             let indice = data.case.replace("h", "");
-                            let voisins = determinerIndicesAutour(indice);
-                            checkCouleurAutour:
-                            for(v of voisins){
-                                for(p of salle.etatPlateau){
-                                    if(p.position == "h"+v && ["white", "black"][indexJoueur] == p.couleur){
-                                        peutPlacer = true;
-                                        break checkCouleurAutour;
-                                    }
-                                }
-                            }
+                            peutPlacer = checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
                         }
                         if(peutPlacer){
                             //gestion pions restants
@@ -505,10 +478,11 @@ io.on('connection', (socket) => {
                             io.to(salle.nom).emit('instructionsActivation', { 'indices': determinerIndicesAutour(data.case.replace("h", ""))});
                             //gestion pour poser pion
                             data.couleur = ["white", "black"][indexJoueur];
-                            data.joueur = indexJoueur + 1;
+                            data.joueur = joueur[0];
                             stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur};
                             salle.etatPlateau.push(stockePion);
                             //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
+                            io.to(socket.id).emit("UnhighlightCases");
                             io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                             //gestion tour
                             salle.tour = 1-indexJoueur;
@@ -530,6 +504,46 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("afficheCasesJouables", () => {
+        parcoursDesSalles:
+        for(let salle of salles){
+            for(let joueur of salle.listeJoueurs){
+                if(joueur[1] == socket.id){
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    if(indexJoueur == salle.tour){
+                        let listeCasesVides = [];
+                        if(salle.compteurTour != 1){
+                            for(let p of salle.etatPlateau){
+                                let indice = p.position.replace("h", "");
+                                let voisins = determinerIndicesAutour(indice);
+                                for(let v of voisins){
+                                    let estUnPionPlace = false;
+                                    for(c of salle.etatPlateau){
+                                        if(c.position == "h"+v){
+                                            estUnPionPlace = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!estUnPionPlace){
+                                        peutPlacer = checkPeutPlacer(v, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                                        if(!listeCasesVides.includes(v) && peutPlacer){
+                                            listeCasesVides.push(v);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else{listeCasesVides = [820];}
+                        // console.log("liste des cases jouables :", listeCasesVides);
+                        io.to(socket.id).emit("HighlightCasesJouables", listeCasesVides);
+                        break parcoursDesSalles;
+                    }
+                }
+                
+        }}
+
+    });
+
     socket.on('envoieMessage',(data) => {
         for(const salle of salles){
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
@@ -543,17 +557,19 @@ io.on('connection', (socket) => {
     });
 });
 
+// Générateur de nom de salle aléatoire
 function generateRandomText() {
     let text = "";
     const possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    for (let i = 0; i < 10; i++) {
-        const randomIndex = Math.floor(Math.random() * possibleChars.length);
+    for (let i = 0; i < 10; i++) { // On met 10 caractères afin d'éviter qu'une salle est le même nom qu'une autre
+        const randomIndex = Math.floor(Math.random() * possibleChars.length); // Le risque 0 n'existe pas néanmoins
         text += possibleChars.charAt(randomIndex);
     }
     return text;
 }
 
 function determinerIndicesAutour(position) {
+    // rend toutes les cases autour de la position
     let indicesAutour = [];
     nbLignes = 40;
     nbColonnes = 40;
@@ -582,7 +598,9 @@ function determinerIndicesAutour(position) {
     return indicesAutour;
 }
 
-function determinerIndicesADistance(position, distance) {
+function determinerIndicesADistance(position, distance) { 
+    // rend toutes les cases exterieur du rayon distance
+    // n'est normalement plus utilisé mais peux servir
     let indices = [];
     const nbColonnes = 40; // Nombre de colonnes dans le damier
     const nbLignes = 40; // Nombre de lignes dans le damier
@@ -606,18 +624,131 @@ function determinerIndicesADistance(position, distance) {
     return indices;
 }
 
+function checkPeutPlacer(casePossible, pionsPlateau, indexJoueur, tour){
+    let peutPlacer = true;
+    const c = JSON.parse(JSON.stringify(casePossible));
+    let casesVoisines = determinerIndicesAutour(c);
+    checkCouleurAutour:
+    for(let vi of casesVoisines){
+        for(let p of pionsPlateau){
+            if(p.position == "h"+vi && ["white", "black"][1-indexJoueur] == p.couleur && tour >= 2){
+                peutPlacer = false;
+                break checkCouleurAutour;
+            }
+            else if(tour < 2) peutPlacer = true;
+        }
+    }
+    return peutPlacer;
+}
+
 function determinerIndicesLigne(positionDepart, positionArrive) {
+    // rend une liste de liste contenant les position des cases sur la ligne et diagonales (HG, HD, BG, BD)
     let indices = [];
-    const nbColonnes = 40; // Nombre de colonnes dans le damier
-    const nbLignes = 40; // Nombre de lignes dans le damier
 
-    // Convertir la position en coordonnées de ligne et de colonne
-    const ligne = Math.floor(position / nbColonnes);
-    const colonne = position % nbColonnes;
+    // pour détérminer les cases de la ligne 
+    let indiLigne = [];
+    if(position%40==0){
+        for(i of range(39))
+        indiLigne.push(position+i);
+    }
+    else{
+        let posTemp = position;
+        let i = 1;
+        while(posTemp%40!=0){
+            indiLigne.push(posTemp-i);
+            i+=1;
+        }
+        indiLigne.push(posTemp-i);
+    }
+    indices.push(indiLigne);
 
-    if(positionDepart == positionArrive) return indices;
+    // pour détérminer les cases des colonnes
+    let posTempCol = position;
+    while(posTempCol%40!=0){
+        posTempCol-=1;
+    }
+    if(posTempCol%80==0){lignePairBase = true}
+    else{lignePairBase = false}
 
-    // à finir
+    // case en haut a gauche
+    let indiHG = [];
+    let lignePair = lignePairBase;
+    let addHG;
+    if(lignePair) addHG = position - 41;
+    else addHG = position - 40;
+    while(addHG >= 0){
+        if(lignePair){
+            indiHG.push(addHG);
+            addHG - 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indiHG.push(addHG);
+            addHG - 41;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHG);
+
+    // case en haut a droite
+    let indiHD = [];
+    lignePair = lignePairBase;
+    let addHD;
+    if(lignePair) addHD = position - 40;
+    else addHD = position - 39;
+    while(addHD >= 0){
+        if(lignePair){
+            indices.push(addHD);
+            addHD - 39;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addHD);
+            addHD - 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiHD);
+
+    // case en bas a gauche
+    let indiBG = [];
+    lignePair = lignePairBase;
+    let addBG;
+    if(lignePair) addBG = position + 39;
+    else addBG = position + 40;
+    while(addBG >= 0){
+        if(lignePair){
+            indices.push(addBG);
+            addBG + 40;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBG);
+            addBG + 39;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBG);
+
+    // case en bas a droite
+    let indiBD = [];
+    lignePair = lignePairBase;
+    let addBD;
+    if(lignePair) addBD = position + 40;
+    else addBD = position + 41;
+    while(addBD >= 0){
+        if(lignePair){
+            indices.push(addBD);
+            addBD + 41;
+            lignePair = !lignePair;
+        }
+        else{
+            indices.push(addBD);
+            addBD + 40;
+            lignePair = !lignePair;
+        }
+    }
+    indices.push(indiBD);
 
     return indices;
 }
@@ -625,20 +756,20 @@ function determinerIndicesLigne(positionDepart, positionArrive) {
 
 // le serveur ne connaît pas l'état de la partie ?
 function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
-    const indicesAutour = determinerIndicesAutour(positionActuelle);
-    const indiceAutourCible = determinerIndicesAutour(positionCible);
-    for(position in positionCible){
+    let indicesAutour = determinerIndicesAutour(positionActuelle);
+    let indiceAutourCible = determinerIndicesAutour(positionCible);
+    for(position of positionCible){
         if(position == positionActuelle){
             indiceAutourCible.pop(positionActuelle);
         }
     }
     switch (typeJeton){
-        case 'abeille' :
+        case 'Abeille' :
             for(position in indicesAutour){
                 if(positionCible == position ){
                     if(damier[positionCible].attr('jeton') == "vide"){
                         indiceAutourCible.pop(positionActuelle);
-                        for(indice in indiceAutourCible){
+                        for(indice of indiceAutourCible){
                             if(damier[indice].attr('jeton') != "vide"){
                                 return true;
                             }
@@ -649,26 +780,77 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             return false
         
         case 'Araignee' :
-            const indicesAutour3 = determinerIndicesADistance(positionActuelle,3)
-            for(position in indicesAutour3){
-                if(positionCible == position ){
-                    if(damier[positionCible].attr('jeton') == "vide"){
-                        for(indice in indiceAutourCible){
-                            if(damier[indice].attr('jeton') != "vide"){
-                                return true;
-                            }
+            let casesAutourAraignee1 = [];
+            let casesAutourAraignee2 = [];
+            let casesAutourAraigneeFinal = [];
+            if(damier[positionCible].attr('jeton') == "vide"){
+                for(indice1 of indicesAutour){
+                    if(damier[indice1].attr('jeton') == "vide"){
+                        casesAutourAraignee1.push(indice1);
+                    }
+                }
+                for(indice2 of casesAutourAraignee1){
+                    let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                    for(indiceTemp2 of casesAutourTemp2){
+                        if(damier[indiceTemp2].attr('jeton') == "vide"){
+                            casesAutourAraignee2.push(indiceTemp2);
                         }
                     }
+                }
+
+                for(indicef of casesAutourAraignee2){
+                    let casesAutourTempf = determinerIndicesAutour(indicef);
+                    for(indiceTempf of casesAutourTempf){
+                        if(damier[indiceTempf].attr('jeton') == "vide"){
+                            casesAutourAraigneeFinal.push(indiceTempf);
+                        }
+                    }
+                }
+
+                for(indiceFinal of casesAutourAraigneeFinal){
+                    if(indiceFinal == positionCible) return true;
                 }
             }
             return false;
 
         case 'Coccinelle' :
-        
+            let casesAutourCocinelle1 = [];
+            let casesAutourCocinelle2 = [];
+            let casesAutourCocinelleFinal = [];
+            if(damier[positionCible].attr('jeton') == "vide"){
+                for(indice1 of indicesAutour){
+                    if(damier[indice1].attr('jeton') =! "vide"){
+                        casesAutourCocinelle1.push(indice1);
+                    }
+                }
+                for(indice2 of casesAutourCocinelle1){
+                    let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                    for(indiceTemp2 of casesAutourTemp2){
+                        if(damier[indiceTemp2].attr('jeton') =! "vide"){
+                            casesAutourCocinelle2.push(indiceTemp2);
+                        }
+                    }
+                }
+
+                for(indicef of casesAutourCocinelle2){
+                    let casesAutourTempf = determinerIndicesAutour(indicef);
+                    for(indiceTempf of casesAutourTempf){
+                        if(damier[indiceTempf].attr('jeton') == "vide"){
+                            casesAutourCocinelleFinal.push(indiceTempf);
+                        }
+                    }
+                }
+
+                for(indiceFinal of casesAutourCocinelleFinal){
+                    if(indiceFinal == positionCible) return true;
+                }
+            }
+            return false;
+
         case 'Fourmi' :
             if(damier[positionCible].attr('jeton') == "vide"){
-                indiceAutourCible.pop(positionActuelle);
-                for(indice in indiceAutourCible){
+                if(indiceAutourCible.includes(positionActuelle)) indiceAutourCible.pop(positionActuelle);
+                for(indice of indiceAutourCible){
                     if(damier[indice].attr('jeton') != "vide"){
                         return true;
                     }
@@ -677,14 +859,37 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             return false;
         
         case 'Moustique' :
+            let listeMoustique = [];
+            for(indice of indicesAutour){
+                if(damier[indice].attr('jeton') != "vide" && !listeMoustique.includes(damier[indice].attr('jeton')))
+                listeMoustique.push(damier[indice].attr('jeton'));
+            }
+            for(pionMoustique of listeMoustique){
+                if(validerDeplacementJeton(damier, positionActuelle, positionCible, pionMoustique))
+                return true;
+            }
+            return false;
 
         case 'Sauterelle' :
-            // fonction non fini
+            if(damier[positionCible].attr('jeton') == "vide"){
+                if(indiceAutourCible.includes(positionActuelle)) indiceAutourCible.pop(positionActuelle);
+
+                let indicesSauterelle = determinerIndicesLigne(positionActuelle);
+                for(ligne of indicesSauterelle){
+                    if(damier[ligne[0]].attr('jeton') != "vide"){
+                    for(indiceCheck of ligne){
+                        if(damier[indiceCheck].attr('jeton') == "vide" && indiceCheck == positionCible )
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
 
         case 'Scarabee' :
-            for(indiceD in indicesAutour){
+            for(indiceD of indicesAutour){
                 if(positionCible == indice){
-                    for(indiceC in indiceAutourCible){
+                    for(indiceC of indiceAutourCible){
                         if(damier[indiceC].attr('jeton') != "vide"){
                             return true;
                         }
@@ -693,4 +898,5 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             }
             return false;
     }
+    return false;
 }
