@@ -1620,6 +1620,11 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     socket.on("infosTour", (data) => { 
         console.log("C'est au tour du joueur", data.tour, " de jouer");
         console.log("Tour n°"+data.compteurTour);
+        if(data.compteurTour == 3){
+            $("#cptTourActuel").text("Tour : "+data.compteurTour+" - N'oubliez pas de poser votre reine !");
+        }else{
+            $("#cptTourActuel").text("Tour : "+data.compteurTour);
+        }
         $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
     })
 

@@ -329,29 +329,6 @@ footer{
     }
 }
 
-/* Fond message de victoire */
-/* .victoire{
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    height: 100%;
-    width: 100%;
-    background-size: cover;
-    background-image:url("images/fonds/hive-1920-1080.png");
-    background-repeat: no-repeat;
-    text-align: center;
-    color: white;
-    font-size: 4em;
-} */
-
-/* Texte de victoire */
-/* .textVictoire{
-    font-family: "Handlee", cursive;
-    color: black;
-    margin-top: 20%;
-} */
-
 .jeuErreur{
     position: absolute;
     top: 50%;
@@ -420,6 +397,25 @@ footer{
     position: absolute;
     left: 12.51%;
     border-radius: 1em;
+}
+
+.cptTourA{
+    opacity: 0.8;
+    background-color: white;
+    left: 50%;
+    top: 15%;
+    transform:translate(-50%,-50%);
+    position: absolute;
+    border-radius: 1em;
+}
+
+.cptTourA p{
+    font-family: "Handlee", cursive;
+    color: black;
+    text-align: center;
+    font-size: 1.5em;
+    padding-right: 0.5em;
+    padding-left: 0.5em;
 }
 
 /* Texte de l'action en cours */
