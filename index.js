@@ -603,6 +603,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on("deplacerPion", (data) => {
+        //console.log("entrée dans le socket deplacerPion")
+        //if(validerDeplacementJeton(data.damier,data.caseOrigine,data.caseArrivee,data.typePion)){
+        console.log("Validation mouvement du pion");
         parcoursDesSalles:
         for(let salle of salles){
             for(let joueur of salle.listeJoueurs){
@@ -634,44 +637,66 @@ io.on('connection', (socket) => {
                                     io.to(socket.id).emit("placerAbeille");
                                 }
                                 else{
-                                    console.log("j'ai trouvé le pion à changer")
-                                    pion.position = data.caseArrivee;
-                                    salle.tour = 1 - indexJoueur;
-                                    salle.compteurTour += 0.5;
-                                    io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
-                                    io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
-                                    let joueurGagnant = victoire(salle.etatPlateau);
-                                    console.log("gagnant :", joueurGagnant);
-                                    if( joueurGagnant != false){
-                                        if(joueurGagnant == "egalite"){
-                                            io.to(salle.nom).emit("victoire", {
-                                                "equalite1" : salle.listeJoueurs[0],
-                                                "equalite2" : salle.listeJoueurs[1]
-                                            });
-                                        }else{
-                                            io.to(salle.nom).emit("victoire", {
-                                                "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
-                                                "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
-                                            });
+                                    console.log("keys des piles : ", salle.pilesDePions, "pion.position : ", pion.position);
+                                    if(!Object.keys(salle.pilesDePions).includes(pion.position)){
+                                        console.log("j'ai trouvé le pion à changer")
+                                        pion.position = data.caseArrivee;
+                                        salle.tour = 1 - indexJoueur;
+                                        salle.compteurTour += 0.5;
+                                        io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pion.pion, "couleurPionDeplace" : pion.couleur, "pionEnDessous" : null, "couleurPionEnDessous" : "none", "joueur" : joueur[0]});
+                                        io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                        let joueurGagnant = victoire(salle.etatPlateau);
+                                        console.log("gagnant :", joueurGagnant);
+                                        if( joueurGagnant != false){
+                                            io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
                                         }
-                                        
-                                        for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
-                                            console.log("i :",i);
-                                            let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
-                                            console.log(index);
-                                            if (index !== -1) {
-                                                console.log(salle.listeJoueurs.splice(index, 1));
-                                                salle.listeJoueurs.splice(index, 1);
-                                                socket.leave(salle.nom);
-                                            }
-                                            console.log(salle.listeJoueurs);
-                                        }
-                                        
-                                        console.log(salles);
-                                        salles.splice(salle,1);
-                                        console.log(salles);
+                                        break;
                                     }
-                                    break;
+                                    else{
+                                        let pionEnHautDeLaPile = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 1];
+                                        console.log("en haut de la pile :", pionEnHautDeLaPile);
+                                        if(pionEnHautDeLaPile.position == data.caseOrigine){
+                                            console.log("j'ai trouvé le pion à changer 2")
+                                            let pionDuDessous = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 2];
+                                            pion.position = data.caseArrivee;
+                                            salle.tour = 1 - indexJoueur;
+                                            salle.compteurTour += 0.5;
+                                            io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pionEnHautDeLaPile.pion, "couleurPionDeplace" : pionEnHautDeLaPile.couleur, "pionEnDessous" : pionDuDessous.pion, "couleurPionEnDessous" : pionDuDessous.couleur,"joueur" : joueur[0]});
+                                            io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                            let joueurGagnant = victoire(salle.etatPlateau);
+                                            console.log("gagnant :", joueurGagnant);
+                                            if( joueurGagnant != false){
+                                                if(joueurGagnant == "egalite"){
+                                                    io.to(salle.nom).emit("victoire", {
+                                                        "equalite1" : salle.listeJoueurs[0],
+                                                        "equalite2" : salle.listeJoueurs[1]
+                                                    });
+                                                }else{
+                                                    io.to(salle.nom).emit("victoire", {
+                                                        "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
+                                                        "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                                    });
+                                                }
+                                        
+                                                for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
+                                                    console.log("i :",i);
+                                                    let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
+                                                    console.log(index);
+                                                    if (index !== -1) {
+                                                        console.log(salle.listeJoueurs.splice(index, 1));
+                                                        salle.listeJoueurs.splice(index, 1);
+                                                        socket.leave(salle.nom);
+                                                    }
+                                                    console.log(salle.listeJoueurs);
+                                                }
+                                        
+                                                console.log(salles);
+                                                salles.splice(salle,1);
+                                                console.log(salles);
+                                            }
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -683,6 +708,7 @@ io.on('connection', (socket) => {
                 }
             }
         }
+    //}
     });
 
     socket.on('envoieMessage',(data) => {
@@ -739,8 +765,7 @@ function victoire(plateau){
 function determinerIndicesAutour(position) {
     // rend toutes les cases autour de la position
     let indicesAutour = [];
-    nbLignes = 40;
-    nbColonnes = 40;
+    let nbColonnes = 40;
 
     // Convertir la position en coordonnées de ligne et colonne
     let ligne = Math.floor(position / nbColonnes);
@@ -924,7 +949,13 @@ function determinerIndicesLigne(positionDepart, positionArrive) {
 
 
 // le serveur ne connaît pas l'état de la partie ?
-function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
+function validerDeplacementJeton(damier, positionActuelle1, positionCible1, typeJeton) {
+    console.log("entrée dans la fonction validerDeplacementJeton")
+    console.log("damier : " + damier);
+    console.log("positionActuelle1 : " + positionActuelle1 + " positionCible1 : " + positionCible1);
+    let positionActuelle = positionActuelle1.substring(1);
+    let positionCible = positionCible1.substring(1);
+    console.log("positionActuelle : " + positionActuelle + " positionCible : " + positionCible);
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceAutourCible = determinerIndicesAutour(positionCible);
     for(position of positionCible){
@@ -932,13 +963,30 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             indiceAutourCible.pop(positionActuelle);
         }
     }
+    console.log("typeJeton début fonction valider déplacement : " + typeJeton);
+    console.log("typeof : " + typeof typeJeton);
     switch (typeJeton){
         case 'Abeille' :
-            for(position in indicesAutour){
+            console.log("dans l'abeille");
+            console.log("indicesAutour : " + indicesAutour);
+            for(position of indicesAutour){
+                console.log("positionCible == position : "+ positionCible + "==" + position + " ? " + positionCible == position );
                 if(positionCible == position ){
+                    console.log("damier[positionCible] : " + damier[positionCible]);
+                    for (var prop in damier[positionCible]) {
+                        console.log("prop : " + prop);
+                        if (prop === 'jeton') {
+                            var jeton = damier[positionCible].jeton;
+                            console.log("jeton : " +jeton);
+                            break;
+                        }
+                    }
+                    console.log("Abeille premier if valider ! \n damier[positionCible].attr('jeton') == 'vide' : " + damier[positionCible].attr('jeton'));
                     if(damier[positionCible].attr('jeton') == "vide"){
+                        console.log("On a trouvé la positionCible aux alentours ! " + position + " attendu : " + positionCible);
                         indiceAutourCible.pop(positionActuelle);
                         for(indice of indiceAutourCible){
+                            console.log("Abeille dernière étape ! Pitié qqn a côté ? " + damier[indice].attr('jeton'));
                             if(damier[indice].attr('jeton') != "vide"){
                                 return true;
                             }

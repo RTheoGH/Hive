@@ -627,6 +627,7 @@ function desactiverHexagone(indiceHexagone) {
 }
 
 function activerHexagone(indiceHexagone) {
+    console.log("J'essaie d'active l'hexagone " + indiceHexagone);
     var hexagone = d3.select('#h' + indiceHexagone);
 
     // Vérifier la couleur de remplissage actuelle
@@ -636,11 +637,14 @@ function activerHexagone(indiceHexagone) {
     if (hexagone.attr('jeton') == 'vide'
      && couleurRemplissage != "white"
      && couleurRemplissage != "black") {
+        console.log("l'hexagone est actif ! " + indiceHexagone);
         hexagone
             .classed("desactive", false)
             .classed("hexagoneReactive", true)
-            .attr("fill", "none")
-            .style("pointer-events", "all");
+            .attr("fill", "transparent")
+            .attr("stroke", "black")
+            .style("pointer-events", "auto")
+            .style("display", "block");
     }
 }
 
@@ -770,37 +774,6 @@ function toggleHexagone(data) {
     }
 }
 */
-
-function determinerIndicesAutour(position) {
-    let indicesAutour = [];
-    nbColonnes = 40;
-
-    // Convertir la position en coordonnées de ligne et colonne
-    let ligne = Math.floor(position / nbColonnes);
-    let colonne = position % nbColonnes;
-
-    // Coordonnées des voisins relatifs
-    let voisinsRelatifs = [
-        [0, -1], [0, 1], // gauche, droite
-        [-1, (ligne % 2 === 0) ? 1 : 0], [-1, (ligne % 2 === 0) ? 0 : -1], // hautG, hautD
-        [1, (ligne % 2 === 0) ? 1 : 0], [1, (ligne % 2 === 0) ? 0 : -1]  // basG, basD
-    ];
-
-    // Parcourir les voisins et calculer les indices
-    for (let voisin of voisinsRelatifs) {
-        let voisinLigne = ligne + voisin[0];
-        let voisinColonne = colonne + voisin[1];
-
-        // Vérifier si le voisin est à l'intérieur des limites
-        if (voisinLigne >= 0 && voisinLigne < nbColonnes && voisinColonne >= 0 && voisinColonne < nbColonnes) {
-            // Calculer l'indice et l'ajouter au tableau
-            let voisinIndice = voisinLigne * nbColonnes + voisinColonne;
-            indicesAutour.push(voisinIndice);
-        }
-    }
-
-    return indicesAutour;
-}
 
 socket.on('instructionsRedActivation', (data) => {
     // Activer les hexagones autour selon les instructions du serveur
@@ -1279,7 +1252,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             let indicesSauterelle = determinerIndicesLigne(positionActuelle);
             console.log("indicesSauterelle :", indicesSauterelle);
             for(ligne of indicesSauterelle){
-                if(damier[ligne[0]].attr('jeton') != "vide"){
+                if(damier[ligne[0]].attr('jeton') != "vide" && ligne[0] != positionActuelle){
                     interne : for(caseSaut of ligne){
                         console.log("interne for");
                         if(damier[caseSaut].attr('jeton') == "vide"){
@@ -1499,12 +1472,11 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                     }
                                 }
                             }
-                          
                             console.log("movement allowed :", is_movement_allowed);
                             if(is_movement_allowed || nb_pion == 1){
                                 // console.log(listeCase);
                                 // console.log(listeCase[0].attr("jeton"));
-                                caseDisponiblePourDeplacer = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton")); 
+                                caseDisponiblePourDeplacer = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton"));
                                 //console.log(caseDisponiblePourDeplacer);
 
                                 // Sélectionner uniquement les cases disponibles
@@ -1513,16 +1485,22 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                     socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponiblePourDeplacer, "pionOrigine" : deplacementPionOrigine});
                                 }
                             }
-
-                           
                         }
                         caseDisponiblePourDeplacer = caseDisponiblePourDeplacer.map(function (x) { 
                             return parseInt(x); 
-                          });
+                        });
                         console.log(parseInt(pionActuel.replace("h", "")));
                         if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
                             console.log("cas où on veut déplacer le pion à cet emplacement");
-                            socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel});
+                            let listeCase = [];
+                            for (let i = 0; i < nbLignes * nbColonnes; i++) {
+                                listeCase.push(d3.select('#h' + i));
+                            }
+                            console.log(listeCase);
+                            console.log(deplacementPionOrigine);
+                            let tPion = d3.select("#"+deplacementPionOrigine).attr("jeton");
+                            console.log(tPion);
+                            socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel, "damier" : listeCase, "typePion" : tPion });
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -1581,13 +1559,66 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     socket.on("ReceptDeplacerPion", (data) => {
         let pathOrigine = $('path#' + data.caseOrigine);
         let pathArrivee = $('path#' + data.caseArrivee);
+        console.log("data.caseOrigine : ", data.caseOrigine);
+        caseOrigine = data.caseOrigine;
+        caseArrivee = data.caseArrivee;
+        console.log("d3.select('#'+data.caseOrigine) : ", d3.select('#'+data.caseOrigine));
+        console.log("caseOrigine.substring(1) : "+caseOrigine.substring(1));
+        let caseAcote = determinerIndicesAutour(caseOrigine.substring(1));
+        console.log("caseAcote : "+caseAcote);
+        for(caseDiscover of caseAcote){
+            let seul = true;
+            console.log("reception 2, caseDiscover : " + caseDiscover);
+            let caseAcoteDiscover = determinerIndicesAutour(caseDiscover);
+            console.log("caseAcoteDiscover avant filtre : " + caseAcoteDiscover);
+            console.log("nombre a filtrer : " + data.caseOrigine.substring(1));
+            caseAcoteDiscover = caseAcoteDiscover.filter(element => element != caseOrigine.substring(1));
+            console.log("caseAcoteDiscover apres filtre : " + caseAcoteDiscover);
+            for(verifSeul of caseAcoteDiscover){
+                console.log("reception 3, verifSeul : " + verifSeul);
+                console.log("d3.select('#h'+verifSeul).attr('jeton')!='vide' : " + d3.select('#h'+verifSeul).attr('jeton')!='vide');
+                if(d3.select('#h'+verifSeul).attr('jeton')!='vide'){
+                    console.log("Il n'est pas seul !");
+                    seul = false;
+                }
+            }
+            if(seul){
+                console.log("Seul ! " + '#h'+ caseDiscover + " existe ? " + d3.select('#h'+caseDiscover));
+                console.log("d3.select('#h'+caseDiscover).classed(desactive, true) : " + d3.select('#h'+caseDiscover).classed("desactive", true));
+                d3.select('#h'+caseDiscover).classed("desactive", true)
+                .style("display", "none")
+                .style("pointer-events", "none");
+                
+            }
+        }
+        let caseAcoteArivee = determinerIndicesAutour(caseArrivee.substring(1));
+        console.log("case a activer : " + caseAcoteArivee);
+        for(caseApparition of caseAcoteArivee){
+                //toggleHexagone({ 'position': caseApparition, 'indices': determinerIndicesAutour(caseApparition) });
+                activerHexagone(caseApparition);
+                /*
+                d3.select('#h'+caseApparition).classed("desactive", false)
+                    .classed("hexagoneWhiteBorder", true)
+                    .attr("stroke", "black")
+                    .style("pointer-events", "auto");
+                */
+        }
+        /* 
+                        d3.select('#h'+caseDiscover).classed("desactive", false)
+                .classed("hexagoneWhiteBorder", true)
+                .style.pointerEvents = "auto";
+         */
         d3.select("#"+data.caseOrigine).attr("jeton", "vide");
-        d3.select("#"+data.caseArrivee).attr("jeton", data.pion.replace("pion", ""));
+        d3.select("#"+data.caseArrivee).attr("jeton", data.pionDeplace.replace("pion", ""));
         casesHighlight[data.caseOrigine.replace("h", "")] = "none";
         unhighlight();
         supprimerImageDeCase(pathOrigine);
-        posePionSurCase(pathArrivee, data.pion, data.couleur, data.joueur, "déplacer");
+        posePionSurCase(pathArrivee, data.pionDeplace, data.couleurPionDeplace, data.joueur, "déplacer");
         deplacementAudio.play();
+        if(data.pionEnDessous != null){
+            supprimerImageDeCase(pathOrigine);
+            posePionSurCase(pathOrigine, data.pionEnDessous, data.couleurPionEnDessous, data.joueur);
+        }
     });
 
     function messageErreurEnJeu(message){
