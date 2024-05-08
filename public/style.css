@@ -329,27 +329,21 @@ footer{
     }
 }
 
-/* Fond message de victoire */
-.victoire{
+.jeuErreur{
     position: absolute;
-    /* top: 45%; */
-    /* left: 50%; */
-    /* transform: translate(-50%,-50%); */
-    height: 100%;
-    width: 100%;
-    background-size: cover;
-    background-image:url("images/fonds/hive-1920-1080.png");
-    background-repeat: no-repeat;
-    text-align: center;
-    color: white;
-    font-size: 4em;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background-color: #ffb700;
+    border-radius: 24px;
+    padding: 1em;
+    box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.575), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
-/* Texte de victoire */
-.textVictoire{
+.texteJErreur{
     font-family: "Handlee", cursive;
     color: black;
-    margin-top: 20%;
+    font-size: 2em;
 }
 
 /* Bouton nouvelle partie */
@@ -403,6 +397,25 @@ footer{
     position: absolute;
     left: 12.51%;
     border-radius: 1em;
+}
+
+.cptTourA{
+    opacity: 0.8;
+    background-color: white;
+    left: 50%;
+    top: 15%;
+    transform:translate(-50%,-50%);
+    position: absolute;
+    border-radius: 1em;
+}
+
+.cptTourA p{
+    font-family: "Handlee", cursive;
+    color: black;
+    text-align: center;
+    font-size: 1.5em;
+    padding-right: 0.5em;
+    padding-left: 0.5em;
 }
 
 /* Texte de l'action en cours */

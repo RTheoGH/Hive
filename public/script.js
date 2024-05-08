@@ -39,7 +39,7 @@ const ambiant = new Audio('public/sons/ambiant.mp3');
 const found = new Audio('public/sons/found.mp3');
 const miss = new Audio('public/sons/miss.mp3');
 const pose = new Audio('public/sons/pose.mp3');
-const deplacement = new Audio('public/sons/deplacement.mp3');
+const deplacementAudio = new Audio('public/sons/deplacement.mp3');
 const defaite = new Audio('public/sons/defaite.mp3');
 // -------------------
 
@@ -67,6 +67,7 @@ let modeChoisi = "";
 let deplacementPionOrigine = null;
 let modeSelectionDeplacement = false;
 var caseDisponiblePourDeplacer = [];
+var messageEnCours = false;
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -139,21 +140,42 @@ socket.on('lancementR',() => {
     debutPartie();
 })
 
+function affichageDeLaVictoire(){
+    let w = window.innerWidth;
+    console.log(w);
+    if (w >= 1920) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1920-1080.png")');
+    } else if (w < 1920 && w >= 1680) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1680-1050.png")');
+    } else if (w < 1680 && w >= 1540) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1540-870.png")');
+    } else if (w < 1540 && w >= 1440) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1440-900.png")');
+    } else if (w < 1440 && w >= 1280) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1280-800.png")');
+    } else if (w < 1280 && w >= 1024) {
+        $("#tablier").css("background-image", 'url("images/fonds/hive-1024-768.png")');
+    }
+    
+    $("#actions").hide();
+    $("#menuPions").hide();
+    $("#chat").hide();
+    $(".hive").hide();
+    $("#VNW").text("Nouvelle Partie !");
+    ambiant.pause();
+    ambiant.currentTime = 0;
+    $("#lancer").prop("disabled",true);
+}
+
 // Actualisation de la partie en cours
 socket.on('majPartie', (data) => {
     const joueurActuel = data.listeJoueurs.find(joueur => joueur[1] == socket.id);
     console.log(joueurActuel);
     socket.emit("sortieDePartie",data);
     if(joueurActuel){
-        // Annonce de la victoire si on est le joueur qui reste encore dans la partie
-        var victoire ="<div class='victoire'><div class='textVictoire'>Vous remportez la partie !\
-            <br/><button class='bouton'\
-            onClick='window.location.reload()'>Nouvelle Partie</button></div></div>";
-        $("body").append(victoire);
-        ambiant.pause();
-        ambiant.currentTime = 0;
+        affichageDeLaVictoire();
         win.play();
-        $("#lancer").prop("disabled",true);
+        $("#tourJoueur").text(joueurActuel[0]+" a remporté la partie !");
     }
 });
 
@@ -1592,36 +1614,75 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         unhighlight();
         supprimerImageDeCase(pathOrigine);
         posePionSurCase(pathArrivee, data.pionDeplace, data.couleurPionDeplace, data.joueur, "déplacer");
+        deplacementAudio.play();
         if(data.pionEnDessous != null){
             supprimerImageDeCase(pathOrigine);
             posePionSurCase(pathOrigine, data.pionEnDessous, data.couleurPionEnDessous, data.joueur);
         }
     });
+
+    function messageErreurEnJeu(message){
+        if(!messageEnCours){
+            messageEnCours = true;
+            var zoneErreur ="<div id='zoneErreur' class='jeuErreur'><div class='texteJErreur'>"+message+"</div></div>";
+            $("body").append(zoneErreur);
+            $('#zoneErreur').delay(2000).fadeOut(300).delay(0).queue(() => {
+                $('#zoneErreur').remove();
+                messageEnCours = false;
+            });
+        }
+    }
     
     socket.on("pasTonTour", () => {
         console.log("C'est le tour du joueur adverse");
+        messageErreurEnJeu("Ce n'est pas votre tour.");
     });
 
     socket.on("pasTonPion", () => {
         console.log("C'est un pion adverse, vous ne pouvez pas le déplacer");
+        messageErreurEnJeu("Ce n'est pas votre pion.");
     });
 
     socket.on("caseDejaPrise", () => {
         console.log("La case est déjà prise");
+        messageErreurEnJeu("Cette case est déjà occupée.");
     });
 
     socket.on("infosTour", (data) => { 
         console.log("C'est au tour du joueur", data.tour, " de jouer");
         console.log("Tour n°"+data.compteurTour);
+        if(data.compteurTour == 3){
+            $("#cptTourActuel").text("Tour : "+data.compteurTour+" - N'oubliez pas de poser votre reine !");
+        }else{
+            $("#cptTourActuel").text("Tour : "+data.compteurTour);
+        }
         $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
     })
 
     socket.on("placerAbeille", () => {
         console.log("Il faut placer l'abeille");
+        messageErreurEnJeu("Vous devez placer votre abeille.");
     })
 
-    socket.on("victoire", (gagnant) =>{
-        console.log("Le gagnant est : ", gagnant);
+    socket.on("victoire", (data) =>{
+        // console.log("Le gagnant est : ", data.gagnant[0]);
+        console.log("Ma data :\n",data);
+        affichageDeLaVictoire();
+        socket.emit("sortieDePartie",data);
+        if(data.equalite1 && data.equalite2){
+            defaite.play();
+            $("#tourJoueur").text("Egalité ! - Personne ne gagne !");
+        }
+        if(data.gagnant && data.perdant){
+            if(socket.id === data.gagnant[1]){
+                win.play();
+                $("#tourJoueur").text(data.gagnant[0]+" a remporté la partie ! - Vous avez gagné !");
+            }
+            if(socket.id === data.perdant[1]){
+                defaite.play();
+                $("#tourJoueur").text(data.gagnant[0]+" a remporté la partie ! - Vous avez perdu...");
+            }
+        }
     });
 
     //Pour mettre les images sur les pions du menu :
