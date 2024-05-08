@@ -1252,7 +1252,10 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             let indicesSauterelle = determinerIndicesLigne(positionActuelle);
             console.log("indicesSauterelle :", indicesSauterelle);
             for(ligne of indicesSauterelle){
-                if(damier[ligne[0]].attr('jeton') != "vide" && ligne[0] != positionActuelle){
+                if(ligne[0] == positionActuelle){
+                    ligne = ligne.filter(element => element !== positionActuelle);
+                }
+                if(damier[ligne[0]].attr('jeton') != "vide"){
                     interne : for(caseSaut of ligne){
                         console.log("interne for");
                         if(damier[caseSaut].attr('jeton') == "vide"){
