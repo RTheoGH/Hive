@@ -64,6 +64,9 @@ let accepter = false;
 let matchID = "";
 let casesHighlight = []
 let modeChoisi = "";
+let deplacementPionOrigine = null;
+let modeSelectionDeplacement = false;
+var caseDisponiblePourDeplacer = [];
 
 // --------------------------------------------------------------------------------------------------------
 // ----------------------------------------- Sockets du client --------------------------------------------
@@ -602,20 +605,24 @@ function desactiverHexagone(indiceHexagone) {
 }
 
 function activerHexagone(indiceHexagone) {
+    console.log("J'essaie d'active l'hexagone " + indiceHexagone);
     var hexagone = d3.select('#h' + indiceHexagone);
 
     // Vérifier la couleur de remplissage actuelle
     var couleurRemplissage = hexagone.attr("fill");
     
     // Si la couleur de remplissage n'est pas rouge, rendre transparent et cliquable
-    if (couleurRemplissage !== "red"
+    if (hexagone.attr('jeton') == 'vide'
      && couleurRemplissage != "white"
      && couleurRemplissage != "black") {
+        console.log("l'hexagone est actif ! " + indiceHexagone);
         hexagone
             .classed("desactive", false)
             .classed("hexagoneReactive", true)
-            .attr("fill", "none")
-            .style("pointer-events", "all");
+            .attr("fill", "transparent")
+            .attr("stroke", "black")
+            .style("pointer-events", "auto")
+            .style("display", "block");
     }
 }
 
@@ -746,37 +753,6 @@ function toggleHexagone(data) {
 }
 */
 
-function determinerIndicesAutour(position) {
-    let indicesAutour = [];
-    nbColonnes = 40;
-
-    // Convertir la position en coordonnées de ligne et colonne
-    let ligne = Math.floor(position / nbColonnes);
-    let colonne = position % nbColonnes;
-
-    // Coordonnées des voisins relatifs
-    let voisinsRelatifs = [
-        [0, -1], [0, 1], // gauche, droite
-        [-1, (ligne % 2 === 0) ? 1 : 0], [-1, (ligne % 2 === 0) ? 0 : -1], // hautG, hautD
-        [1, (ligne % 2 === 0) ? 1 : 0], [1, (ligne % 2 === 0) ? 0 : -1]  // basG, basD
-    ];
-
-    // Parcourir les voisins et calculer les indices
-    for (let voisin of voisinsRelatifs) {
-        let voisinLigne = ligne + voisin[0];
-        let voisinColonne = colonne + voisin[1];
-
-        // Vérifier si le voisin est à l'intérieur des limites
-        if (voisinLigne >= 0 && voisinLigne < nbColonnes && voisinColonne >= 0 && voisinColonne < nbColonnes) {
-            // Calculer l'indice et l'ajouter au tableau
-            let voisinIndice = voisinLigne * nbColonnes + voisinColonne;
-            indicesAutour.push(voisinIndice);
-        }
-    }
-
-    return indicesAutour;
-}
-
 socket.on('instructionsRedActivation', (data) => {
     // Activer les hexagones autour selon les instructions du serveur
     toggleHexagone(data);
@@ -784,8 +760,16 @@ socket.on('instructionsRedActivation', (data) => {
 
 var rayonGlobal = 0
 
+//fonction pour supprimer l'image ajoutée à la case "elemCase" désignée par la balise path
+function supprimerImageDeCase(elemCase) {
+    var svgElement = elemCase.closest('svg')[0];
+    var image = d3.select(svgElement).select('image');
+    image.remove();
+}
+
+
 //fonction pour poser le pion "pion" sur la case "elemCase" désignée par la balise path
-function posePionSurCase(elemCase, pion, couleur, joueur){
+function posePionSurCase(elemCase, pion, couleur, joueur, type){
     var svgElement = elemCase.closest('svg')[0];
     if (elemCase.length > 0) {            // Si on le trouve
         var d = elemCase.attr('d');       // On récupère son d
@@ -816,14 +800,19 @@ function posePionSurCase(elemCase, pion, couleur, joueur){
             'pionSauterelle' : 'une sauterelle',
             'pionMoustique' : 'un moustique'
         };
-        $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        if(type == "poser"){
+            $("#actions_action").append("<li>"+joueur+" a posé "+dicoPionHistorique[pion]+"</li>");
+        }
+        else{
+            $("#actions_action").append("<li>"+joueur+" a déplacé "+dicoPionHistorique[pion]+"</li>");
+        }
     }
 }
 
 function indiceFourmiRec(damier, liste){
     let indicesAutour = [];
     let ListeIndiceRec = liste;
-    /*  Version récursive si la boucle for extensive pose problème
+     // Version récursive si la boucle for extensive pose problème
     for(indiceListe in liste){
         indicesAutour = determinerIndicesAutour(indiceListe);
         for(indice in indicesAutour){
@@ -836,7 +825,7 @@ function indiceFourmiRec(damier, liste){
     if(ListeIndiceRec == liste)
         return ListeIndiceRec;
     else{ indiceFourmiRec(damier, liste) }
-    */
+    /*
     for(indiceListe in ListeIndiceRec){
         indicesAutour = determinerIndicesAutour(indiceListe);
         for(indice in indicesAutour){
@@ -847,119 +836,135 @@ function indiceFourmiRec(damier, liste){
         }
     }
     return ListeIndiceRec;
+    */
 }
 
 function determinerIndicesLigne(position) { 
-    // rend une liste de liste contenant les position des cases sur la ligne et diagonales (HG, HD, BG, BD)
+    // Rend une liste de listes contenant les positions des cases sur la ligne et diagonales (HG, HD, BG, BD)
     let indices = [];
+    console.log("determinerIndicesLigne start");
 
-    // pour détérminer les cases de la ligne 
-    let indiLigne = [];
-    if(position%40==0){
-        for(i in range(39))
-        indiLigne.push(position+i);
-    }
-    else{
-        let posTemp = position;
-        let i = 1;
-        while(posTemp%40!=0){
-            indiLigne.push(posTemp-i);
-            i+=1;
-        }
-        indiLigne.push(posTemp-i);
-    }
-    indices.push(indiLigne);
+    // Pour déterminer les cases des colonnes à gauche et à droite de la case spécifiée
+    let colonne = position % 40;
 
-    // pour détérminer les cases des colonnes
+    // Cases à gauche de la case spécifiée
+    let indiGauche = [];
+    for (let i = colonne - 1; i >= 0; i--) {
+        indiGauche.push(position - (colonne - i));
+    }
+
+    // Cases à droite de la case spécifiée
+    let indiDroite = [];
+    let indiplus = colonne;
+    let i = 0;
+    while(indiplus%40 != 0){
+        indiDroite.push(parseInt(position) + i);
+        i++;
+        indiplus++;
+    }
+    indiDroite.pop(parseInt(position));
+    console.log("indiGauche " + indiGauche);
+    console.log("indiDroite " + indiDroite);
+    indices.push(indiGauche);
+    indices.push(indiDroite);
+
+
+    console.log("determinerIndicesLigne partie ligne");
+
+
+    // Pour déterminer les cases des diagonales
     let posTempCol = position;
-    while(posTempCol%40!=0){
-        posTempCol-=1;
+    while (posTempCol % 40 != 0) {
+        posTempCol--;
     }
-    if(posTempCol%80==0){lignePairBase = true}
-    else{lignePairBase = false}
-
-    // case en haut a gauche
+    let lignePairBase = posTempCol % 80 == 0 ? false : true;
+    // Case en haut à gauche (HG)
     let indiHG = [];
     let lignePair = lignePairBase;
     let addHG;
-    if(lignePair) addHG = position - 41;
+    if (lignePair) addHG = position - 41;
     else addHG = position - 40;
-    while(addHG >= 0){
-        if(lignePair){
-            indiHG.push(addHG);
-            addHG - 40;
+    while (addHG >= 0) {
+        indiHG.push(addHG);
+        if (lignePair) {
+            addHG -= 40;
             lignePair = !lignePair;
-        }
-        else{
-            indiHG.push(addHG);
-            addHG - 41;
+        } else {
+            addHG -= 41;
             lignePair = !lignePair;
         }
     }
     indices.push(indiHG);
 
-    // case en haut a droite
+    console.log("determinerIndicesLigne HG");
+
+    // Case en haut à droite (HD)
     let indiHD = [];
     lignePair = lignePairBase;
     let addHD;
-    if(lignePair) addHD = position - 40;
-    else addHD = position - 39;
-    while(addHD >= 0){
-        if(lignePair){
-            indices.push(addHD);
-            addHD - 39;
+    if (lignePair) addHD = parseInt(position) - 40;
+    else addHD = parseInt(position) - 39;
+    while (addHD >= 0) {
+        indiHD.push(addHD);
+        if (lignePair) {
+            addHD -= 39;
             lignePair = !lignePair;
-        }
-        else{
-            indices.push(addHD);
-            addHD - 40;
+        } else {
+            addHD -= 40;
             lignePair = !lignePair;
         }
     }
     indices.push(indiHD);
 
-    // case en bas a gauche
+    console.log("determinerIndicesLigne HD");
+
+    // Case en bas à gauche (BG)
     let indiBG = [];
     lignePair = lignePairBase;
     let addBG;
-    if(lignePair) addBG = position + 39;
-    else addBG = position + 40;
-    while(addBG >= 0){
-        if(lignePair){
-            indices.push(addBG);
-            addBG + 40;
+    if (lignePair) addBG = parseInt(position) + 39;
+    else addBG = parseInt(position) + 40;
+    console.log("while : " + addBG < 1600)
+    while (addBG < 1600) {
+        indiBG.push(addBG);
+        console.log("indiBG.push(addBG); ---" + addBG + " : ", indiBG);
+        if (lignePair) {
+            addBG += 40;
             lignePair = !lignePair;
-        }
-        else{
-            indices.push(addBG);
-            addBG + 39;
+        } else {
+            addBG += 39;
             lignePair = !lignePair;
         }
     }
     indices.push(indiBG);
 
-    // case en bas a droite
+    console.log("determinerIndicesLigne BG" + indiBG);
+
+
+    // Case en bas à droite (BD)
     let indiBD = [];
     lignePair = lignePairBase;
     let addBD;
-    if(lignePair) addBD = position + 40;
-    else addBD = position + 41;
-    while(addBD >= 0){
-        if(lignePair){
-            indices.push(addBD);
-            addBD + 41;
+    if (lignePair) addBD = parseInt(position) + 40;
+    else addBD = parseInt(position) + 41;
+    while (addBD < 1600) {
+        indiBD.push(addBD);
+        if (lignePair) {
+            addBD += 41;
             lignePair = !lignePair;
-        }
-        else{
-            indices.push(addBD);
-            addBD + 40;
+        } else {
+            addBD += 40;
             lignePair = !lignePair;
         }
     }
     indices.push(indiBD);
 
+    console.log("determinerIndicesLigne BD" + indiBD);
+
+
     return indices;
 }
+
 
 function determinerIndicesAutour(position) {
     // rend toutes les cases autour de la position
@@ -994,38 +999,44 @@ function determinerIndicesAutour(position) {
 function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceRetour = [];
+    console.log("indicesAutour" + indicesAutour);
     switch (typeJeton){
         case 'Abeille' :
-            for(position in indicesAutour){
+            for(position of indicesAutour){
+                // console.log(position);
+                // console.log(damier[position].attr('jeton'));
                 if(damier[position].attr('jeton') == "vide")
-                indiceRetour.push(position);
+                    indiceRetour.push(position);
+                    console.log("indiceRetour :" + indiceRetour);
             }
             break;
     
         case 'Araignee' :
             let casesAutourAraignee1 = [];
             let casesAutourAraignee2 = [];
-
             for(indice1 in indicesAutour){
-                if(damier[indice1].attr('jeton') == "vide"){
-                    casesAutourAraignee1.push(indice1);
+                //console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] + "\n indicesAutour[indice1] :" + indicesAutour[indice1] + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
+                if(damier[indicesAutour[indice1]].attr('jeton') == "vide"){
+                    casesAutourAraignee1.push(indicesAutour[indice1]);
                 }
             }
 
             for(indice2 in casesAutourAraignee1){
-                let casesAutourTemp2 = determinerIndicesAutour(indice2);
+                let casesAutourTemp2 = determinerIndicesAutour(casesAutourAraignee1[indice2]);
                 for(indiceTemp2 in casesAutourTemp2){
-                    if(damier[indiceTemp2].attr('jeton') == "vide"){
-                        indiceRetour.push(indiceTemp2);
+                    //console.log("indiceTemp2 : " + indiceTemp2 + "\n damier[indiceTemp2] :" + damier[indiceTemp2] + "\n damier[indiceTemp2].attr('jeton') :" + damier[indiceTemp2].attr('jeton'));
+                    if(damier[casesAutourTemp2[indiceTemp2]].attr('jeton') == "vide"){
+                        casesAutourAraignee2.push(casesAutourTemp2[indiceTemp2]);
                     }
                 }
             }
 
             for(indicef in casesAutourAraignee2){
-                let casesAutourTempf = determinerIndicesAutour(indicef);
+                let casesAutourTempf = determinerIndicesAutour(casesAutourAraignee2[indicef]);
                 for(indiceTempf in casesAutourTempf){
-                    if(damier[indiceTempf].attr('jeton') == "vide"){
-                        casesAutourAraigneeFinal.push(indiceTempf);
+                    //console.log("indiceTempf : " + indiceTempf + "\n damier[indiceTempf] :" + damier[indiceTempf] + "\n damier[indiceTempf].attr('jeton') :" + damier[indiceTempf].attr('jeton'));
+                    if(damier[casesAutourTempf[indiceTempf]].attr('jeton') == "vide"){
+                        indiceRetour.push(casesAutourTempf[indiceTempf]);
                     }
                 }
             }
@@ -1035,24 +1046,31 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             let casesAutourCocinelle1 = [];
             let casesAutourCocinelle2 = [];
 
-            for(indice1 in indicesAutour){
-                if(damier[indice1].attr('jeton') =! "vide"){
+
+            for(indice1 of indicesAutour){
+                // console.log("indice1 : " + indice1 + "\n damier[indice1] :" + damier[indice1] 
+                // + "\n damier[indice1].attr('jeton') :" + damier[indice1].attr('jeton'));
+                if(damier[indice1].attr('jeton') != "vide"){
                     casesAutourCocinelle1.push(indice1);
                 }
             }
 
-            for(indice2 in casesAutourCocinelle1){
+            console.log("casesAutourCocinelle1 : " + casesAutourCocinelle1);
+
+            for(indice2 of casesAutourCocinelle1){
+                // console.log("indice2 : " + indice2 + "\n damier[indice2] :" + damier[indice2] 
+                // + "\n damier[indice2].attr('jeton') :" + damier[indice2].attr('jeton'));
                 let casesAutourTemp2 = determinerIndicesAutour(indice2);
-                for(indiceTemp2 in casesAutourTemp2){
-                    if(damier[indiceTemp2].attr('jeton') =! "vide"){
+                for(indiceTemp2 of casesAutourTemp2){
+                    if(damier[indiceTemp2].attr('jeton') != "vide"){
                         casesAutourCocinelle2.push(indiceTemp2);
                     }
                 }
             }
 
-            for(indicef in casesAutourCocinelle2){
+            for(indicef of casesAutourCocinelle2){
                 let casesAutourTempf = determinerIndicesAutour(indicef);
-                for(indiceTempf in casesAutourTempf){
+                for(indiceTempf of casesAutourTempf){
                     if(damier[indiceTempf].attr('jeton') == "vide"){
                         indiceRetour.push(indiceTempf);
                     }
@@ -1061,23 +1079,147 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
         break;
 
         case 'Fourmi' :
-            let indiceRetourDoublons = indiceFourmiRec(damier, [positionActuelle])
-            indiceRetourDoublons.pop(positionActuelle)
-            indiceRetour = [...new Set(indiceRetourDoublons)]; // devrait enlever des doublons (même si il ne devrait pas y en avoir avec cette version)
+            /*
+            // let indiceRetourDoublons = indiceFourmiRec(damier, [positionActuelle])
+            let indiceTotalFourmi = [];
+            let indiceFinalFourmi = [];
+            for(indiceT of indicesAutour){
+                console.log("indiceT : "+ indiceT + "\n damier[indiceT] " + damier[indiceT] + "\ndamier[indiceT].attr('jeton') : " + damier[indiceT].attr('jeton')   );
+                if(damier[indiceT].attr('jeton') == "vide" && !damier[indiceT].classed("desactive")){
+                    indiceTotalFourmi.push(indiceT);
+                    console.log("indiceT : " + indiceT);
+                }
+            }
+
+            
+            console.log("indiceTotalFourmi :" + indiceTotalFourmi);
+            while(indiceTotalFourmi.length !== indiceFinalFourmi.length){
+                console.log("indiceFinalFourmi :" +indiceFinalFourmi);
+                indiceFinalFourmi = indiceTotalFourmi;
+                for(indiceRec of indiceFinalFourmi){
+                    console.log("indiceRec : " + indiceRec);
+                    let indicesAutourFourmiRec = determinerIndicesAutour(indiceRec);
+                    console.log("indicesAutourFourmiRec : " + indicesAutourFourmiRec);
+                    for(indiceT of indicesAutourFourmiRec){
+                        console.log("indiceT" + indiceT + "\ndamier[indiceT].attr('jeton')" + damier[indiceT].attr('jeton') + "\n !damier[indiceT].classed(desactive) "+ !damier[indiceT].classed("desactive") + "\n!indiceFinalFourmi.includes(indiceT)" + !indiceFinalFourmi.includes(indiceT))
+                        if(damier[indiceT].attr('jeton') == "vide" && !damier[indiceT].classed("desactive") && !indiceFinalFourmi.includes(indiceT)){
+                            console.log("condition vérifier (all true)");
+                            indiceTotalFourmi.push(indiceT);
+                        }
+                    }
+                }
+            }
+
+            */
+            let reponse = [];
+            let damierActif = [];
+            for(let caseActive=0;caseActive<=(40*40)-1;caseActive++){
+                let caseAutourActive = determinerIndicesAutour(caseActive);
+                let conditionClearDamier = false;
+                //console.log(caseAutourActive);
+                for(caseRF of caseAutourActive){
+                    if(caseRF<1600 && caseRF >= 0)
+                    if(damier[caseRF].attr("jeton") != "vide") conditionClearDamier = true;
+                }
+                if(conditionClearDamier){
+                    damierActif.push(caseRF);
+                }
+            }
+
+            // console.log("damierActif.length : "+ damierActif.length);
+            // console.log("damierActif : " +damierActif);
+
+            let damierFourmi = []; // /!\ ptite triche en attendant /!\
+            for(hexa of damier){
+                if(hexa.attr("jeton")=="vide" && parseInt(hexa.attr("id").substring(1)) < 1600 && parseInt(hexa.attr("id").substring(1)) >= 0){
+                    damierFourmi.push(hexa.attr("id").substring(1));
+                }
+            }
+
+
+            console.log("damierActif.length : "+ damierActif.length);
+            console.log("damierActif : " +damierActif);
+
+            damierActif.pop(positionActuelle);
+            let caseAutourPosAct = determinerIndicesAutour(positionActuelle);
+            for(indiceAPA of caseAutourPosAct){
+                if(damierActif.includes(indiceAPA)){
+                    if(damier[indiceAPA].attr("jeton") == "vide"){
+                        let autourIndAPA = determinerIndicesAutour(indiceAPA);
+                        let is_alone = true;
+                        for(indiceAPArec of autourIndAPA){
+                            if(damierActif.includes(indiceAPArec))
+                            if(damier[indiceAPArec].attr("jeton") != "vide"){
+                                is_alone = false;
+                            }
+                        }
+                        if(is_alone) damierActif.pop(indiceAPA);
+                    }
+                }
+            }
+
+            
+            for(caseDispoFourmi of indicesAutour){
+                if(damier[caseDispoFourmi].attr("jeton") == "vide"
+                && !reponse.includes(caseDispoFourmi)){
+                    reponse.push(caseDispoFourmi);
+                }
+            }
+            let tailleFin = -1;
+            while(tailleFin < reponse.length){
+                //console.log("Nouvelle entree boucle while");
+                for(i of reponse){
+                    //console.log("Nouvelle entree boucle for 1, i :" + i);
+                    tailleFin = reponse.length;
+                    indicesAutour = determinerIndicesAutour(i);
+                    for(caseDispoFourmi of indicesAutour){
+                        //console.log("Nouvelle entree boucle for 2, caseDispoFourmi :" + caseDispoFourmi);
+                        if(damierActif.includes(caseDispoFourmi)){
+                            if(damier[caseDispoFourmi].attr("jeton") == "vide"
+                            && !reponse.includes(caseDispoFourmi)){
+                                //console.log("Nouvelle entree boucle if");
+                                reponse.push(caseDispoFourmi);
+                            }
+                        }
+                    }
+                }
+            }
+            
+
+            //console.log("reponse "+reponse);
+            reponse.pop(positionActuelle)
+            //console.log("indiceFinalFourmi" + indiceFinalFourmi);
+            indiceRetour = [...new Set(reponse)];
+            //console.log("indiceRetour : " + indiceRetour);
+            /*
+            for(indiceFourmiTrop of indicesAutour){
+                let indiFTemps = determinerIndicesAutour(indiceFourmiTrop);
+                console.log("indice Autours : "+ indiFTemps);
+                let is_alone = true;
+                for(indiFTemp of indiFTemps){
+                    if(damier[indiFTemp].attr('jeton') != "vide"){
+                        is_alone = false;
+                        console.log("damier[indiFTemp].attr('jeton') :"+damier[indiFTemp].attr('jeton')+"\n indice :" + indiceFourmiTrop);
+                    }
+                }
+                if(is_alone) indiceRetour.pop(indiceFourmiTrop);
+            }
             if(indiceRetour.includes(positionActuelle))
                 indiceRetour.pop(positionActuelle);
+                */
+            indiceRetour = damierFourmi; // A retirer !
         break;
         
         case 'Moustique' :
             let listeMoustique = [];
             let listeAddMoustique = []
-            for(indice in indicesAutour){
+            for(indice of indicesAutour){
                 if(damier[indice].attr('jeton') != "vide" && !listeMoustique.includes(damier[indice].attr('jeton')))
                 listeMoustique.push(damier[indice].attr('jeton'));
             }
-            for(pionMoustique in listeMoustique){
+            for(pionMoustique of listeMoustique){
                 listeAddMoustique = CasesDeplacementJeton(damier, positionActuelle, pionMoustique)
-                for(indiceMoustique in listeAddMoustique){
+                for(indiceMoustique of listeAddMoustique){
                     if(!indiceRetour.includes(indiceMoustique))
                         indiceRetour.push(indiceMoustique);
                 }
@@ -1085,23 +1227,45 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             break;
 
         case 'Sauterelle' :
-            if(positionActuelle in indiceAutourCible) indiceAutourCible.pop(positionActuelle);
             let indicesSauterelle = determinerIndicesLigne(positionActuelle);
-            for(ligne in indicesSauterelle){
-                if(damier[ligne[0]].attr('jeton') != "vide"){
-                for(indiceCheck in ligne){
-                    if(damier[indiceCheck].attr('jeton') == "vide")
-                        indiceRetour.push(indiceCheck);
-                    break;
+            console.log("indicesSauterelle :", indicesSauterelle);
+            for(ligne of indicesSauterelle){
+                if(damier[ligne[0]].attr('jeton') != "vide" && ligne[0] != positionActuelle){
+                    interne : for(caseSaut of ligne){
+                        console.log("interne for");
+                        if(damier[caseSaut].attr('jeton') == "vide"){
+                            indiceRetour.push(caseSaut);
+                            console.log(caseSaut);
+                            break interne;
+                        }
                     }
                 }
             }
-            break;
+        break;
 
         case 'Scarabee' :
             return determinerIndicesAutour(positionActuelle);
     }
+    for(ind of indicesAutour){
+        let verifCasesSeul = determinerIndicesAutour(ind);
+        let seul = true;
+        for(CaseInd of verifCasesSeul){
+            if(damier[CaseInd].attr("jeton") != "vide" && CaseInd != positionActuelle) seul = false;
+        }
+        if(seul){
+            console.log("indiceRetour avant filtre : " + indiceRetour);
+            console.log("élément a retirer : " + ind);
+            indiceRetour = indiceRetour.filter(element => element !== ind);
+            console.log("indiceRetour Après filtre : " + indiceRetour);
+        }
+    }
+    console.log("indiceRetour :" + indiceRetour);
+    let listeSansDoublons = [...new Set(indiceRetour)];
+    console.log("listeSansDoublons" + listeSansDoublons); 
+    return listeSansDoublons;
 }
+
+
 
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
@@ -1215,7 +1379,9 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                     // d3.select(this).append("svg").append('image')
                     //.attr("viewBox", "0 0 " + (rayon * 2) + " " + (rayon * 2))  // Ajout de la viewBox
                     //.attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
-                    
+                    let pionActuel = d3.select(this).attr("id");
+                    console.log("pion cliqué : ", pionActuel);
+                    console.log("pion origine : ", deplacementPionOrigine);
 
                     //console.log(this)
                     if (!d3.select(this).classed("desactive")) {
@@ -1228,15 +1394,91 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                 socket.emit('discover', {'position': position});
                             }
                         }
+                        console.log(d3.select(this).attr("jeton"));
+                        if(!modeSelectionDeplacement){
+                            caseDisponiblePourDeplacer = [];
+                        }
                         if (d3.select(this).attr("jeton") != "vide"){
-                            for(let caseI = 0; caseI < (nbLignes*nbColonnes)-1 ;caseI++ ){
-                                if(d3.select(this).attr("fill") === "blue")
-                                    d3.select(this).attr("fill") = "transparent";
+                            let listeCase = [];
+                            console.log(modeSelectionDeplacement);
+                            if(modeSelectionDeplacement){
+                                if(pionActuel == deplacementPionOrigine){
+                                    deplacementPionOrigine = null;
+                                }
+                                modeSelectionDeplacement = false;
+                                unhighlight();
+                                // if(pionActuel == deplacementPionOrigine){
+                                //     modeSelectionDeplacement = false;
+                                //     deplacementPionOrigine = null;
+                                //     unhighlight();
+                                // }
+                                // else{
+                                //     deplacementPionOrigine = pionActuel;
+                                // }
+                            }else{
+                                modeSelectionDeplacement = true;
+                                deplacementPionOrigine = pionActuel;
                             }
-                            let caseDisponible = CasesDeplacementJeton(d3.select("#tablier"),position,d3.select(this).attr("jeton"));
-                            for(let caseD of caseDisponible){
-                                d3.select(caseD).attr("fill") = "blue";
+                            
+                            for (let i = 0; i < nbLignes * nbColonnes; i++) {
+                                listeCase.push(d3.select('#h' + i));
                             }
+                            
+
+                            let caseAutourDeplacement = determinerIndicesAutour(position);
+                            let is_movement_allowed = true;
+                            let nb_pion = 0;
+                            for(caseDeplacement of caseAutourDeplacement){
+                                if(d3.select("#h" + caseDeplacement).attr("jeton") != "vide") nb_pion++;
+                                let caseAutourDeplacementRec = determinerIndicesAutour(caseDeplacement);
+                                let need_allow = false;
+                                // console.log("caseAutourDeplacementRec avant suppression :", caseAutourDeplacementRec);
+                                // console.log("élément à supprimer :", position);
+                                position = parseInt(position, 10); // Convertir position en nombre
+                                caseAutourDeplacementRec = caseAutourDeplacementRec.filter(element => element !== position);
+                                //console.log("caseAutourDeplacementRec après suppression :", caseAutourDeplacementRec);                                
+                                if(d3.select("#h" + caseDeplacement).attr("jeton") != "vide"){
+                                    for(caseAllow of caseAutourDeplacementRec){
+                                        console.log("d3.select('#h' + caseAllow).attr('jeton') :"+d3.select("#h" + caseAllow).attr("jeton"));
+                                        if(d3.select("#h" + caseAllow).attr("jeton") != "vide"){
+                                            need_allow = true;
+                                            console.log("trouvé");
+                                        }
+                                    }
+                                    if(!need_allow){
+                                        is_movement_allowed = false;
+                                    }
+                                }
+                            }
+                            console.log("movement allowed :", is_movement_allowed);
+                            if(is_movement_allowed || nb_pion == 1){
+                                // console.log(listeCase);
+                                // console.log(listeCase[0].attr("jeton"));
+                                caseDisponiblePourDeplacer = CasesDeplacementJeton(listeCase, position, d3.select(this).attr("jeton"));
+                                //console.log(caseDisponiblePourDeplacer);
+
+                                // Sélectionner uniquement les cases disponibles
+                                console.log("cases disponibles :",caseDisponiblePourDeplacer);
+                                if(deplacementPionOrigine != null && modeSelectionDeplacement){
+                                    socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponiblePourDeplacer, "pionOrigine" : deplacementPionOrigine});
+                                }
+                            }
+                        }
+                        caseDisponiblePourDeplacer = caseDisponiblePourDeplacer.map(function (x) { 
+                            return parseInt(x); 
+                        });
+                        console.log(parseInt(pionActuel.replace("h", "")));
+                        if(caseDisponiblePourDeplacer.includes(parseInt(pionActuel.replace("h", "")))){
+                            console.log("cas où on veut déplacer le pion à cet emplacement");
+                            let listeCase = [];
+                            for (let i = 0; i < nbLignes * nbColonnes; i++) {
+                                listeCase.push(d3.select('#h' + i));
+                            }
+                            console.log(listeCase);
+                            console.log(deplacementPionOrigine);
+                            let tPion = d3.select("#"+deplacementPionOrigine).attr("jeton");
+                            console.log(tPion);
+                            socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel, "damier" : listeCase, "typePion" : tPion });
                         }
                         //let position=d3.select(this).attr('id').substring(1);
                         //let typePion = document.querySelector('input[name="swap"]:checked').id;
@@ -1253,9 +1495,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
             
         
     }
-
-
-    
 
 
     // Créer un nouvel élément SVG pour tous les éléments ayant comme classe "pion"
@@ -1290,19 +1529,91 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     socket.on("ReceptPoserPionPlateau", (data) => {
         var path = $('path#' + data.case);
         d3.select("#"+data.case).attr("jeton", data.pion.replace("pion", ""));
-        posePionSurCase(path, data.pion, data.couleur, data.joueur);
+        posePionSurCase(path, data.pion, data.couleur, data.joueur, "poser");
         selectionPion = null;
         pose.play();
+    });
+
+    socket.on("ReceptDeplacerPion", (data) => {
+        let pathOrigine = $('path#' + data.caseOrigine);
+        let pathArrivee = $('path#' + data.caseArrivee);
+        console.log("data.caseOrigine : ", data.caseOrigine);
+        caseOrigine = data.caseOrigine;
+        caseArrivee = data.caseArrivee;
+        console.log("d3.select('#'+data.caseOrigine) : ", d3.select('#'+data.caseOrigine));
+        console.log("caseOrigine.substring(1) : "+caseOrigine.substring(1));
+        let caseAcote = determinerIndicesAutour(caseOrigine.substring(1));
+        console.log("caseAcote : "+caseAcote);
+        for(caseDiscover of caseAcote){
+            let seul = true;
+            console.log("reception 2, caseDiscover : " + caseDiscover);
+            let caseAcoteDiscover = determinerIndicesAutour(caseDiscover);
+            console.log("caseAcoteDiscover avant filtre : " + caseAcoteDiscover);
+            console.log("nombre a filtrer : " + data.caseOrigine.substring(1));
+            caseAcoteDiscover = caseAcoteDiscover.filter(element => element != caseOrigine.substring(1));
+            console.log("caseAcoteDiscover apres filtre : " + caseAcoteDiscover);
+            for(verifSeul of caseAcoteDiscover){
+                console.log("reception 3, verifSeul : " + verifSeul);
+                console.log("d3.select('#h'+verifSeul).attr('jeton')!='vide' : " + d3.select('#h'+verifSeul).attr('jeton')!='vide');
+                if(d3.select('#h'+verifSeul).attr('jeton')!='vide'){
+                    console.log("Il n'est pas seul !");
+                    seul = false;
+                }
+            }
+            if(seul){
+                console.log("Seul ! " + '#h'+ caseDiscover + " existe ? " + d3.select('#h'+caseDiscover));
+                console.log("d3.select('#h'+caseDiscover).classed(desactive, true) : " + d3.select('#h'+caseDiscover).classed("desactive", true));
+                d3.select('#h'+caseDiscover).classed("desactive", true)
+                .style("display", "none")
+                .style("pointer-events", "none");
+                
+            }
+        }
+        let caseAcoteArivee = determinerIndicesAutour(caseArrivee.substring(1));
+        console.log("case a activer : " + caseAcoteArivee);
+        for(caseApparition of caseAcoteArivee){
+                //toggleHexagone({ 'position': caseApparition, 'indices': determinerIndicesAutour(caseApparition) });
+                activerHexagone(caseApparition);
+                /*
+                d3.select('#h'+caseApparition).classed("desactive", false)
+                    .classed("hexagoneWhiteBorder", true)
+                    .attr("stroke", "black")
+                    .style("pointer-events", "auto");
+                */
+        }
+        /* 
+                        d3.select('#h'+caseDiscover).classed("desactive", false)
+                .classed("hexagoneWhiteBorder", true)
+                .style.pointerEvents = "auto";
+         */
+        d3.select("#"+data.caseOrigine).attr("jeton", "vide");
+        d3.select("#"+data.caseArrivee).attr("jeton", data.pion.replace("pion", ""));
+        casesHighlight[data.caseOrigine.replace("h", "")] = "none";
+        unhighlight();
+        supprimerImageDeCase(pathOrigine);
+        posePionSurCase(pathArrivee, data.pion, data.couleur, data.joueur, "déplacer");
     });
     
     socket.on("pasTonTour", () => {
         console.log("C'est le tour du joueur adverse");
     });
 
+    socket.on("pasTonPion", () => {
+        console.log("C'est un pion adverse, vous ne pouvez pas le déplacer");
+    });
+
+    socket.on("caseDejaPrise", () => {
+        console.log("La case est déjà prise");
+    });
+
     socket.on("infosTour", (data) => { 
         console.log("C'est au tour du joueur", data.tour, " de jouer");
         console.log("Tour n°"+data.compteurTour);
         $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
+    })
+
+    socket.on("placerAbeille", () => {
+        console.log("Il faut placer l'abeille");
     })
 
     //Pour mettre les images sur les pions du menu :
@@ -1364,26 +1675,55 @@ var selectionPion = null;
 
 $(document).on('click', '.pion', function(){
     if($("#nb_"+this.id).text() != 0){
-        selectionPion = this.id;
-        socket.emit("afficheCasesJouables");
+        if(selectionPion != this.id){
+            selectionPion = this.id;
+            deplacementPionOrigine = null;
+            unhighlight();
+            socket.emit("afficheCasesJouables");
+        }else{
+            selectionPion = null;
+            unhighlight();
+        }
     }
 });
 
-socket.on("HighlightCasesJouables", (casesVides) => {
-    for(c of casesVides){
+function highlight(cases, couleurs){
+    //couleurs = {"h820" : "black", "h721" = "white"} par exemple
+    console.log("couleurs : ", couleurs);
+    for(c of cases){
         d3.select("#h"+c)
             .attr("fill", "green")
             .attr("opacity", 0.3)
             .attr("stroke", "green");
+        if(Object.keys(couleurs).includes("h"+c)){
+            casesHighlight[c] = couleurs["h"+c];
+        }
+        else{
+            casesHighlight[c] = "none";
+        }
     }
-    casesHighlight = casesVides;
-});
+}
 
-socket.on("UnhighlightCases", () => {
-    for(c of casesHighlight){
+function unhighlight(){
+    console.log("casesHighlight : ", casesHighlight);
+    for(c in casesHighlight){
         d3.select("#h"+c)
-            .attr("fill", "none")
+            .attr("fill", casesHighlight[c])
             .attr("opacity", 1)
             .attr("stroke", "black");
     }
+    casesHighlight = {};
+}
+
+socket.on("HighlightCasesJouables", (cases) => {
+    highlight(cases, {});
+});
+
+socket.on("UnhighlightCases", () => {
+    unhighlight();
+});
+
+socket.on("recupHighlightDeplacement", (data) => {
+    console.log("je vais highlight : ", data.couleurs);
+    highlight(data.cases, data.couleurs);
 });
