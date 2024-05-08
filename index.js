@@ -467,7 +467,7 @@ io.on('connection', (socket) => {
                     if(salle.tour == indexJoueur){
                         let peutPlacer = true;
                         for(let p of salle.etatPlateau){
-                            console.log("position : ",  p.position, "c :", data.case);
+                            //console.log("position : ",  p.position, "c :", data.case);
                             if(p.position == data.case){
                                 console.log("cas où la case est déjà prise");
                                 peutPlacer = false;
@@ -499,6 +499,11 @@ io.on('connection', (socket) => {
                             //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
                             io.to(socket.id).emit("UnhighlightCases");
                             io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                            let joueurGagnant = victoire(salle.etatPlateau);
+                            console.log("gagnant : ",joueurGagnant);
+                            if(joueurGagnant != false){
+                                io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                            }
                             //gestion tour
                             salle.tour = 1-indexJoueur;
                             salle.compteurTour += 0.5;
@@ -632,13 +637,40 @@ io.on('connection', (socket) => {
                                     io.to(socket.id).emit("placerAbeille");
                                 }
                                 else{
-                                    console.log("j'ai trouvé le pion à changer")
-                                    pion.position = data.caseArrivee;
-                                    salle.tour = 1 - indexJoueur;
-                                    salle.compteurTour += 0.5;
-                                    io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pion" : pion.pion, "couleur" : pion.couleur, "joueur" : joueur[0]});
-                                    io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
-                                    break;
+                                    console.log("keys des piles : ", salle.pilesDePions, "pion.position : ", pion.position);
+                                    if(!Object.keys(salle.pilesDePions).includes(pion.position)){
+                                        console.log("j'ai trouvé le pion à changer")
+                                        pion.position = data.caseArrivee;
+                                        salle.tour = 1 - indexJoueur;
+                                        salle.compteurTour += 0.5;
+                                        io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pion.pion, "couleurPionDeplace" : pion.couleur, "pionEnDessous" : null, "couleurPionEnDessous" : "none", "joueur" : joueur[0]});
+                                        io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                        let joueurGagnant = victoire(salle.etatPlateau);
+                                        console.log("gagnant :", joueurGagnant);
+                                        if( joueurGagnant != false){
+                                            io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                                        }
+                                        break;
+                                    }
+                                    else{
+                                        let pionEnHautDeLaPile = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 1];
+                                        console.log("en haut de la pile :", pionEnHautDeLaPile);
+                                        if(pionEnHautDeLaPile.position == data.caseOrigine){
+                                            console.log("j'ai trouvé le pion à changer 2")
+                                            let pionDuDessous = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 2];
+                                            pion.position = data.caseArrivee;
+                                            salle.tour = 1 - indexJoueur;
+                                            salle.compteurTour += 0.5;
+                                            io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pionEnHautDeLaPile.pion, "couleurPionDeplace" : pionEnHautDeLaPile.couleur, "pionEnDessous" : pionDuDessous.pion, "couleurPionEnDessous" : pionDuDessous.couleur,"joueur" : joueur[0]});
+                                            io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                            let joueurGagnant = victoire(salle.etatPlateau);
+                                            console.log("gagnant :", joueurGagnant);
+                                            if( joueurGagnant != false){
+                                                io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                                            }
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -677,23 +709,30 @@ function generateRandomText() {
     return text;
 }
 
-function victoire(damier){
-    let victoireWhite = true;
-    let victoireBlack = true;
-    for(hexagone of damier){
-        if(hexagone.attr("jeton")=="Abeille"){
-            let color = ""; // définir l'appartenance de l'abeille
-            let CaseAutourAbeille = determinerIndicesAutour(hexagone.attr("id").substring(1)); // d3.select(this) a la place de hexagone ?
-            for(hexaAbeille of CaseAutourAbeille){
-                if (hexaAbeille.attr("jeton")=="vide") {
-                    ;// mettre false a victoire de color
+function victoire(plateau){
+    let victoireWhite = false;
+    let victoireBlack = false;
+    for(pion of plateau){
+        if(pion.pion == "pionAbeille"){
+            let abeilleEntouree = true;
+            for(let c of determinerIndicesAutour(pion.position.replace("h", ""))){
+                // console.log("c :", c);
+                let caseTrouvee = false;
+                for(p of plateau){ //check si chaque case autour est bien remplie
+                    if(p.position == "h"+c){
+                        caseTrouvee = true;
+                    }
                 }
+                abeilleEntouree = abeilleEntouree && caseTrouvee;
+            }
+            if(abeilleEntouree){
+                (pion.couleur == "white") ? victoireBlack = true : victoireWhite = true;
             }
         }
     }
-    if(victoireBlack && victoireWhite); // Envoyer égalité
-    if(victoireBlack); // Envoyer victoire black
-    if(victoireWhite); // envoyer victoire white
+    if(victoireBlack && victoireWhite) return "égalité"; // Envoyer égalité
+    if(victoireBlack) return "black"; // Envoyer victoire black
+    if(victoireWhite) return "white"; // envoyer victoire white
     return false;
 }
 

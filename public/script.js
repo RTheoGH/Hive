@@ -1458,7 +1458,7 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                 //console.log(caseDisponiblePourDeplacer);
 
                                 // Sélectionner uniquement les cases disponibles
-                                console.log("cases disponibles :",caseDisponiblePourDeplacer);
+                                //console.log("cases disponibles :",caseDisponiblePourDeplacer);
                                 if(deplacementPionOrigine != null && modeSelectionDeplacement){
                                     socket.emit("highlightDeplacement", {"casesDisponibles" : caseDisponiblePourDeplacer, "pionOrigine" : deplacementPionOrigine});
                                 }
@@ -1587,11 +1587,15 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .style.pointerEvents = "auto";
          */
         d3.select("#"+data.caseOrigine).attr("jeton", "vide");
-        d3.select("#"+data.caseArrivee).attr("jeton", data.pion.replace("pion", ""));
+        d3.select("#"+data.caseArrivee).attr("jeton", data.pionDeplace.replace("pion", ""));
         casesHighlight[data.caseOrigine.replace("h", "")] = "none";
         unhighlight();
         supprimerImageDeCase(pathOrigine);
-        posePionSurCase(pathArrivee, data.pion, data.couleur, data.joueur, "déplacer");
+        posePionSurCase(pathArrivee, data.pionDeplace, data.couleurPionDeplace, data.joueur, "déplacer");
+        if(data.pionEnDessous != null){
+            supprimerImageDeCase(pathOrigine);
+            posePionSurCase(pathOrigine, data.pionEnDessous, data.couleurPionEnDessous, data.joueur);
+        }
     });
     
     socket.on("pasTonTour", () => {
@@ -1615,6 +1619,10 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     socket.on("placerAbeille", () => {
         console.log("Il faut placer l'abeille");
     })
+
+    socket.on("victoire", (gagnant) =>{
+        console.log("Le gagnant est : ", gagnant);
+    });
 
     //Pour mettre les images sur les pions du menu :
     
