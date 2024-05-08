@@ -635,8 +635,7 @@ io.on('connection', (socket) => {
                             if(data.caseOrigine == pion.position){
                                 if(salle.compteurTour >= 3 && pion.pion != "pionAbeille" && joueur[2]["pionAbeille"] != 0){
                                     io.to(socket.id).emit("placerAbeille");
-                                }
-                                else{
+                                }else{
                                     console.log("keys des piles : ", salle.pilesDePions, "pion.position : ", pion.position);
                                     if(!Object.keys(salle.pilesDePions).includes(pion.position)){
                                         console.log("j'ai trouvé le pion à changer")
@@ -647,12 +646,39 @@ io.on('connection', (socket) => {
                                         io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                                         let joueurGagnant = victoire(salle.etatPlateau);
                                         console.log("gagnant :", joueurGagnant);
-                                        if( joueurGagnant != false){
-                                            io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                                        if(joueurGagnant != false){
+                                            console.log("Toujours la ?");
+                                            if(joueurGagnant == "egalite"){
+                                                io.to(salle.nom).emit("victoire", {
+                                                    "equalite1" : salle.listeJoueurs[0],
+                                                    "equalite2" : salle.listeJoueurs[1]
+                                                });
+                                                console.log("Equalité");
+                                            }else{
+                                                console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
+                                                io.to(salle.nom).emit("victoire", {
+                                                    "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
+                                                    "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                                });
+                                                console.log("Victoire/Défaite");
+                                            }
+                                            for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
+                                                console.log("i :",i);
+                                                let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
+                                                console.log(index);
+                                                if (index !== -1) {
+                                                    console.log(salle.listeJoueurs.splice(index, 1));
+                                                    salle.listeJoueurs.splice(index, 1);
+                                                    socket.leave(salle.nom);
+                                                }
+                                                console.log(salle.listeJoueurs);
+                                            }
+                                            console.log(salles);
+                                            salles.splice(salle,1);
+                                            console.log(salles);
                                         }
                                         break;
-                                    }
-                                    else{
+                                    }else{
                                         let pionEnHautDeLaPile = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 1];
                                         console.log("en haut de la pile :", pionEnHautDeLaPile);
                                         if(pionEnHautDeLaPile.position == data.caseOrigine){
@@ -665,19 +691,22 @@ io.on('connection', (socket) => {
                                             io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                                             let joueurGagnant = victoire(salle.etatPlateau);
                                             console.log("gagnant :", joueurGagnant);
-                                            if( joueurGagnant != false){
+                                            if(joueurGagnant != false){
+                                                console.log("Toujours la ?");
                                                 if(joueurGagnant == "egalite"){
                                                     io.to(salle.nom).emit("victoire", {
                                                         "equalite1" : salle.listeJoueurs[0],
                                                         "equalite2" : salle.listeJoueurs[1]
                                                     });
+                                                    console.log("Equalité");
                                                 }else{
+                                                    console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
                                                     io.to(salle.nom).emit("victoire", {
                                                         "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
                                                         "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
                                                     });
+                                                    console.log("Victoire/Défaite");
                                                 }
-                                        
                                                 for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
                                                     console.log("i :",i);
                                                     let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
@@ -689,7 +718,6 @@ io.on('connection', (socket) => {
                                                     }
                                                     console.log(salle.listeJoueurs);
                                                 }
-                                        
                                                 console.log(salles);
                                                 salles.splice(salle,1);
                                                 console.log(salles);
@@ -700,8 +728,7 @@ io.on('connection', (socket) => {
                                 }
                             }
                         }
-                    }
-                    else{
+                    }else{
                         io.to(socket.id).emit("pasTonTour");
                     }
                     break parcoursDesSalles;
