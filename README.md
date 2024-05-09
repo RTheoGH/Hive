@@ -86,14 +86,18 @@ Une pièce doit être placée à côté d’une pièce amie et ne peut en aucun 
 - Vérification des positions possibles
 - Tour par tour
 - Base de donnée mongoDB (mongoose)
-- Déplacement des pions (non terminé / a tester)
-- Détection de la victoire (non terminé)
+- Déplacement des pions
+- Détection de la victoire
+- Quelques bugs encore présent
 
 ---
 
 ## Jouer en ligne
 
 Adresse : https://hive-qcdu.onrender.com/
+
+Le chargement est assez long la première fois que vous accedez au site. 
+C'est normal, il faut que le site démarre le serveur.
 
 ---
 
@@ -122,5 +126,7 @@ node index.js
 
 ## Références
 
-- Page du jeu : https://www.regledujeu.fr/hive/
+- Jeu de société Hive : https://fr.wikipedia.org/wiki/Hive\_(jeu\_de\_société)
+- Règles du jeu : https://www.regledujeu.fr/hive/
 - MongoDB : https://www.mongodb.com/
+- D3JS : https://d3js.org/

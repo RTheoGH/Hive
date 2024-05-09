@@ -501,8 +501,37 @@ io.on('connection', (socket) => {
                             io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
                             let joueurGagnant = victoire(salle.etatPlateau);
                             console.log("gagnant : ",joueurGagnant);
-                            if(joueurGagnant != false){
-                                io.to(salle.nom).emit("victoire", joueurGagnant == "white" ? salle.listeJoueurs[0][0] : salle.listeJoueurs[1][0]);
+                            if(joueurGagnant != false){ // Si la fonction de victoire() renvoie autre chose que false.
+                                console.log("Toujours la ?");
+                                if(joueurGagnant == "egalite"){ // Si on a une égalité
+                                    io.to(salle.nom).emit("victoire", {
+                                        "egalite1" : salle.listeJoueurs[0],
+                                        "egalite2" : salle.listeJoueurs[1]
+                                    });
+                                    console.log("Equalité");
+                                }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
+                                    console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
+                                    io.to(salle.nom).emit("victoire", {
+                                        "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
+                                        "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                    });
+                                    console.log("Victoire/Défaite");
+                                }
+                                // Après avoir annoncé la victoire on retire les joueurs de la salle.
+                                for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
+                                    console.log("i :",i);
+                                    let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
+                                    console.log(index);
+                                    if (index !== -1) {
+                                        console.log(salle.listeJoueurs.splice(index, 1));
+                                        salle.listeJoueurs.splice(index, 1);
+                                        socket.leave(salle.nom);
+                                    }
+                                    console.log(salle.listeJoueurs);
+                                }
+                                console.log(salles);
+                                salles.splice(salle,1); // On retire la salle une fois tout le monde parti.
+                                console.log(salles);
                             }
                             //gestion tour
                             salle.tour = 1-indexJoueur;
@@ -518,8 +547,6 @@ io.on('connection', (socket) => {
                     }
                     break parcoursDesSalles;
                 }
-                
-                
             }
         }
     });
@@ -560,9 +587,7 @@ io.on('connection', (socket) => {
                         break parcoursDesSalles;
                     }
                 }
-                
         }}
-
     });
 
     socket.on("highlightDeplacement", (data) => {
@@ -646,15 +671,15 @@ io.on('connection', (socket) => {
                                         io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                                         let joueurGagnant = victoire(salle.etatPlateau);
                                         console.log("gagnant :", joueurGagnant);
-                                        if(joueurGagnant != false){
+                                        if(joueurGagnant != false){ // Si la fonction de victoire() renvoie autre chose que false.
                                             console.log("Toujours la ?");
-                                            if(joueurGagnant == "egalite"){
+                                            if(joueurGagnant == "egalite"){ // Si on a une égalité
                                                 io.to(salle.nom).emit("victoire", {
-                                                    "equalite1" : salle.listeJoueurs[0],
-                                                    "equalite2" : salle.listeJoueurs[1]
+                                                    "egalite1" : salle.listeJoueurs[0],
+                                                    "egalite2" : salle.listeJoueurs[1]
                                                 });
                                                 console.log("Equalité");
-                                            }else{
+                                            }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
                                                 console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
                                                 io.to(salle.nom).emit("victoire", {
                                                     "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
@@ -662,6 +687,7 @@ io.on('connection', (socket) => {
                                                 });
                                                 console.log("Victoire/Défaite");
                                             }
+                                            // Après avoir annoncé la victoire on retire les joueurs de la salle.
                                             for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
                                                 console.log("i :",i);
                                                 let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
@@ -674,7 +700,7 @@ io.on('connection', (socket) => {
                                                 console.log(salle.listeJoueurs);
                                             }
                                             console.log(salles);
-                                            salles.splice(salle,1);
+                                            salles.splice(salle,1); // On retire la salle une fois tout le monde parti.
                                             console.log(salles);
                                         }
                                         break;
@@ -691,15 +717,15 @@ io.on('connection', (socket) => {
                                             io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
                                             let joueurGagnant = victoire(salle.etatPlateau);
                                             console.log("gagnant :", joueurGagnant);
-                                            if(joueurGagnant != false){
+                                            if(joueurGagnant != false){ // Si la fonction de victoire() renvoie autre chose que false.
                                                 console.log("Toujours la ?");
-                                                if(joueurGagnant == "egalite"){
+                                                if(joueurGagnant == "egalite"){ // Si on a une égalité
                                                     io.to(salle.nom).emit("victoire", {
-                                                        "equalite1" : salle.listeJoueurs[0],
-                                                        "equalite2" : salle.listeJoueurs[1]
+                                                        "egalite1" : salle.listeJoueurs[0],
+                                                        "egalite2" : salle.listeJoueurs[1]
                                                     });
                                                     console.log("Equalité");
-                                                }else{
+                                                }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
                                                     console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
                                                     io.to(salle.nom).emit("victoire", {
                                                         "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
@@ -707,6 +733,7 @@ io.on('connection', (socket) => {
                                                     });
                                                     console.log("Victoire/Défaite");
                                                 }
+                                                // Après avoir annoncé la victoire on retire les joueurs de la salle.
                                                 for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
                                                     console.log("i :",i);
                                                     let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
@@ -719,7 +746,7 @@ io.on('connection', (socket) => {
                                                     console.log(salle.listeJoueurs);
                                                 }
                                                 console.log(salles);
-                                                salles.splice(salle,1);
+                                                salles.splice(salle,1); // On retire la salle une fois tout le monde parti.
                                                 console.log(salles);
                                             }
                                             break;
@@ -738,6 +765,7 @@ io.on('connection', (socket) => {
     //}
     });
 
+    // Socket de réception lorsqu'un joueur envoie un message dans le chat textuel
     socket.on('envoieMessage',(data) => {
         for(const salle of salles){
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
@@ -745,7 +773,7 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){
                 console.log("j'envoie le message à la salle :",salle.nom);
-                io.to(salle.nom).emit('recoitMessage',data);
+                io.to(salle.nom).emit('recoitMessage',data); // On renvoit le message à tout les joueurs de la salle
             }
         }
     });
@@ -762,6 +790,7 @@ function generateRandomText() {
     return text;
 }
 
+// Fonction principale qui calcule si un joueur gagne la partie
 function victoire(plateau){
     let victoireWhite = false;
     let victoireBlack = false;
@@ -974,8 +1003,6 @@ function determinerIndicesLigne(positionDepart, positionArrive) {
     return indices;
 }
 
-
-// le serveur ne connaît pas l'état de la partie ?
 function validerDeplacementJeton(damier, positionActuelle1, positionCible1, typeJeton) {
     console.log("entrée dans la fonction validerDeplacementJeton")
     console.log("damier : " + damier);

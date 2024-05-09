@@ -69,9 +69,9 @@ let modeSelectionDeplacement = false;
 var caseDisponiblePourDeplacer = [];
 var messageEnCours = false;
 
-// --------------------------------------------------------------------------------------------------------
-// ----------------------------------------- Sockets du client --------------------------------------------
-// --------------------------------------------------------------------------------------------------------
+// -----------------------------------
+// ----- Sockets pour les salles -----
+// -----------------------------------
 
 // Actualisation de salle correspondante
 socket.on('majSalle', (data) => {
@@ -136,10 +136,12 @@ socket.on('affichagePartie', (data) => {
     }
 });
 
+// Socket de lancement d'une partie matchmaking
 socket.on('lancementR',() => {
     debutPartie();
 })
 
+// Fonction qui affiche la victoire d'un joueur dans une partie
 function affichageDeLaVictoire(){
     let w = window.innerWidth;
     console.log(w);
@@ -323,9 +325,9 @@ socket.on("recupMode",(data) => {
     console.log("Ok le mode pour la partie est : ",modeChoisi);
 })
 
-// --------------------------------------------------------------------------------------------------------
-// -------------------------------------------- Fonctions -------------------------------------------------
-// --------------------------------------------------------------------------------------------------------
+// -----------------------------------------
+// ------- Fonctions pour les salles -------
+// -----------------------------------------
 
 // Redirection vers la page des règles
 function ouvrirRegles() {
@@ -587,9 +589,20 @@ function send(){
     $('#message').val("");
 }
 
-// ------------------
+// Fonction raccourci pour envoyer un message
+function fsend(event){
+    if (event.keyCode === 13) { // Touche 'Entrer'
+        send();
+    }
+}
+
+// ------------------------------------------------------
 // Fin des fonctions principales pour les salles
-// ------------------
+// ------------------------------------------------------
+
+// ------------------------------------------------------
+// Début des fonctions principales pour jouer à Hive
+// ------------------------------------------------------
 
 function hideHex(position){
     console.log('fonction hideHex sur : '+ position);
@@ -600,13 +613,6 @@ socket.on('hide', (data) => {
     console.log('chemin hide client : '+ position);
     hideHex(data.position);
 });
-
-// Fonction raccourci pour envoyer un message
-function fsend(event){
-    if (event.keyCode === 13) { // Touche 'Entrer'
-        send();
-    }
-}
 
 // Fonction qui créé un hexagone
 function creeHexagone(rayon) {
@@ -1018,6 +1024,7 @@ function determinerIndicesAutour(position) {
     return indicesAutour;
 }
 
+// Calcul des déplacements effectués par chaque pion
 function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceRetour = [];
@@ -1291,7 +1298,7 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
 }
 
 
-
+// Fonction principale gérant le plateau et les pions dans son ensemble
 function genereDamier(rayon, nbLignes, nbColonnes) {
     if(nbLignes==9 && nbColonnes==9){  /* augmente la taille globale du damier*/
         rayon=rayon+5;
@@ -1624,33 +1631,38 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         }
     });
 
+    // Affiche un message d'erreur à la manière d'un alert()
     function messageErreurEnJeu(message){
         if(!messageEnCours){
             messageEnCours = true;
             var zoneErreur ="<div id='zoneErreur' class='jeuErreur'><div class='texteJErreur'>"+message+"</div></div>";
             $("body").append(zoneErreur);
             $('#zoneErreur').delay(2000).fadeOut(300).delay(0).queue(() => {
-                $('#zoneErreur').remove();
+                $('#zoneErreur').remove(); // Après 2s, le texte commence à disparaitre puis une fois qu'on ne voit plus, il est supprimé
                 messageEnCours = false;
             });
         }
     }
     
+    // Socket de réception indiquant à un joueur qui souhaite joué que ce n'est pas son tour
     socket.on("pasTonTour", () => {
         console.log("C'est le tour du joueur adverse");
         messageErreurEnJeu("Ce n'est pas votre tour.");
     });
 
+    // Socket de réception indiquant à un joueur qui souhaite joué que ce n'est pas son pion
     socket.on("pasTonPion", () => {
         console.log("C'est un pion adverse, vous ne pouvez pas le déplacer");
         messageErreurEnJeu("Ce n'est pas votre pion.");
     });
 
+    // Socket de réception indiquant à un joueur qui souhaite joué que la case n'est pas disponible
     socket.on("caseDejaPrise", () => {
         console.log("La case est déjà prise");
         messageErreurEnJeu("Cette case est déjà occupée.");
     });
 
+    // Socket mettant à jour le compteur de tour en haut de l'écran
     socket.on("infosTour", (data) => { 
         console.log("C'est au tour du joueur", data.tour, " de jouer");
         console.log("Tour n°"+data.compteurTour);
@@ -1662,26 +1674,27 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
         $("#tourJoueur").text(data.joueur+" doit poser ou déplacer une pièce");
     })
 
+    // Socket de réception indiquant à un joueur qui souhaite joué qu'il doit poser son abeille
     socket.on("placerAbeille", () => {
         console.log("Il faut placer l'abeille");
         messageErreurEnJeu("Vous devez placer votre abeille.");
     })
 
+    // Socket de réception en cas de détection d'une victoire
     socket.on("victoire", (data) =>{
-        // console.log("Le gagnant est : ", data.gagnant[0]);
-        console.log("Ma data :\n",data);
-        affichageDeLaVictoire();
+        // console.log("Ma data :\n",data);
+        affichageDeLaVictoire(); // Affichage de la page de victoire
         socket.emit("sortieDePartie",data);
-        if(data.equalite1 && data.equalite2){
+        if(data.egalite1 && data.egalite2){ // En cas d'égalité
             defaite.play();
             $("#tourJoueur").text("Egalité ! - Personne ne gagne !");
         }
-        if(data.gagnant && data.perdant){
-            if(socket.id === data.gagnant[1]){
+        if(data.gagnant && data.perdant){ // Si on a un gagnant et un perdant
+            if(socket.id === data.gagnant[1]){ // Si vous êtes le gagnant
                 win.play();
                 $("#tourJoueur").text(data.gagnant[0]+" a remporté la partie ! - Vous avez gagné !");
             }
-            if(socket.id === data.perdant[1]){
+            if(socket.id === data.perdant[1]){ // Si vous êtes le perdant
                 defaite.play();
                 $("#tourJoueur").text(data.gagnant[0]+" a remporté la partie ! - Vous avez perdu...");
             }
@@ -1759,6 +1772,7 @@ $(document).on('click', '.pion', function(){
     }
 });
 
+// Fonction qui met en surbrillance verte une case possible
 function highlight(cases, couleurs){
     //couleurs = {"h820" : "black", "h721" = "white"} par exemple
     console.log("couleurs : ", couleurs);
@@ -1776,6 +1790,7 @@ function highlight(cases, couleurs){
     }
 }
 
+// Fonction qui retire la surbrillance verte
 function unhighlight(){
     console.log("casesHighlight : ", casesHighlight);
     for(c in casesHighlight){
@@ -1787,14 +1802,17 @@ function unhighlight(){
     casesHighlight = {};
 }
 
+// Surbrillance des cases
 socket.on("HighlightCasesJouables", (cases) => {
     highlight(cases, {});
 });
 
+// Enleve la surbrillance
 socket.on("UnhighlightCases", () => {
     unhighlight();
 });
 
+// Surbrillance pour les déplacements
 socket.on("recupHighlightDeplacement", (data) => {
     console.log("je vais highlight : ", data.couleurs);
     highlight(data.cases, data.couleurs);
