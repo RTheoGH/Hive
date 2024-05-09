@@ -152,7 +152,8 @@ io.on('connection', (socket) => {
                             const copiePions = JSON.parse(JSON.stringify(pions));
                             data.joueur[2] = copiePions;
                             salles[i].listeJoueurs.push(data.joueur);
-                            salles[i]["etatPlateau"] = []  //liste de dicos, représente les pièces par leur position, le pion et la couleur
+                            salles[i]["etatPlateau"] = [];  //liste de dicos, représente les pièces par leur position, le pion et la couleur
+                            salles[i]["pilesDePions"] = {};
                             salles[i]["compteurTour"] = 1;
                             salles[i]["tour"] = randInt(2);
                             console.log("C'est au tour du joueur : ",salles[i].tour);
@@ -387,7 +388,7 @@ io.on('connection', (socket) => {
             console.log(matchPop);
             const copiePionsJ1 = JSON.parse(JSON.stringify(pions));
             const copiePionsJ2 = JSON.parse(JSON.stringify(pions));
-            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "tour":randInt(2), "compteurTour":1};
+            let nouvelle_salle = {"nom":matchPop.MatchID,"code":"","listeJoueurs":[[matchPop.J1[1],matchPop.J1[2],copiePionsJ1],[matchPop.J2[1],matchPop.J2[2],copiePionsJ2]],"type":"VS","mode":"extension2", "etatPlateau":[], "pilesDePions" : {}, "tour":randInt(2), "compteurTour":1};
             salles.push(nouvelle_salle); // On crée et ajoute la nouvelle salle dans les salles
             let cpt = 0; // compteur pour éviter de lancer deux fois la partie (voir socket suivante)
             io.to(matchPop.J1).emit('clientJoin', {"salle":nouvelle_salle,"cpt":cpt}); // On fait rejoindre le joueur 1
@@ -465,10 +466,24 @@ io.on('connection', (socket) => {
                     //check si c'est le tour du joueur
                     if(salle.tour == indexJoueur){
                         let peutPlacer = true;
+                        for(let p of salle.etatPlateau){
+                            //console.log("position : ",  p.position, "c :", data.case);
+                            if(p.position == data.case){
+                                console.log("cas où la case est déjà prise");
+                                peutPlacer = false;
+                                io.to(socket.id).emit("caseDejaPrise");
+                                break;
+                            }
+                        }
                         //check si le pion est joué autour d'un pion de sa couleur
                         if(salle.compteurTour >= 2){
                             let indice = data.case.replace("h", "");
-                            peutPlacer = checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                            console.log("indice : ",indice);
+                            peutPlacer = peutPlacer && checkPeutPlacer(indice, salle.etatPlateau, indexJoueur, salle.compteurTour);
+                        }
+                        if(salle.compteurTour >= 3 && data.pion != "pionAbeille" && joueur[2]["pionAbeille"] != 0){
+                            peutPlacer = false;
+                            io.to(socket.id).emit("placerAbeille");
                         }
                         if(peutPlacer){
                             //gestion pions restants
@@ -479,11 +494,45 @@ io.on('connection', (socket) => {
                             //gestion pour poser pion
                             data.couleur = ["white", "black"][indexJoueur];
                             data.joueur = joueur[0];
-                            stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur};
+                            stockePion = {"position" : data.case, "pion" : data.pion, "couleur" : data.couleur, "jeton" : data.jeton};
                             salle.etatPlateau.push(stockePion);
                             //console.log("Etat du plateau stocké sur le serveur :",etatPlateau);
                             io.to(socket.id).emit("UnhighlightCases");
                             io.to(salle.nom).emit("ReceptPoserPionPlateau", data);
+                            let joueurGagnant = victoire(salle.etatPlateau);
+                            console.log("gagnant : ",joueurGagnant);
+                            if(joueurGagnant != false){ // Si la fonction de victoire() renvoie autre chose que false.
+                                console.log("Toujours la ?");
+                                if(joueurGagnant == "egalite"){ // Si on a une égalité
+                                    io.to(salle.nom).emit("victoire", {
+                                        "egalite1" : salle.listeJoueurs[0],
+                                        "egalite2" : salle.listeJoueurs[1]
+                                    });
+                                    console.log("Equalité");
+                                }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
+                                    console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
+                                    io.to(salle.nom).emit("victoire", {
+                                        "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
+                                        "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                    });
+                                    console.log("Victoire/Défaite");
+                                }
+                                // Après avoir annoncé la victoire on retire les joueurs de la salle.
+                                for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
+                                    console.log("i :",i);
+                                    let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
+                                    console.log(index);
+                                    if (index !== -1) {
+                                        console.log(salle.listeJoueurs.splice(index, 1));
+                                        salle.listeJoueurs.splice(index, 1);
+                                        socket.leave(salle.nom);
+                                    }
+                                    console.log(salle.listeJoueurs);
+                                }
+                                console.log(salles);
+                                salles.splice(salle,1); // On retire la salle une fois tout le monde parti.
+                                console.log(salles);
+                            }
                             //gestion tour
                             salle.tour = 1-indexJoueur;
                             salle.compteurTour += 0.5;
@@ -498,8 +547,6 @@ io.on('connection', (socket) => {
                     }
                     break parcoursDesSalles;
                 }
-                
-                
             }
         }
     });
@@ -511,6 +558,7 @@ io.on('connection', (socket) => {
                 if(joueur[1] == socket.id){
                     const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
                     if(indexJoueur == salle.tour){
+                        console.log("plateau : ", salle.etatPlateau);
                         let listeCasesVides = [];
                         if(salle.compteurTour != 1){
                             for(let p of salle.etatPlateau){
@@ -539,11 +587,185 @@ io.on('connection', (socket) => {
                         break parcoursDesSalles;
                     }
                 }
-                
         }}
-
     });
 
+    socket.on("highlightDeplacement", (data) => {
+        parcoursDesSalles:
+        for(let salle of salles){
+            for(let joueur of salle.listeJoueurs){
+                if(joueur[1] == socket.id){
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    //console.log(indexJoueur);
+                    if(indexJoueur == salle.tour){
+                        //console.log("plateau :", salle.etatPlateau);
+                        let couleurs = {};
+                        let bonneCouleur = true;
+                        for(p of salle.etatPlateau){
+                            if(data.casesDisponibles.toString().includes(p.position.replace("h", ""))){
+                                couleurs[p.position] = p.couleur;
+                                //console.log("J'ai trouvé le pion, sa couleur est : ", p.couleur)
+                            }
+                            if(p.position == data.pionOrigine && p.couleur != ["white", "black"][indexJoueur]){
+                                bonneCouleur = false;
+                            }
+                        }
+                        if(bonneCouleur){
+                            console.log("couleurs :",couleurs)
+                            io.to(socket.id).emit("recupHighlightDeplacement", {"cases" : data.casesDisponibles, "couleurs" : couleurs});
+                        }
+                        else{
+                            io.to(socket.id).emit("pasTonPion");
+                        }
+                    }
+                    else{
+                        io.to(socket.id).emit("pasTonTour");
+                    }
+                    break parcoursDesSalles;
+                }
+            }
+        }
+    });
+
+    socket.on("deplacerPion", (data) => {
+        //console.log("entrée dans le socket deplacerPion")
+        //if(validerDeplacementJeton(data.damier,data.caseOrigine,data.caseArrivee,data.typePion)){
+        console.log("Validation mouvement du pion");
+        parcoursDesSalles:
+        for(let salle of salles){
+            for(let joueur of salle.listeJoueurs){
+                if(joueur[1] == socket.id){
+                    const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
+                    if(indexJoueur == salle.tour){
+                        console.log("plateau :", salle.etatPlateau);
+                        console.log("Case d'origine :", data.caseOrigine);
+                        bouclePilePions:
+                        for(pion of salle.etatPlateau){
+                            if(pion.position == data.caseArrivee){
+                                for(p of salle.etatPlateau){ //pour récupérer les données du pion à déplacer
+                                    if(p.position == data.caseOrigine){
+                                        console.log("cas où on fait une pile de pion");
+                                        if(Object.keys(salle.pilesDePions).includes(pion.position)){
+                                            salle.pilesDePions[pion.position].push();
+                                        }
+                                        else{
+                                            salle.pilesDePions[pion.position] = [pion, p] //liste des pions du plut bas au plus haut
+                                        }
+                                        break bouclePilePions;
+                                    }
+                                }
+                            }
+                        }
+                        for(pion of salle.etatPlateau){
+                            if(data.caseOrigine == pion.position){
+                                if(salle.compteurTour >= 3 && pion.pion != "pionAbeille" && joueur[2]["pionAbeille"] != 0){
+                                    io.to(socket.id).emit("placerAbeille");
+                                }else{
+                                    console.log("keys des piles : ", salle.pilesDePions, "pion.position : ", pion.position);
+                                    if(!Object.keys(salle.pilesDePions).includes(pion.position)){
+                                        console.log("j'ai trouvé le pion à changer")
+                                        pion.position = data.caseArrivee;
+                                        salle.tour = 1 - indexJoueur;
+                                        salle.compteurTour += 0.5;
+                                        io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pion.pion, "couleurPionDeplace" : pion.couleur, "pionEnDessous" : null, "couleurPionEnDessous" : "none", "joueur" : joueur[0]});
+                                        io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                        let joueurGagnant = victoire(salle.etatPlateau);
+                                        console.log("gagnant :", joueurGagnant);
+                                        if(joueurGagnant != false){ // Si la fonction de victoire() renvoie autre chose que false.
+                                            console.log("Toujours la ?");
+                                            if(joueurGagnant == "egalite"){ // Si on a une égalité
+                                                io.to(salle.nom).emit("victoire", {
+                                                    "egalite1" : salle.listeJoueurs[0],
+                                                    "egalite2" : salle.listeJoueurs[1]
+                                                });
+                                                console.log("Equalité");
+                                            }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
+                                                console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
+                                                io.to(salle.nom).emit("victoire", {
+                                                    "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
+                                                    "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                                });
+                                                console.log("Victoire/Défaite");
+                                            }
+                                            // Après avoir annoncé la victoire on retire les joueurs de la salle.
+                                            for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
+                                                console.log("i :",i);
+                                                let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
+                                                console.log(index);
+                                                if (index !== -1) {
+                                                    console.log(salle.listeJoueurs.splice(index, 1));
+                                                    salle.listeJoueurs.splice(index, 1);
+                                                    socket.leave(salle.nom);
+                                                }
+                                                console.log(salle.listeJoueurs);
+                                            }
+                                            console.log(salles);
+                                            salles.splice(salle,1); // On retire la salle une fois tout le monde parti.
+                                            console.log(salles);
+                                        }
+                                        break;
+                                    }else{
+                                        let pionEnHautDeLaPile = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 1];
+                                        console.log("en haut de la pile :", pionEnHautDeLaPile);
+                                        if(pionEnHautDeLaPile.position == data.caseOrigine){
+                                            console.log("j'ai trouvé le pion à changer 2")
+                                            let pionDuDessous = salle.pilesDePions[pion.position][(salle.pilesDePions[pion.position]).length - 2];
+                                            pion.position = data.caseArrivee;
+                                            salle.tour = 1 - indexJoueur;
+                                            salle.compteurTour += 0.5;
+                                            io.to(salle.nom).emit("ReceptDeplacerPion", {"caseOrigine" : data.caseOrigine, "caseArrivee" : data.caseArrivee, "pionDeplace" : pionEnHautDeLaPile.pion, "couleurPionDeplace" : pionEnHautDeLaPile.couleur, "pionEnDessous" : pionDuDessous.pion, "couleurPionEnDessous" : pionDuDessous.couleur,"joueur" : joueur[0]});
+                                            io.to(salle.nom).emit("infosTour", {"tour" : salle.tour, "compteurTour" : Math.floor(salle.compteurTour), "joueur" : salle.listeJoueurs[salle.tour][0]});
+                                            let joueurGagnant = victoire(salle.etatPlateau);
+                                            console.log("gagnant :", joueurGagnant);
+                                            if(joueurGagnant != false){ // Si la fonction de victoire() renvoie autre chose que false.
+                                                console.log("Toujours la ?");
+                                                if(joueurGagnant == "egalite"){ // Si on a une égalité
+                                                    io.to(salle.nom).emit("victoire", {
+                                                        "egalite1" : salle.listeJoueurs[0],
+                                                        "egalite2" : salle.listeJoueurs[1]
+                                                    });
+                                                    console.log("Equalité");
+                                                }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
+                                                    console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
+                                                    io.to(salle.nom).emit("victoire", {
+                                                        "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
+                                                        "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                                    });
+                                                    console.log("Victoire/Défaite");
+                                                }
+                                                // Après avoir annoncé la victoire on retire les joueurs de la salle.
+                                                for (let i = 0; i < salle.listeJoueurs.length+1; i++) {
+                                                    console.log("i :",i);
+                                                    let index = salle.listeJoueurs.indexOf(salle.listeJoueurs[i]);
+                                                    console.log(index);
+                                                    if (index !== -1) {
+                                                        console.log(salle.listeJoueurs.splice(index, 1));
+                                                        salle.listeJoueurs.splice(index, 1);
+                                                        socket.leave(salle.nom);
+                                                    }
+                                                    console.log(salle.listeJoueurs);
+                                                }
+                                                console.log(salles);
+                                                salles.splice(salle,1); // On retire la salle une fois tout le monde parti.
+                                                console.log(salles);
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        io.to(socket.id).emit("pasTonTour");
+                    }
+                    break parcoursDesSalles;
+                }
+            }
+        }
+    //}
+    });
+
+    // Socket de réception lorsqu'un joueur envoie un message dans le chat textuel
     socket.on('envoieMessage',(data) => {
         for(const salle of salles){
             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
@@ -551,7 +773,7 @@ io.on('connection', (socket) => {
             console.log(indexJoueur);
             if(indexJoueur != -1){
                 console.log("j'envoie le message à la salle :",salle.nom);
-                io.to(salle.nom).emit('recoitMessage',data);
+                io.to(salle.nom).emit('recoitMessage',data); // On renvoit le message à tout les joueurs de la salle
             }
         }
     });
@@ -568,11 +790,38 @@ function generateRandomText() {
     return text;
 }
 
+// Fonction principale qui calcule si un joueur gagne la partie
+function victoire(plateau){
+    let victoireWhite = false;
+    let victoireBlack = false;
+    for(pion of plateau){
+        if(pion.pion == "pionAbeille"){
+            let abeilleEntouree = true;
+            for(let c of determinerIndicesAutour(pion.position.replace("h", ""))){
+                // console.log("c :", c);
+                let caseTrouvee = false;
+                for(p of plateau){ //check si chaque case autour est bien remplie
+                    if(p.position == "h"+c){
+                        caseTrouvee = true;
+                    }
+                }
+                abeilleEntouree = abeilleEntouree && caseTrouvee;
+            }
+            if(abeilleEntouree){
+                (pion.couleur == "white") ? victoireBlack = true : victoireWhite = true;
+            }
+        }
+    }
+    if(victoireBlack && victoireWhite) return "egalite"; // Envoyer égalité
+    if(victoireBlack) return "black"; // Envoyer victoire black
+    if(victoireWhite) return "white"; // envoyer victoire white
+    return false;
+}
+
 function determinerIndicesAutour(position) {
     // rend toutes les cases autour de la position
     let indicesAutour = [];
-    nbLignes = 40;
-    nbColonnes = 40;
+    let nbColonnes = 40;
 
     // Convertir la position en coordonnées de ligne et colonne
     let ligne = Math.floor(position / nbColonnes);
@@ -628,6 +877,7 @@ function checkPeutPlacer(casePossible, pionsPlateau, indexJoueur, tour){
     let peutPlacer = true;
     const c = JSON.parse(JSON.stringify(casePossible));
     let casesVoisines = determinerIndicesAutour(c);
+    
     checkCouleurAutour:
     for(let vi of casesVoisines){
         for(let p of pionsPlateau){
@@ -753,9 +1003,13 @@ function determinerIndicesLigne(positionDepart, positionArrive) {
     return indices;
 }
 
-
-// le serveur ne connaît pas l'état de la partie ?
-function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJeton) {
+function validerDeplacementJeton(damier, positionActuelle1, positionCible1, typeJeton) {
+    console.log("entrée dans la fonction validerDeplacementJeton")
+    console.log("damier : " + damier);
+    console.log("positionActuelle1 : " + positionActuelle1 + " positionCible1 : " + positionCible1);
+    let positionActuelle = positionActuelle1.substring(1);
+    let positionCible = positionCible1.substring(1);
+    console.log("positionActuelle : " + positionActuelle + " positionCible : " + positionCible);
     let indicesAutour = determinerIndicesAutour(positionActuelle);
     let indiceAutourCible = determinerIndicesAutour(positionCible);
     for(position of positionCible){
@@ -763,13 +1017,30 @@ function validerDeplacementJeton(damier, positionActuelle, positionCible, typeJe
             indiceAutourCible.pop(positionActuelle);
         }
     }
+    console.log("typeJeton début fonction valider déplacement : " + typeJeton);
+    console.log("typeof : " + typeof typeJeton);
     switch (typeJeton){
         case 'Abeille' :
-            for(position in indicesAutour){
+            console.log("dans l'abeille");
+            console.log("indicesAutour : " + indicesAutour);
+            for(position of indicesAutour){
+                console.log("positionCible == position : "+ positionCible + "==" + position + " ? " + positionCible == position );
                 if(positionCible == position ){
+                    console.log("damier[positionCible] : " + damier[positionCible]);
+                    for (var prop in damier[positionCible]) {
+                        console.log("prop : " + prop);
+                        if (prop === 'jeton') {
+                            var jeton = damier[positionCible].jeton;
+                            console.log("jeton : " +jeton);
+                            break;
+                        }
+                    }
+                    console.log("Abeille premier if valider ! \n damier[positionCible].attr('jeton') == 'vide' : " + damier[positionCible].attr('jeton'));
                     if(damier[positionCible].attr('jeton') == "vide"){
+                        console.log("On a trouvé la positionCible aux alentours ! " + position + " attendu : " + positionCible);
                         indiceAutourCible.pop(positionActuelle);
                         for(indice of indiceAutourCible){
+                            console.log("Abeille dernière étape ! Pitié qqn a côté ? " + damier[indice].attr('jeton'));
                             if(damier[indice].attr('jeton') != "vide"){
                                 return true;
                             }
