@@ -429,23 +429,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // socket.on('discover', (data) => {
-    //     const position = data.position;
-    //     console.log('Position reçue du client :', position);
-    //     let indicesAutour = determinerIndicesAutour(data.position);
-    //     parcoursDesSalles:
-    //     for(salle of salles){
-    //         for(joueur of salle.listeJoueurs){
-    //             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
-    //             if(joueur.includes(socket.id)){
-    //                 if(indexJoueur == salle.tour){
-    //                 // Envoyer les instructions pour activer les hexagones autour
-    //                     io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
-    //                     break parcoursDesSalles;
-    //                 }
-    //     }}}
-    // });
-
     socket.on('ClickHexRed', (data) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
@@ -508,6 +491,11 @@ io.on('connection', (socket) => {
                                         "egalite1" : salle.listeJoueurs[0],
                                         "egalite2" : salle.listeJoueurs[1]
                                     });
+                                    let g = joueurGagnant ;
+                                    let un = salle.listeJoueurs[0];
+                                    let deux = salle.listeJoueurs[1];
+                                    let plat = salle.etatPlateau;
+                                    declareWin(g,un,deux,plat);
                                     console.log("Equalité");
                                 }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
                                     console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
@@ -515,6 +503,11 @@ io.on('connection', (socket) => {
                                         "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
                                         "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
                                     });
+                                    let g = joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1];
+                                    let un = salle.listeJoueurs[0];
+                                    let deux = salle.listeJoueurs[1];
+                                    let plat = salle.etatPlateau;
+                                    declareWin(g,un,deux,plat);
                                     console.log("Victoire/Défaite");
                                 }
                                 // Après avoir annoncé la victoire on retire les joueurs de la salle.
@@ -678,6 +671,11 @@ io.on('connection', (socket) => {
                                                     "egalite1" : salle.listeJoueurs[0],
                                                     "egalite2" : salle.listeJoueurs[1]
                                                 });
+                                                let g = joueurGagnant ;
+                                                let un = salle.listeJoueurs[0];
+                                                let deux = salle.listeJoueurs[1];
+                                                let plat = salle.etatPlateau;
+                                                declareWin(g,un,deux,plat);
                                                 console.log("Equalité");
                                             }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
                                                 console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
@@ -685,6 +683,11 @@ io.on('connection', (socket) => {
                                                     "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
                                                     "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
                                                 });
+                                                let g = joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1];
+                                                let un = salle.listeJoueurs[0];
+                                                let deux = salle.listeJoueurs[1];
+                                                let plat = salle.etatPlateau;
+                                                declareWin(g,un,deux,plat);
                                                 console.log("Victoire/Défaite");
                                             }
                                             // Après avoir annoncé la victoire on retire les joueurs de la salle.
@@ -724,13 +727,24 @@ io.on('connection', (socket) => {
                                                         "egalite1" : salle.listeJoueurs[0],
                                                         "egalite2" : salle.listeJoueurs[1]
                                                     });
+                                                    let g = joueurGagnant ;
+                                                    let un = salle.listeJoueurs[0];
+                                                    let deux = salle.listeJoueurs[1];
+                                                    let plat = salle.etatPlateau;
+                                                    declareWin(g,un,deux,plat);
                                                     console.log("Equalité");
                                                 }else{ //  Si on a un gagnant et un perdant, si 'white' -> gagnant J1, si 'black' -> gagnant J2
                                                     console.log(salle.listeJoueurs[0],"\n",salle.listeJoueurs[1]);
                                                     io.to(salle.nom).emit("victoire", {
                                                         "gagnant" : joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1],
                                                         "perdant" : joueurGagnant == "white" ? salle.listeJoueurs[1] : salle.listeJoueurs[0]
+                                                        
                                                     });
+                                                    let g = joueurGagnant == "white" ? salle.listeJoueurs[0] : salle.listeJoueurs[1];
+                                                    let un = salle.listeJoueurs[0];
+                                                    let deux = salle.listeJoueurs[1];
+                                                    let plat = salle.etatPlateau;
+                                                    declareWin(g,un,deux,plat);
                                                     console.log("Victoire/Défaite");
                                                 }
                                                 // Après avoir annoncé la victoire on retire les joueurs de la salle.
@@ -816,6 +830,27 @@ function victoire(plateau){
     if(victoireBlack) return "black"; // Envoyer victoire black
     if(victoireWhite) return "white"; // envoyer victoire white
     return false;
+}
+
+function declareWin(g,un,deux,plat){
+    (async () => {
+        try {
+            await mongoose.connect("mongodb://127.0.0.1:27017/local"); //connection
+            // await mongoose.connect("mongodb://localhost:27017/local"); // ancienne version problématique
+            console.log("Connexion réussi avec MongoDB");
+            const Win = new Historique({ // nouveau tuple
+                Joueur_1 : un[0],
+                Joueur_2 : deux[0],
+                Winner : g == "egalite" ? "Egalité": g[0] ,
+                Plateau : plat
+            });
+            console.log("winbyff créer avec succés");
+            const resultat = await Win.save() // insert
+            console.log(resultat);
+        }catch(error){
+            console.log(error);
+        }
+        })();
 }
 
 function determinerIndicesAutour(position) {

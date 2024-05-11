@@ -7,6 +7,7 @@
 ![Socket.io](https://img.shields.io/badge/Socket.io-black?style=for-the-badge&logo=socket.io&badgeColor=010101)
 ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
 ![D3.js](https://img.shields.io/static/v1?style=for-the-badge&message=D3.js&color=222222&logo=D3.js&logoColor=F9A03C&label=)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
 
 ## Projet réalisé par
 ### Groupe 4 :
@@ -88,7 +89,13 @@ Une pièce doit être placée à côté d’une pièce amie et ne peut en aucun 
 - Base de donnée mongoDB (mongoose)
 - Déplacement des pions
 - Détection de la victoire
-- Quelques bugs encore présent
+
+### Quelques bugs encore présents et un point manquant
+
+- **Bug du scarabée** : la montée et la descente du scarabée ne fonctionne pas correctement. Lorsque celui-ci redescend d'une pièce, ce n'est pas lui qui redescend, mais la pièce dans dessous qui bouge...
+- **Bug de la fourmi** : la fourmi peut casser la ruche dans de rare cas. Si elle se trouve à une jointure entre deux pièces, on peut tout de même la bouger... Elle peut aussi se déplacer en arrière si elle est en bout de ruche...
+
+- **Blocage partiel** d'une pièce par d'autres pièces, si l'espace pour se déplacer ne permet pas de la faire 'glisser'.
 
 ---
 
@@ -130,3 +137,4 @@ node index.js
 - Règles du jeu : https://www.regledujeu.fr/hive/
 - MongoDB : https://www.mongodb.com/
 - D3JS : https://d3js.org/
+- Socket.IO : https://socket.io/fr/

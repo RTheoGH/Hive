@@ -716,71 +716,6 @@ function toggleHexagone(data) {
     }
 }
 
-/*
-    if (couleurRemplissage === "red") {
-        console.log(data.position + " est rouge.");
-        // Hexagone rouge, le désactive et désactive les hexagones autour
-        var autourRouge = false
-        for(indiceR of indicesAutour){
-            if(d3.select('#h' + indiceR).attr("fill")==="red") autourRouge = true;
-        }
-        if(autourRouge){
-            hexagone
-                .attr("fill", "none")
-        }
-        else{
-            hexagone
-                .classed("desactive", true)
-                .classed("hexagoneReactive", false)
-                .classed("hexagoneWhiteBorder", true)
-                .attr("fill", "none")
-                .style("pointer-events", "none");
-        }
-        // passer a vide
-
-        // Désactiver les hexagones autour s'ils ne sont pas rouges ou n'ont pas un autre hexagone rouge autour d'eux
-        for(indiceR of indicesAutour) {
-            console.log(indiceR + " est rouge ou border ?");
-            //var hexVoisin = d3.select('#h' + indice);
-            //var couleurVoisin = hexVoisin.attr("fill");
-
-            // Vérifier si l'hexagone voisin est rouge ou a un hexagone rouge autour de lui
-            //var indicesVoisinAutour = determinerIndicesAutour(indice);
-            //let rouge = false;
-            //for(indiceRed of indicesVoisinAutour){
-            //    if(d3.select('#h' + indiceRed).attr("fill")==="red"){
-            //        rouge = true;
-            //    }
-            //}
-            //var voisinAHexRouge = indicesVoisinAutour.some(function (voisinIndice) {
-            //    var voisinHex = d3.select('#h' + voisinIndice);
-            //    return voisinHex.attr("fill") === "red";
-            //});
-            
-            var hexVoisin = d3.select('#h' + indiceR);
-            var indicesVoisinAutour = determinerIndicesAutour(indiceR);
-            let rouge = false;
-            if(d3.select('#h' + indiceR).attr("fill")==="red") rouge = true;
-            for(indiceRed of indicesVoisinAutour){
-                if(d3.select('#h' + indiceRed).attr("fill")==="red") rouge = true;
-            }
-
-            if (!rouge) {
-                hexVoisin
-                    .classed("desactive", true)
-                    .classed("hexagoneReactive", false)
-                    .classed("hexagoneWhiteBorder", true)
-                    .attr("fill", "none")
-                    .style("pointer-events", "none");
-            }
-        }
-    } else {
-        // Hexagone non rouge, l'active
-        console.log(data.position + " n'est pas rouge");
-    }
-}
-*/
-
 socket.on('instructionsRedActivation', (data) => {
     // Activer les hexagones autour selon les instructions du serveur
     toggleHexagone(data);
@@ -853,18 +788,6 @@ function indiceFourmiRec(damier, liste){
     if(ListeIndiceRec == liste)
         return ListeIndiceRec;
     else{ indiceFourmiRec(damier, liste) }
-    /*
-    for(indiceListe in ListeIndiceRec){
-        indicesAutour = determinerIndicesAutour(indiceListe);
-        for(indice in indicesAutour){
-            if(damier[indice].attr('jeton') != "vide" // si la case est vide
-            && !damier[indice].classed("desactive") // et qu'elle est active
-            && !indiceRetourDoublons.includes(indice)) // et que je l'ai pas déjà
-            ListeIndiceRec.push(indice);
-        }
-    }
-    return ListeIndiceRec;
-    */
 }
 
 function determinerIndicesLigne(position) { 
@@ -1108,38 +1031,6 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
         break;
 
         case 'Fourmi' :
-            /*
-            // let indiceRetourDoublons = indiceFourmiRec(damier, [positionActuelle])
-            let indiceTotalFourmi = [];
-            let indiceFinalFourmi = [];
-            for(indiceT of indicesAutour){
-                console.log("indiceT : "+ indiceT + "\n damier[indiceT] " + damier[indiceT] + "\ndamier[indiceT].attr('jeton') : " + damier[indiceT].attr('jeton')   );
-                if(damier[indiceT].attr('jeton') == "vide" && !damier[indiceT].classed("desactive")){
-                    indiceTotalFourmi.push(indiceT);
-                    console.log("indiceT : " + indiceT);
-                }
-            }
-
-            
-            console.log("indiceTotalFourmi :" + indiceTotalFourmi);
-            while(indiceTotalFourmi.length !== indiceFinalFourmi.length){
-                console.log("indiceFinalFourmi :" +indiceFinalFourmi);
-                indiceFinalFourmi = indiceTotalFourmi;
-                for(indiceRec of indiceFinalFourmi){
-                    console.log("indiceRec : " + indiceRec);
-                    let indicesAutourFourmiRec = determinerIndicesAutour(indiceRec);
-                    console.log("indicesAutourFourmiRec : " + indicesAutourFourmiRec);
-                    for(indiceT of indicesAutourFourmiRec){
-                        console.log("indiceT" + indiceT + "\ndamier[indiceT].attr('jeton')" + damier[indiceT].attr('jeton') + "\n !damier[indiceT].classed(desactive) "+ !damier[indiceT].classed("desactive") + "\n!indiceFinalFourmi.includes(indiceT)" + !indiceFinalFourmi.includes(indiceT))
-                        if(damier[indiceT].attr('jeton') == "vide" && !damier[indiceT].classed("desactive") && !indiceFinalFourmi.includes(indiceT)){
-                            console.log("condition vérifier (all true)");
-                            indiceTotalFourmi.push(indiceT);
-                        }
-                    }
-                }
-            }
-
-            */
             let reponse = [];
             let damierActif = [];
             for(let caseActive=0;caseActive<=(40*40)-1;caseActive++){
@@ -1220,22 +1111,6 @@ function CasesDeplacementJeton(damier, positionActuelle, typeJeton) {
             //console.log("indiceFinalFourmi" + indiceFinalFourmi);
             indiceRetour = [...new Set(reponse)];
             //console.log("indiceRetour : " + indiceRetour);
-            /*
-            for(indiceFourmiTrop of indicesAutour){
-                let indiFTemps = determinerIndicesAutour(indiceFourmiTrop);
-                console.log("indice Autours : "+ indiFTemps);
-                let is_alone = true;
-                for(indiFTemp of indiFTemps){
-                    if(damier[indiFTemp].attr('jeton') != "vide"){
-                        is_alone = false;
-                        console.log("damier[indiFTemp].attr('jeton') :"+damier[indiFTemp].attr('jeton')+"\n indice :" + indiceFourmiTrop);
-                    }
-                }
-                if(is_alone) indiceRetour.pop(indiceFourmiTrop);
-            }
-            if(indiceRetour.includes(positionActuelle))
-                indiceRetour.pop(positionActuelle);
-                */
             indiceRetour = damierFourmi; // A retirer !
         break;
         
@@ -1362,17 +1237,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
     var milieu = [];
     if (((nbLignes*nbColonnes)/2)%200 == 0){
         milieu.push((nbLignes*nbColonnes+nbLignes)/2)
-        /*
-        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-1)
-        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+1)
-        //milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-(nbColonnes+1))
-        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-(nbColonnes))
-        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)-(nbColonnes-1))
-        //milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes-1))
-        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes))
-        milieu.push(((nbLignes*nbColonnes+nbLignes)/2)+(nbColonnes+1))
-        */
-
     }
     console.log(milieu);
     for (var ligne=0; ligne < nbLignes; ligne++) {
@@ -1405,12 +1269,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                 .attr("jeton", "vide")
                 .attr("id", "h"+(ligne*nbLignes+colonne)) // car un id doit commencer par une lettre pour pouvoir être utilisé
                 .on("click", function(d) {
-
-                    
-                    // d3.select(this).selectAll("svg").remove();
-                    // d3.select(this).append("svg").append('image')
-                    //.attr("viewBox", "0 0 " + (rayon * 2) + " " + (rayon * 2))  // Ajout de la viewBox
-                    //.attr('href', 'https://cdn.discordapp.com/attachments/1173320346372411485/1200083491887513642/abeille.png?ex=65c4e3d8&is=65b26ed8&hm=c3a5878cf857a8c4290650b43e743b82eecb5b953ee5d903b2121e8be1104b62&')
                     let pionActuel = d3.select(this).attr("id");
                     console.log("pion cliqué : ", pionActuel);
                     console.log("pion origine : ", deplacementPionOrigine);
@@ -1439,14 +1297,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                                 }
                                 modeSelectionDeplacement = false;
                                 unhighlight();
-                                // if(pionActuel == deplacementPionOrigine){
-                                //     modeSelectionDeplacement = false;
-                                //     deplacementPionOrigine = null;
-                                //     unhighlight();
-                                // }
-                                // else{
-                                //     deplacementPionOrigine = pionActuel;
-                                // }
                             }else{
                                 modeSelectionDeplacement = true;
                                 deplacementPionOrigine = pionActuel;
@@ -1512,15 +1362,6 @@ function genereDamier(rayon, nbLignes, nbColonnes) {
                             console.log(tPion);
                             socket.emit("deplacerPion", {"caseOrigine" : deplacementPionOrigine, "caseArrivee" : pionActuel, "damier" : listeCase, "typePion" : tPion });
                         }
-                        //let position=d3.select(this).attr('id').substring(1);
-                        //let typePion = document.querySelector('input[name="swap"]:checked').id;
-                        //console.log("typePion : "+typePion)
-                        //console.log(position);
-                        //socket.emit('pion',{'typePion':typePion,'position':position,'numJoueur':jeton});
-                        //console.log("typePion hexagone apres emit : "+typePion);
-                        // if(typePion=="pion")
-                        //d3.select(this).attr('fill', "red");
-                        // d3.select(this).attr('fill', couleursJoueurs[jeton]);
                     }
                 });
             }
