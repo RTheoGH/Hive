@@ -429,23 +429,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // socket.on('discover', (data) => {
-    //     const position = data.position;
-    //     console.log('Position reçue du client :', position);
-    //     let indicesAutour = determinerIndicesAutour(data.position);
-    //     parcoursDesSalles:
-    //     for(salle of salles){
-    //         for(joueur of salle.listeJoueurs){
-    //             const indexJoueur = salle.listeJoueurs.findIndex(joueur => joueur[1] == socket.id);
-    //             if(joueur.includes(socket.id)){
-    //                 if(indexJoueur == salle.tour){
-    //                 // Envoyer les instructions pour activer les hexagones autour
-    //                     io.to(salle.nom).emit('instructionsActivation', { 'indices': indicesAutour });
-    //                     break parcoursDesSalles;
-    //                 }
-    //     }}}
-    // });
-
     socket.on('ClickHexRed', (data) => {
         const position = data.position;
         console.log('Position reçue du client :', position);
